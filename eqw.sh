@@ -136,8 +136,18 @@ etc etc for now...
 		"
 		
 		exit 1
-	else
+	elif [[ $parameter_count == 1 ]]; then
 	param_file=(`ls $1/parameter*`)
+	echo "
+		Found parameters file.
+		($param_file)
+	"
+	elif [[ $parameter_count == 0 ]]; then
+	touch $1/parameter_file_empty.txt
+	param_file=($1/parameter_file_empty.txt)
+	echo "
+		No parameters file found.  Running qiime with defaults.
+	"
 	fi
 
 ## Check that no more than one mapping file is present
@@ -415,6 +425,8 @@ qiime_workflow_script restarting in $mode mode" >> $log
 ## split_libraries_fastq.py command
 
 		log=($outdir/eqw_workflow.log)
+
+if [[ ! -f $outdir/split_libraries/seqs.fna ]]; then
 	
 	if [[ $slqual == "" ]]; then 
 	qual=(19)
@@ -450,6 +462,7 @@ Split libraries command completed." >> $log
 	date >> $log	
 
 	wait
+fi
 
 ## Check for split libraries success
 
@@ -513,6 +526,10 @@ filter_fasta.py -f $outdir/split_libraries/seqs.fna -o $outdir/split_libraries/s
 
 	if [[ ! -f $outdir/split_libraries/seqs_rc.fna ]]; then
 
+	echo "		Reverse complementing split libraries output according
+		to config file setting.
+	"
+
 	`adjust_seq_orientation.py -i $seqs -r -o $outdir/split_libraries/seqs_rc.fna`
 	wait
 	echo "		Demultiplexed sequences were reverse complemented.
@@ -528,7 +545,7 @@ filter_fasta.py -f $outdir/split_libraries/seqs.fna -o $outdir/split_libraries/s
 
 	if [[ $mode == "ITS" ]]; then
 
-#	ITSx_parallel.sh $seqs $itsx_threads $itsx_options
+	dev-ITSx_parallel.sh $seqs $itsx_threads $itsx_options
 
 	wait
 	seqs=$outdir/split_libraries/seqs_rc_ITSx_output/seqs_rc_ITSx_filtered.fna	
