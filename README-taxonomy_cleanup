@@ -1,0 +1,2 @@
+This script was made to filter UNITE database taxonomy file when some sequences are removed and you have a list of those sequences you want removed.  This list should be one sequence/taxonomy identifier per line.
+

@@ -1,0 +1,6 @@
+All scripts here are experimental.  They probably are frought with
+bugs as I try to add features to my existing scripts.  I recommend
+not using these.
+
+All scripts here are prefixed with "dev-" to make calling them 
+separately from my own command line a bit easier.

@@ -1,0 +1,9 @@
+I made this for me so that I could quickly summarize technical replicates
+within an OTU table, summing their total sequencing counts, and presumably
+improving statistical power by diminishing randomness in the data.  Maybe
+it helps you too.
+
+To call the script, place it in your path, and type its name:
+
+summarize_and_filter.sh
+
