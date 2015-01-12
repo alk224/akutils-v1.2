@@ -67,7 +67,7 @@ set -e
 		echo "		Directory fastq-mcf_output exists.
 		Deleting contents and filtering data.
 		"
-		rm -r fastq-mcf_out/*
+		rm -r $workdir/fastq-mcf_out/*
 
 	fi
 
