@@ -554,7 +554,7 @@ filter_fasta.py -f $outdir/split_libraries/seqs.fna -o $outdir/split_libraries/s
 	fi
 
 	wait
-	seqs=$outdir/split_libraries/seqs_ITSx_filtered.fna	
+	seqs=$outdir/split_libraries/seqs_rc_ITSx_output/seqs_ITSx_filtered.fna	
 	
 	fi
 
