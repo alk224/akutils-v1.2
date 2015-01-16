@@ -14,13 +14,14 @@ set -e
 		directory this script is executed on, will be referenced
 		instead.  Config files can be defined with the config
 		utility by issuing:
+
 		eqw.sh config
 
 		Usage (order is important!!):
-		Qiime_workflow.sh <input folder> <mode>
+		eqw.sh <input folder> <mode>
 
 		Example:
-		Qiime_workflow.sh ./ 16S
+		eqw.sh ./ 16S
 
 		This example will attempt to process data residing in the
 		current directory through a complete qiime workflow.  If
@@ -33,13 +34,9 @@ set -e
 		Order of processing attempts:
 		1) Checks for <input folder>/split_libraries/seqs.fna.  
 		If present, moves forward to chimera filter or OTU
-		picking.  If absent, checks for joined fastq files (as
-		idx.fq and rd.fq).  Requires a mapping file be present
-		(map*).
-		2) If joined fastqs absent, looks for raw fastq files
-		(as index1*fastq, index2*fastq, read1*fastq, read2*fastq).
-		Requires a mapping file to be present (map*) and a primers
-		file to be present (primers*).
+		picking.  If absent, checks for fastq files to process
+		(as idx.fq and rd.fq).  Requires a mapping file be 
+		present (map*).
 
 		Config file:
 		To get this script to work you need a valid config file.
@@ -83,9 +80,9 @@ set -e
 		exit 0
 	fi
 
-## If less than two arguments supplied, display usage 
+## If other than two arguments supplied, display usage 
 
-	if [  "$#" -le 1 ]; then 
+	if [  "$#" -ne 2 ]; then 
 
 		echo "
 		Usage (order is important!!):
@@ -96,22 +93,59 @@ set -e
 
 ## Check that valid mode was entered
 
-	if [[ $2 != ITS && $2 != 16S ]]; then
+	if [[ $2 != other && $2 != 16S ]]; then
 		echo "
 		Invalid mode entered (you entered $2).
-		Valid modes are 16S or ITS.
+		Valid modes are 16S or other.
 
 		Usage (order is important!!):
-		Qiime_workflow.sh <input folder> <mode>
+		eqw.sh <input folder> <mode>
 		"
 		exit 1
 	fi
 
 	mode=($2)
 
+## Define working directory and log file
+	workdir=$(pwd)
+	outdir=($1)
+
+## Check if output directory already exists
+
+	if [[ -d $outdir ]]; then
+		echo "		Output directory already exists ($outdir).
+
+		Checking for prior workflow progress...
+		"
+		if [[ -e $outdir/eqw_workflow.log ]]; then
+		log=($outdir/eqw_workflow.log)
+			echo "
+Workflow restarting in $mode mode" >> $log
+			date >> $log
+		fi
+	fi
+
+	if [[ ! -d $outdir ]]; then
+		mkdir -p $outdir
+	fi
+
+	if [[ ! -e $outdir/eqw_workflow.log ]]; then
+		echo "		Beginning qiime_workflow_script in $mode mode
+		"
+		touch $outdir/eqw_workflow.log
+		log=($outdir/eqw_workflow.log)
+		echo "Workflow beginning in $mode mode" >> $log
+		date >> $log
+		echo "
+---
+		" >> $log
+
+	fi
+		log=($outdir/eqw_workflow.log)
+
 ## Check that no more than one parameter file is present
 
-	parameter_count=(`ls $1/parameter* | wc -w`)
+	parameter_count=(`ls $outdir/parameter* | wc -w`)
 
 	if [[ $parameter_count -ge 2 ]]; then
 
@@ -125,27 +159,32 @@ set -e
 		
 		Exiting...
 		"
-		
 		exit 1
+
 	elif [[ $parameter_count == 1 ]]; then
-	param_file=(`ls $1/parameter*`)
+		param_file=(`ls $outdir/parameter*`)
 	echo "
 		Found parameters file.
 		($param_file)
 	"
+	echo "Using custom parameters file ($outdir/$param_file)
+	Parameters file contents:
+	" >> $log
+		cat $param_file >> $log
+
 	elif [[ $parameter_count == 0 ]]; then
-	touch $1/parameter_file_empty.txt
-	param_file=($1/parameter_file_empty.txt)
 	echo "
-		No parameters file found.  Running qiime with defaults.
+		No parameters file found.  Running with default settings.
 	"
+	echo "No parameter file found.  Using default settings.
+	" >> $log
 	fi
 
 ## Check that no more than one mapping file is present
 
 	map_count=(`ls $1/map* | wc -w`)
 
-	if [[ $map_count -ge 2 && $map_count -ne 0 ]]; then
+	if [[ $map_count -ge 2 && $map_count == 0 ]]; then
 
 		echo "
 		This workflow requires a mapping file.  No more than one 
@@ -160,7 +199,7 @@ set -e
 		
 		exit 1
 	else
-	map=(`ls $1/map*`)	
+		map=(`ls $1/map*`)	
 	fi
 
 ## Check for required dependencies:
@@ -174,7 +213,7 @@ echo "
 scriptdir="$( cd "$( dirname "$0" )" && pwd )"
 
 
-for line in `cat $scriptdir/eqw_resources/dependencies.list`; do
+for line in `cat $scriptdir/eqw_resources/eqw.dependencies.list`; do
 	dependcount=`command -v $line 2>/dev/null | wc -w`
 	if [[ $dependcount == 0 ]]; then
 	echo "
@@ -192,10 +231,6 @@ echo "
 		All dependencies satisfied.  Proceeding...
 "
 
-## Define working directory and log file
-	workdir=$(pwd)
-	outdir=($1)
-
 ##Read in variables from config file
 
 	local_config_count=(`ls $1/eqw*.config 2>/dev/null | wc -w`)
@@ -203,9 +238,12 @@ echo "
 
 	config=`ls $1/eqw*.config`
 
-	echo "		Using custom eqw config file.
-		($1/$config)
+	echo "		Using local eqw config file.
+		$config
 	"
+	echo "Referencing local eqw config file.
+$config
+	" >> $log
 	else
 		global_config_count=(`ls $scriptdir/eqw_resources/eqw*.config 2>/dev/null | wc -w`)
 		if [[ $global_config_count -ge 1 ]]; then
@@ -213,32 +251,25 @@ echo "
 		config=`ls $scriptdir/eqw_resources/eqw*.config`
 
 		echo "		Using global eqw config file.
-		($scriptdir/eqw_resources/eqw*.config)
+		$config
 		"
+		echo "Referencing global eqw config file.
+$config
+		" >> $log
 		fi
 	fi
 
-	if [[ $mode == "16S" ]]; then
-	refs=(`grep "16S_reference" $config | grep -v "#" | cut -f 2`)
-	tax=(`grep "16S_taxonomy" $config | grep -v "#" | cut -f 2`)
-	tree=(`grep "16S_tree" $config | grep -v "#" | cut -f 2`)
-	chimera_refs=(`grep "16S_chimeras" $config | grep -v "#" | cut -f 2`)
+	refs=(`grep "Reference" $config | grep -v "#" | cut -f 2`)
+	tax=(`grep "Taxonomy" $config | grep -v "#" | cut -f 2`)
+	tree=(`grep "Tree" $config | grep -v "#" | cut -f 2`)
+	chimera_refs=(`grep "Chimeras" $config | grep -v "#" | cut -f 2`)
 	seqs=($outdir/split_libraries/seqs_chimera_filtered.fna)
-	alignment_template=(`grep "16S_alignment_template" $config | grep -v "#" | cut -f 2`)
-	alignment_lanemask=(`grep "16S_alignment_lanemask" $config | grep -v "#" | cut -f 2`)
-	revcomp=(`grep "16S_RC_seqs" $config | grep -v "#" | cut -f 2`)
-
-	elif [[ $mode == "ITS" ]]; then
-	refs=(`grep "ITS_reference" $config | grep -v "#" | cut -f 2`)
-	tax=(`grep "ITS_taxonomy" $config | grep -v "#" | cut -f 2`)
-	chimera_refs=(`grep "ITS_chimeras" $config | grep -v "#" | cut -f 2`)
+	alignment_template=(`grep "Alignment_template" $config | grep -v "#" | cut -f 2`)
+	alignment_lanemask=(`grep "Alignment_lanemask" $config | grep -v "#" | cut -f 2`)
+	revcomp=(`grep "RC_seqs" $config | grep -v "#" | cut -f 2`)
 	seqs=($outdir/split_libraries/seqs.fna)
 	itsx_threads=(`grep "Threads_ITSx" $config | grep -v "#" | cut -f 2`)
-	revcomp=(`grep "ITS_RC_seqs" $config | grep -v "#" | cut -f 2`)
 	itsx_options=(`grep "ITSx_options" $config | grep -v "#" | cut -f 2`)
-
-	fi
-
 	slqual=(`grep "Split_libraries_qvalue" $config | grep -v "#" | cut -f 2`)
 	chimera_threads=(`grep "Threads_chimera_filter" $config | grep -v "#" | cut -f 2`)
 	otupicking_threads=(`grep "Threads_pick_otus" $config | grep -v "#" | cut -f 2`)
@@ -253,41 +284,9 @@ echo "
 	rdp_confidence=(`grep "RDP_confidence" $config | grep -v "#" | cut -f 2`)
 	rdp_max_memory=(`grep "RDP_max_memory" $config | grep -v "#" | cut -f 2`)
 	
-
-## Check if output directory already exists
-
-	if [[ -d $outdir ]]; then
-		echo "		Output directory already exists ($outdir).
-
-		Checking for prior workflow progress...
-		"
-		if [[ -f $outdir/eqw_workflow.log ]]; then
-			log=($outdir/eqw_workflow.log)
-			echo "
----
-
-qiime_workflow_script restarting in $mode mode" >> $log
-			date >> $log
-			echo "
----
-			" >> $log
-		fi
-	else
-		echo "		Beginning qiime_workflow_script in $mode mode
-		"
-		mkdir $outdir
-		touch $outdir/eqw_workflow.log
-		log=($outdir/eqw_workflow.log)
-		echo "qiime_workflow_script beginning in $mode mode" >> $log
-		date >> $log
-		echo "
----
-		" >> $log
-	fi
-
 ## Check for split_libraries outputs and inputs
 
-	if [[ -f $outdir/split_libraries/seqs.fna ]]; then
+if [[ -f $outdir/split_libraries/seqs.fna ]]; then
 	echo "		Split libraries output detected. 
 		($outdir/split_libraries/seqs.fna)
 		Skipping split_libraries_fastq.py step,
@@ -298,102 +297,7 @@ qiime_workflow_script restarting in $mode mode" >> $log
 		Checking for fastq files.
 	"
 
-		if [[ ! -f idx.fq || ! -f rd.fq ]]; then
-		echo "		Joined fastqs not present or not all present.
-		(Looked for idx.fq and rd.fq).
 
-		Checking for raw fastq files instead.
-		"
-
-		fastq_count=(`ls $outdir/*fastq | wc -w`)
-
-		if [[ $fastq_count -ge 3 ]]; then
-		index_count=(`ls $outdir/index*fastq | wc -w`)
-		read_count=(`ls $outdir/read*fastq | wc -w`)
-		fi
-
-		if [[ $read_count != 2 ]]; then
-		echo "		More or less than 2 read files (raw fastq) are
-		present.  Check your input files and try again.
-
-		Exiting workflow.
-		"
-		exit 1
-		fi
-		
-
-		if [[ $index_count -eq 1 ]]; then
-		index1=(`ls $outdir/index1*fastq`)
-		index1length=$((`sed '2q;d' $index1 | egrep "\w+" | wc -m`-1))
-
-		elif [[ $index_count -eq 2 ]]; then
-		index1=(`ls $outdir/index1*fastq`)
-		index2=(`ls $outdir/index2*fastq`)
-		index1length=$((`sed '2q;d' $index1 | egrep "\w+" | wc -m`-1))
-		index2length=$((`sed '2q;d' $index2 | egrep "\w+" | wc -m`-1))
-		indexlength=$(($index1+$index2))
-
-		fi
-
-		read1=(`ls $outdir/read1*fastq`)
-		read2=(`ls $outdir/read2*fastq`)
-		primers_count=(`ls $outdir/primers* 2>/dev/null | wc -w`)
-
-		if [[ $primers_count -ne 1 ]]; then
-		echo " 		Either your primers file is missing or you have
-		too many files in your working directory that
-		start with primers*.  See --help for more details.
-		"
-		exit 1
-		else primers=(`ls $outdir/primers*`)
-		fi
-
-		if [[ $index_count -eq 2 ]]; then
-		echo "		Starting dual indexed joining workflow with
-		PhiX screen.
-		"
-		joinmode=dual
-		echo "		Stripping out any primer sequences with fastq-mcf."
-		
-
-
-		if [[ $min_overlap -eq 0 && $max_mismatch -eq 0 ]]; then
-		`Dual_indexed_fqjoin_workflow.sh $index1 $index2 $read1 $read2 $indexlength`
-		fi
-		if [[ $min_overlap -eq 0 && $max_mismatch -ne 0 ]]; then
-		`Dual_indexed_fqjoin_workflow.sh $index1 $index2 $read1 $read2 $indexlength -m $min_overlap`
-		fi
-		if [[ $min_overlap -ne 0 && $max_mismatch -eq 0 ]]; then
-		`Dual_indexed_fqjoin_workflow.sh $index1 $index2 $read1 $read2 $indexlength -p $max_mismatch`
-		fi
-		if [[ $min_overlap -ne 0 && $max_mismatch -ne 0 ]]; then
-		`Dual_indexed_fqjoin_workflow.sh $index1 $index2 $read1 $read2 $indexlength -m $min_overlap -p $max_mismatch`
-		fi		
-
-		elif [[ $index_count -eq 1 ]]; then
-		echo "		Starting single indexed joining workflow with
-		PhiX screen.
-		"
-		joinmode=single
-		echo "		Stripping out any primer sequences with fastq-mcf."
-
-		strip_primers_parallel.sh $read1 $read2 $primers $mcf_threads
-
-		if [[ ! -f barcodes.multx.fil ]]; then
-		cat $map | cut -f 1-2 | grep -v "#" > barcodes.multx.fil
-		fi
-		barcodes=barcodes.multx.fil
-
-		PhiX_filtering_single_index_CL.sh fastq-mcf_out/read1.mcf.fq fastq-mcf_out/read2.mcf.fq $index1 $index1length $barcodes $multx_errors $phix_index $smalt_threads $min_overlap $max_mismatch
-
-		wait
-		fi		
-		cp PhiX_screen/idx.filtered.join.fq ./
-		mv idx.filtered.join.fq idx.fq
-		cp PhiX_screen/rd.filtered.join.fq ./
-		mv rd.filtered.join.fq rd.fq
-
-		fi
 
 		if [[ ! -f idx.fq ]]; then
 		echo "		Index file not present (./idx.fq).
@@ -415,7 +319,7 @@ qiime_workflow_script restarting in $mode mode" >> $log
 
 ## split_libraries_fastq.py command
 
-		log=($outdir/eqw_workflow.log)
+	log=($outdir/eqw_workflow.log)
 
 if [[ ! -f $outdir/split_libraries/seqs.fna ]]; then
 	
@@ -424,6 +328,8 @@ if [[ ! -f $outdir/split_libraries/seqs.fna ]]; then
 	else
 	qual=($slqual)
 	fi
+
+	## detect barcode lengths
 	if [[ `sed '2q;d' idx.fq | egrep "\w+" | wc -m` == 13  ]]; then
 	barcodetype=(golay_12)
 	else
@@ -439,19 +345,13 @@ if [[ ! -f $outdir/split_libraries/seqs.fna ]]; then
 	"
 	fi
 
-	echo "Calling split_libraries_fastq.py:
-split_libraries_fastq.py -i rd.fq -b idx.fq -m $map -o $outdir/split_libraries -q $qual --barcode_type $barcodetype" >> $log
+	echo "Split libraries command:" >> $log
 	date >> $log
-
-	`split_libraries_fastq.py -i rd.fq -b idx.fq -m $map -o $outdir/split_libraries -q $qual --barcode_type $barcodetype`	
-	
-	echo "		Split libraries command completed.
-	"
-
 	echo "
-Split libraries command completed." >> $log
-	date >> $log	
+	split_libraries_fastq.py -i rd.fq -b idx.fq -m $map -o $outdir/split_libraries -q $qual --barcode_type $barcodetype
+	" >> $log
 
+	`split_libraries_fastq.py -i rd.fq -b idx.fq -m $map -o $outdir/split_libraries -q $qual --barcode_type $barcodetype`
 	wait
 fi
 
@@ -475,22 +375,20 @@ seqs=$outdir/split_libraries/seqs.fna
 
 	if [[ ! -f $outdir/split_libraries/seqs_chimera_filtered.fna ]]; then
 
-	echo "		Beginning chimera filtering.
-		(Method: usearch61)
-		(Reference: $chimera_refs)
+	echo "		Filtering chimeras.
+		Method: usearch61
+		Reference: $chimera_refs
 "
-	echo "Beginning chimera filtering step
-		(Method: usearch61)
-		(Reference: $chimera_refs)" >> $log
-	date >> $log
-
 	echo "
-Chimera filtering steps as issued:
+Chimera filtering commands:" >> $log
+	date >> $log
+	echo "Method: usearch61
+Reference: $chimera_refs
 
-identify_chimeric_seqs.py -m usearch61 -i $outdir/split_libraries/seqs.fna -r $chimera_refs -o $outdir/usearch61_chimera_checking
+	identify_chimeric_seqs.py -m usearch61 -i $outdir/split_libraries/seqs.fna -r $chimera_refs -o $outdir/usearch61_chimera_checking
 
-filter_fasta.py -f $outdir/split_libraries/seqs.fna -o $outdir/split_libraries/seqs_chimera_filtered.fna -s $outdir/usearch61_chimera_checking/chimeras.txt -n
-" >> $log
+	filter_fasta.py -f $outdir/split_libraries/seqs.fna -o $outdir/split_libraries/seqs_chimera_filtered.fna -s $outdir/usearch61_chimera_checking/chimeras.txt -n
+	" >> $log
 
 	`identify_chimeric_seqs.py -m usearch61 -i $outdir/split_libraries/seqs.fna -r $chimera_refs -o $outdir/usearch61_chimera_checking`
 	wait
@@ -507,12 +405,6 @@ filter_fasta.py -f $outdir/split_libraries/seqs.fna -o $outdir/split_libraries/s
 	fi
 	fi
 
-## Check for parameter file in working directory
-
-	if [[ `ls $outdir/parameter* | wc -w` == 1 ]]; then
-		param_file=$(ls $outdir/parameter*)
-	fi
-
 ## Reverse complement demultiplexed sequences if necessary
 
 	if [[ $revcomp == "True" ]]; then
@@ -522,160 +414,149 @@ filter_fasta.py -f $outdir/split_libraries/seqs.fna -o $outdir/split_libraries/s
 	echo "		Reverse complementing split libraries output according
 		to config file setting.
 	"
+	echo "
+Reverse complement command:"
+	date >> $log
+	echo "
+	adjust_seq_orientation.py -i $seqs -r -o $outdir/split_libraries/seqs_rc.fna
+	" >> $log
 
 	`adjust_seq_orientation.py -i $seqs -r -o $outdir/split_libraries/seqs_rc.fna`
 	wait
 	echo "		Demultiplexed sequences were reverse complemented.
 	"
+	seqs=$outdir/split_libraries/seqs_rc.fna
 	else
 	echo "		Sequences already in proper orientation.
 	"
 	fi
-	seqs=$outdir/split_libraries/seqs_rc.fna
 	fi
 
-## ITSx filtering (ITS mode only)
-
-	if [[ $mode == "ITS" ]]; then
-
-	dev-ITSx_parallel.sh $seqs $itsx_threads $itsx_options
-
-	if [[ -e $outdir/split_libraries/seqs_rc_ITSx_filtered.fna ]]; then
-	mv $outdir/split_libraries/seqs_rc_ITSx_filtered.fna $outdir/split_libraries/seqs_ITSx_filtered.fna
-	fi
-
-	wait
-	seqs=$outdir/split_libraries/seqs_ITSx_filtered.fna	
-	
-	fi
-
-## Check for OTU picking output
-
-## OTU picking command
-
-#	if [[ ! -f $outdir/uclust_otu_picking/final_otu_map.txt ]]; then
-
-#	if [[ `ls $param_file | wc -w` == 1 ]]; then
-
-#	echo "		Picking OTUs.  Passing in parameters file
-#		($param_file) to modify default settings
-#	"
-#	cat $param_file
-#	echo "
-#---
-
-#OTU picking command as issued:
-#pick_open_reference_otus.py -i $seqs -r $refs -o $outdir/uclust_otu_picking --prefilter_percent_id 0.0 -aO $otupicking_threads --suppress_align_and_tree --#suppress_taxonomy_assignment -p $param_file
-#	" >> $log
-
-#	`pick_open_reference_otus.py -i $seqs -r $refs -o $outdir/uclust_otu_picking --prefilter_percent_id 0.0 -aO $otupicking_threads --suppress_align_and_tree --suppress_taxonomy_assignment -p $param_file`
-#	wait
-#	else
-
-#	echo "
-#---
-
-#OTU picking command as issued:
-#pick_open_reference_otus.py -i $seqs -r $refs -o $outdir/uclust_otu_picking --prefilter_percent_id 0.0 -aO $otupicking_threads --suppress_align_and_tree --#suppress_taxonomy_assignment
-#	" >> $log
-#`pick_open_reference_otus.py -i $seqs -r $refs -o $outdir/uclust_otu_picking --prefilter_percent_id 0.0 -aO $otupicking_threads --suppress_align_and_tree --suppress_taxonomy_assignment`
-#	wait
-#	fi
-
-#	else
-
-#	echo "		OTU map detected.
-#		($outdir/uclust_otu_picking/final_otu_map.txt)
-#		Skipping OTU picking step.
-#"
-#	fi
-
-## chained OTU picking
-
-pick_otus.py -m prefix_suffix -p 50 -u 0 -i $seqs -o prefix50_suffix0
+## OTU picking
 
 seqpath="${seqs%.*}"
 seqname=`basename $seqpath`
 
-pick_rep_set.py -i prefix50_suffix0/$seqname\_otus.txt -f $seqs -o prefix50_suffix0/prefix_rep_set.fasta
 
-pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus
+	if [[ ! -f $outdir/uclust_otu_picking/final_otu_map.txt ]]; then
 
-merge_otu_maps.py -i prefix50_suffix0/$seqname\_otus.txt,cdhit_otus/prefix_rep_set_otus.txt -o cdhit_otus/merged_otu_map.txt
+	if [[ `ls $param_file | wc -w` == 1 ]]; then
 
-pick_rep_set.py -i cdhit_otus/merged_otu_map.txt -f $seqs -o cdhit_otus/merged_rep_set.fna
+	echo "		Picking OTUs.  Passing in parameters file
+		($param_file) to modify default settings
+	"
+	cat $param_file
+	echo "Picking open reference OTUs:" >> $log
+	date >> $log
+	echo "
+	pick_open_reference_otus.py -i $seqs -r $refs -o $outdir/uclust_otu_picking --prefilter_percent_id 0.0 -aO $otupicking_threads --suppress_align_and_tree --#suppress_taxonomy_assignment -p $param_file
+	" >> $log
+	`pick_open_reference_otus.py -i $seqs -r $refs -o $outdir/uclust_otu_picking --prefilter_percent_id 0.0 -aO $otupicking_threads --suppress_align_and_tree --suppress_taxonomy_assignment -p $param_file`
+	wait
+	else
+
+	echo "Picking open reference OTUs:" >> $log
+	date >> $log
+	echo "
+	pick_open_reference_otus.py -i $seqs -r $refs -o $outdir/uclust_otu_picking --prefilter_percent_id 0.0 -aO $otupicking_threads --suppress_align_and_tree --#suppress_taxonomy_assignment
+	" >> $log
+	`pick_open_reference_otus.py -i $seqs -r $refs -o $outdir/uclust_otu_picking --prefilter_percent_id 0.0 -aO $otupicking_threads --suppress_align_and_tree --suppress_taxonomy_assignment`
+	wait
+	fi
+
+	else
+	echo "		OTU map detected.
+		($outdir/uclust_otu_picking/final_otu_map.txt)
+		Skipping OTU picking step.
+	"
+	fi
 
 ## Pick rep set against raw OTU map
 
-#	if [[ ! -f $outdir/uclust_otu_picking/final_rep_set.fna ]]; then
+	if [[ ! -f $outdir/uclust_otu_picking/final_rep_set.fna ]]; then
 
-#	echo "Pick representative sequences command as issued:
-#pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $outdir/uclust_otu_picking/final_rep_set.fna
-#	" >> $log
+	echo "Pick representative sequences command as issued:
+pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $outdir/uclust_otu_picking/final_rep_set.fna
+	" >> $log
 
-#`pick_rep_set.py -i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $outdir/uclust_otu_picking/final_rep_set.fna`
+`pick_rep_set.py -i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $outdir/uclust_otu_picking/final_rep_set.fna`
 
-#	fi
+	else
+	echo "		Rep set detected.
+		$outdir/uclust_otu_picking/final_rep_set.fna
+		Skipping pick rep set step.
+	"
+	fi
 
 ## Check for open reference output directory
 
-#	if [[ ! -d $outdir/cdhit_otus ]]; then
-#	mkdir $outdir/cdhit_otus
-#	fi
+	if [[ ! -d $outdir/open_reference_output ]]; then
+	mkdir $outdir/open_reference_output
+	fi
 
 ## Check for rep set and raw OTU map files
 
-#	if [[ ! -f $outdir/cdhit_otus/final_rep_set.fna ]]; then
-#	cp $outdir/uclust_otu_picking/final_rep_set.fna $outdir/cdhit_otus/
-#	else
-#	echo "		Final rep set file already present.  Not copying.
-#	"
-#	fi
-#
-#	if [[ ! -f $outdir/cdhit_otus/final_otu_map.txt ]]; then
-#	cp $outdir/uclust_otu_picking/final_otu_map.txt $outdir/cdhit_otus
-#	else
-#	echo "		Final OTU map already present.  Not copying.
-#	"
-#	fi
+	if [[ ! -f $outdir/open_reference_output/final_rep_set.fna ]]; then
+	cp $outdir/uclust_otu_picking/final_rep_set.fna $outdir/open_reference_output/
+	else
+	echo "		Final rep set file already present.  Not copying.
+	"
+	fi
+
+	if [[ ! -f $outdir/open_reference_output/final_otu_map.txt ]]; then
+	cp $outdir/uclust_otu_picking/final_otu_map.txt $outdir/open_reference_output
+	else
+	echo "		Final OTU map already present.  Not copying.
+	"
+	fi
 
 ## Align sequences (16S mode)
 
 	if [[ $mode == "16S" ]]; then
 
-	if [[ ! -f $outdir/cdhit_otus/pynast_aligned_seqs/merged_rep_set_aligned.fasta ]]; then
+	if [[ ! -f $outdir/open_reference_output/pynast_aligned_seqs/final_rep_set_aligned.fasta ]]; then
 
 	echo "		Aligning sequences.
-		(Method: Pynast on $alignseqs_threads cores)
-		(Template: $alignment_template)
+		Method: Pynast on $alignseqs_threads cores
+		Template: $alignment_template
 	"
-	`parallel_align_seqs_pynast.py -i $outdir/cdhit_otus/merged_rep_set.fna -o $outdir/cdhit_otus/pynast_aligned_seqs -t $alignment_template -O $alignseqs_threads`
+	echo "Aligning sequences:" >> $log
+	date >> $log
+	echo "
+	parallel_align_seqs_pynast.py -i $outdir/open_reference_output/final_rep_set.fna -o $outdir/open_reference_output/pynast_aligned_seqs -t $alignment_template -O $alignseqs_threads
+	" >> $log
+	`parallel_align_seqs_pynast.py -i $outdir/open_reference_output/final_rep_set.fna -o $outdir/open_reference_output/pynast_aligned_seqs -t $alignment_template -O $alignseqs_threads`
 	wait
 
 	else	
 	echo "		Alignment file detected.
-		($outdir/cdhit_otus/pynast_aligned_seqs/merged_rep_set_aligned.fasta)
+		($outdir/open_reference_output/pynast_aligned_seqs/final_rep_set_aligned.fasta)
 		Skipping sequence alignment step.
 	"
 	fi
 	fi
 
-## Align sequences (ITS mode)
+## Align sequences (other mode)
 
-	if [[ $mode == "ITS" ]]; then
+	if [[ $mode == "other" ]]; then
 
-	if [[ ! -f $outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned.fasta ]]; then
+	if [[ ! -f $outdir/open_reference_output/mafft_aligned_seqs/final_rep_set_aligned.fasta ]]; then
 
 	echo "		Aligning sequences.
-		(Method: Mafft on $alignseqs_threads cores)
-		(Template: none)
+		Method: Mafft on $alignseqs_threads cores
+		Template: none
 	"
-	`align_seqs.py -i $outdir/cdhit_otus/merged_rep_set.fna -o $outdir/cdhit_otus/mafft_aligned_seqs -m mafft`
+	echo "Aligning sequences:" >> $log
+	date >> $log
+	echo "
+	align_seqs.py -i $outdir/open_reference_output/final_rep_set.fna -o $outdir/open_reference_output/mafft_aligned_seqs -m mafft
+	" >> $log
+	`align_seqs.py -i $outdir/open_reference_output/final_rep_set.fna -o $outdir/open_reference_output/mafft_aligned_seqs -m mafft`
 	wait
 
 	else	
 	echo "		Alignment file detected.
-		($outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned.fasta)
+		($outdir/open_reference_output/mafft_aligned_seqs/final_rep_set_aligned.fasta)
 		Skipping sequence alignment step.
 	"
 	fi
@@ -685,37 +566,47 @@ pick_rep_set.py -i cdhit_otus/merged_otu_map.txt -f $seqs -o cdhit_otus/merged_r
 
 	if [[ $mode == "16S" ]]; then
 
-	if [[  ! -f $outdir/cdhit_otus/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta ]]; then
+	if [[  ! -f $outdir/open_reference_output/pynast_aligned_seqs/final_rep_set_aligned_pfiltered.fasta ]]; then
 	
 	echo "		Filtering sequence alignment.
 		Lanemask file: $alignment_lanemask.
 	"
-	`filter_alignment.py -i $outdir/cdhit_otus/pynast_aligned_seqs/merged_rep_set_aligned.fasta -o $outdir/cdhit_otus/pynast_aligned_seqs/ -m $alignment_lanemask`
+	echo "Filtering alignment:" >> $log
+	date >> $log
+	echo "
+	filter_alignment.py -i $outdir/open_reference_output/pynast_aligned_seqs/final_rep_set_aligned.fasta -o $outdir/open_reference_output/pynast_aligned_seqs/ -m $alignment_lanemask
+	" >> $log
+	`filter_alignment.py -i $outdir/open_reference_output/pynast_aligned_seqs/final_rep_set_aligned.fasta -o $outdir/open_reference_output/pynast_aligned_seqs/ -m $alignment_lanemask`
 	wait
 
 	else
 	echo "		Filtered alignment detected.
-		($outdir/cdhit_otus/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta)
+		($outdir/open_reference_output/pynast_aligned_seqs/final_rep_set_aligned_pfiltered.fasta)
 		Skipping alignment filtering step.
 	"
 	fi
 	fi
 
-## Filtering alignment (ITS mode)
+## Filtering alignment (other mode)
 
-	if [[ $mode == "ITS" ]]; then
+	if [[ $mode == "other" ]]; then
 
-	if [[  ! -f $outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta ]]; then
+	if [[  ! -f $outdir/open_reference_output/mafft_aligned_seqs/final_rep_set_aligned_pfiltered.fasta ]]; then
 	
 	echo "		Filtering sequence alignment.
 		Entropy threshold: 0.1
 	"
-	`filter_alignment.py -i $outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned.fasta -o $outdir/cdhit_otus/mafft_aligned_seqs/ -e 0.1`
+	echo "Filtering alignment:" >> $log
+	date >> $log
+	echo "
+	filter_alignment.py -i $outdir/open_reference_output/mafft_aligned_seqs/final_rep_set_aligned.fasta -o $outdir/open_reference_output/mafft_aligned_seqs/ -e 0.1
+	" >> $log
+	`filter_alignment.py -i $outdir/open_reference_output/mafft_aligned_seqs/final_rep_set_aligned.fasta -o $outdir/open_reference_output/mafft_aligned_seqs/ -e 0.1`
 	wait
 
 	else
 	echo "		Filtered alignment detected.
-		($outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta)
+		($outdir/open_reference_output/mafft_aligned_seqs/final_rep_set_aligned_pfiltered.fasta)
 		Skipping alignment filtering step.
 	"
 	fi
@@ -725,35 +616,45 @@ pick_rep_set.py -i cdhit_otus/merged_otu_map.txt -f $seqs -o cdhit_otus/merged_r
 
 	if [[ $mode == "16S" ]]; then
 
-	if [[ ! -f $outdir/cdhit_otus/pynast_aligned_seqs/fasttree_phylogeny.tre ]]; then
+	if [[ ! -f $outdir/open_reference_output/pynast_aligned_seqs/fasttree_phylogeny.tre ]]; then
 
 	echo "		Constructing phylogeny based on sample sequences.
 		Method: Fasttree
 	"
-	( `make_phylogeny.py -i $outdir/cdhit_otus/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta -o $outdir/cdhit_otus/pynast_aligned_seqs/fasttree_phylogeny.tre` ) &
+	echo "Making phylogeny:" >> $log
+	date >> $log
+	echo "
+	make_phylogeny.py -i $outdir/open_reference_output/pynast_aligned_seqs/final_rep_set_aligned_pfiltered.fasta -o $outdir/open_reference_output/pynast_aligned_seqs/fasttree_phylogeny.tre
+	" >> $log
+	( `make_phylogeny.py -i $outdir/open_reference_output/pynast_aligned_seqs/final_rep_set_aligned_pfiltered.fasta -o $outdir/open_reference_output/pynast_aligned_seqs/fasttree_phylogeny.tre` ) &
 
 	else
 	echo "		Phylogenetic tree detected.
-		($outdir/cdhit_otus/pynast_aligned_seqs/fasttree_phylogeny.tre)
+		($outdir/open_reference_output/pynast_aligned_seqs/fasttree_phylogeny.tre)
 		Skipping make phylogeny step.
 	"
 	fi
 	fi
 
-## Make phylogeny in background (ITS mode)
+## Make phylogeny in background (other mode)
 
-	if [[ $mode == "ITS" ]]; then
+	if [[ $mode == "other" ]]; then
 
-	if [[ ! -f $outdir/cdhit_otus/mafft_aligned_seqs/fasttree_phylogeny.tre ]]; then
+	if [[ ! -f $outdir/open_reference_output/mafft_aligned_seqs/fasttree_phylogeny.tre ]]; then
 
 	echo "		Constructing phylogeny based on sample sequences.
 		Method: Fasttree
 	"
-	( `make_phylogeny.py -i $outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta -o $outdir/cdhit_otus/mafft_aligned_seqs/fasttree_phylogeny.tre` ) &
+	echo "Making phylogeny:" >> $log
+	date >> $log
+	echo "
+	make_phylogeny.py -i $outdir/open_reference_output/mafft_aligned_seqs/final_rep_set_aligned_pfiltered.fasta -o $outdir/open_reference_output/mafft_aligned_seqs/fasttree_phylogeny.tre
+	" >> $log
+	( `make_phylogeny.py -i $outdir/open_reference_output/mafft_aligned_seqs/final_rep_set_aligned_pfiltered.fasta -o $outdir/open_reference_output/mafft_aligned_seqs/fasttree_phylogeny.tre` ) &
 
 	else
 	echo "		Phylogenetic tree detected.
-		($outdir/cdhit_otus/mafft_aligned_seqs/fasttree_phylogeny.tre)
+		($outdir/open_reference_output/mafft_aligned_seqs/fasttree_phylogeny.tre)
 		Skipping make phylogeny step.
 	"
 	fi
@@ -762,17 +663,22 @@ pick_rep_set.py -i cdhit_otus/merged_otu_map.txt -f $seqs -o cdhit_otus/merged_r
 
 ## Assign taxonomy (RDP)
 
-	if [[ ! -f $outdir/cdhit_otus/rdp_taxonomy_assignment/merged_rep_set_tax_assignments.txt ]]; then
+	if [[ ! -f $outdir/open_reference_output/rdp_taxonomy_assignment/final_rep_set_tax_assignments.txt ]]; then
 
 	echo "		Assigning taxonomy.
-		(Method: RDP Classifier on $taxassignment_threads cores)
+		Method: RDP Classifier on $taxassignment_threads cores.
 	"
-	`parallel_assign_taxonomy_rdp.py -i $outdir/cdhit_otus/merged_rep_set.fna -o $outdir/cdhit_otus/rdp_taxonomy_assignment -c $rdp_confidence -r $refs -t $tax --rdp_max_memory $rdp_max_memory -O $taxassignment_threads`
+	echo "Assigning taxonomy (RDP):" >> $log
+	date >> $log
+	echo "
+	parallel_assign_taxonomy_rdp.py -i $outdir/open_reference_output/final_rep_set.fna -o $outdir/open_reference_output/rdp_taxonomy_assignment -c $rdp_confidence -r $refs -t $tax --rdp_max_memory $rdp_max_memory -O $taxassignment_threads
+	" >> $log
+	`parallel_assign_taxonomy_rdp.py -i $outdir/open_reference_output/final_rep_set.fna -o $outdir/open_reference_output/rdp_taxonomy_assignment -c $rdp_confidence -r $refs -t $tax --rdp_max_memory $rdp_max_memory -O $taxassignment_threads`
 	wait
 
 	else
 	echo "		Taxonomy assignments detected.
-		($outdir/cdhit_otus/rdp_taxonomy_assignment/merged_rep_set_tax_assignments.txt)
+		($outdir/open_reference_output/rdp_taxonomy_assignment/final_rep_set_tax_assignments.txt)
 		Skipping taxonomy assignment step.
 	"
 	fi
@@ -780,41 +686,59 @@ pick_rep_set.py -i cdhit_otus/merged_otu_map.txt -f $seqs -o cdhit_otus/merged_r
 
 ## Make raw otu table
 
-	if [[ ! -f $outdir/cdhit_otus/raw_otu_table.biom ]]; then
+	if [[ ! -f $outdir/open_reference_output/raw_otu_table.biom ]]; then
 	
 	echo "		Making raw OTU table.
 	"
-	`make_otu_table.py -i $outdir/cdhit_otus/merged_otu_map.txt -t $outdir/cdhit_otus/rdp_taxonomy_assignment/merged_rep_set_tax_assignments.txt -o $outdir/cdhit_otus/raw_otu_table.biom`
+	echo "Making OTU table:" >> $log
+	date >> $log
+	echo "
+	make_otu_table.py -i $outdir/open_reference_output/final_otu_map.txt -t $outdir/open_reference_output/rdp_taxonomy_assignment/final_rep_set_tax_assignments.txt -o $outdir/open_reference_output/raw_otu_table.biom
+	" >> $log
+	`make_otu_table.py -i $outdir/open_reference_output/final_otu_map.txt -t $outdir/open_reference_output/rdp_taxonomy_assignment/final_rep_set_tax_assignments.txt -o $outdir/open_reference_output/raw_otu_table.biom`
 
 	else
 	echo "		Raw OTU table detected.
-		($outdir/cdhit_otus/raw_otu_table.biom)
+		($outdir/open_reference_output/raw_otu_table.biom)
 		Moving to final filtering steps.
 	"
 	fi
 
 ## Summarize raw otu table in background
 
-	if [[ ! -f $outdir/cdhit_otus/raw_otu_table.summary ]]; then
-	( `biom summarize-table -i $outdir/cdhit_otus/raw_otu_table.biom -o $outdir/cdhit_otus/raw_otu_table.summary` ) &
+	if [[ ! -f $outdir/open_reference_output/raw_otu_table.summary ]]; then
+	( `biom summarize-table -i $outdir/open_reference_output/raw_otu_table.biom -o $outdir/open_reference_output/raw_otu_table.summary` ) &
 	fi
 
 ## Final filtering steps for OTU tables
 
 ## Remove singletons and doubletons
 
-	if [[ ! -f $outdir/cdhit_otus/raw_otu_table_no_singletons_no_doubletons.biom ]]; then
+	if [[ ! -f $outdir/open_reference_output/raw_otu_table_no_singletons_no_doubletons.biom ]]; then
 	
-	`filter_otus_from_otu_table.py -i $outdir/cdhit_otus/raw_otu_table.biom -o $outdir/cdhit_otus/raw_otu_table_no_singletons_no_doubletons.biom -n 3`
+	echo "Filtering singletons/doubletons from OTU table:" >> $log
+	date >> $log
+	echo "
+	filter_otus_from_otu_table.py -i $outdir/open_reference_output/raw_otu_table.biom -o $outdir/open_reference_output/raw_otu_table_no_singletons_no_doubletons.biom -n 3
+	" >> $log
+	`filter_otus_from_otu_table.py -i $outdir/open_reference_output/raw_otu_table.biom -o $outdir/open_reference_output/raw_otu_table_no_singletons_no_doubletons.biom -n 3`
 	fi
 
-	if [[ ! -f $outdir/cdhit_otus/raw_otu_table_no_singletons_no_doubletons.summary ]]; then
-	( `biom summarize-table -i $outdir/cdhit_otus/raw_otu_table_no_singletons_no_doubletons.biom -o $outdir/cdhit_otus/raw_otu_table_no_singletons_no_doubletons.summary` ) &
+	if [[ ! -f $outdir/open_reference_output/raw_otu_table_no_singletons_no_doubletons.summary ]]; then
+	( `biom summarize-table -i $outdir/open_reference_output/raw_otu_table_no_singletons_no_doubletons.biom -o $outdir/open_reference_output/raw_otu_table_no_singletons_no_doubletons.summary` ) &
 	fi
 wait
 
+## remove jobs directory
+
+	if [[ -d $outdir/jobs ]]; then
+	rm -r $outdir/jobs
+	fi
+
 echo "		Workflow steps completed.
 "
+echo "---
 
-
+All workflow steps completed." >> $log
+date >> $log
 
