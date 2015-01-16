@@ -46,7 +46,8 @@ if [[ $globallocal == global ]]; then
 
 
 if [[ ! -f $globalconfigsearch ]]; then
-	echo "		No config file detected in eqw resources directory.
+	echo "		No config file detected in eqw resources
+		directory.
 		($scriptdir/eqw_resources/)
 		Shall I create a new one for you (yes or no)?"
 
@@ -86,7 +87,8 @@ fi
 
 if [[ $globallocal == local ]]; then
 	echo "
-		OK.  Checking for existing config file in current directory.
+		OK.  Checking for existing config file in current
+		directory.
 		($workdir/)
 	"
 	sleep 1
@@ -97,29 +99,60 @@ if [[ ! -f $localconfigsearch ]]; then
 		read yesno
 	
 		if [[ ! $yesno == "yes" && ! $yesno == "no" ]]; then
-		echo "		Invalid entry.  Yes or no only."
-		read yesno
-		if [[ ! $yesno == "yes" && ! $yesno == "no" ]]; then
-		echo "		Invalid entry.  Exiting.
-		"
-		exit 1
-		fi
+			echo "		Invalid entry.  Yes or no only."
+			read yesno
+			if [[ ! $yesno == "yes" && ! $yesno == "no" ]]; then
+				echo "		Invalid entry.  Exiting.
+				"
+				exit 1
+			fi
 		fi
 
 		if [[ $yesno == "yes" ]]; then
-		echo "		OK.  Creating workflow file in your current
-		directory.
-		($workdir/qiime_workflow.config)
+
+			if [[ -e $scriptdir/eqw_resources/eqw.global.config ]]; then
+			echo "		Found global config file.
+		($scriptdir/eqw_resources/eqw.global.config)
+		Do you want to generate a whole new config file or make a
+		copy of the existing global file and modify that (new or
+		copy)?"
+			read newcopy
+
+				if [[ ! $newcopy == "new" && ! $newcopy == "copy" ]]; then
+					echo "		Invalid entry.  new or copy only."
+					read yesno
+					if [[ ! $newcopy == "new" && ! $newcopy == "copy" ]]; then
+						echo "		Invalid entry.  Exiting.
+						"
+						exit 1
+					fi
+				fi
+			fi
+
+		if [[ $newcopy == "new" ]]; then
+			echo "		OK.  Creating new workflow file in your
+		current directory.
+		($workdir/eqw.$DATE.config)
 		"
-		cat $scriptdir/eqw_resources/blank_config.config > $workdir/eqw.$DATE.config
-		configfile=($workdir/eqw.$DATE.config)
+			cat $scriptdir/eqw_resources/blank_config.config > $workdir/eqw.$DATE.config
+			configfile=($workdir/eqw.$DATE.config)
 		fi
 
+		if [[ $newcopy == "copy" ]]; then
+			echo "		OK.  Copying global config file for local
+		use in your current directory.
+		($workdir/eqw.$DATE.config)
+		"
+			cat $scriptdir/eqw_resources/eqw.global.config > $workdir/eqw.$DATE.config
+			configfile=($workdir/eqw.$DATE.config)
+		fi
+
+
 		if [[ $yesno == "no" ]]; then
-		echo "		OK.  Please enter the path of the
+			echo "		OK.  Please enter the path of the
 		config file you want to update.
 		"
-		read -e configfile
+			read -e configfile
 		fi
 	else
 	echo "		Found config file."
@@ -127,6 +160,7 @@ if [[ ! -f $localconfigsearch ]]; then
 	"
 	sleep 1
 	configfile=($localconfigsearch)
+	fi
 fi
 fi
 
