@@ -122,12 +122,12 @@ set -e
 		if [[ -e $outdir/chained_workflow*.log ]]; then
 		date0=`date +%Y%m%d_%I%M%p`
 		log=($outdir/chained_workflow_$date0.log)
-		echo "		Workflow restarting in $mode mode"
+		echo "		Chained workflow restarting in $mode mode"
 		date1=`date "+%a %b %I:%M %p %Z %Y"`
 		echo "		$date1"
 		res1=$(date +%s.%N)
 			echo "
-Workflow restarting in $mode mode" > $log
+Chained workflow restarting in $mode mode" > $log
 			date "+%a %b %I:%M %p %Z %Y" >> $log
 		fi
 	fi
@@ -142,7 +142,8 @@ Workflow restarting in $mode mode" > $log
 		echo "		$date1"
 		date0=`date +%Y%m%d_%I%M%p`
 		log=($outdir/chained_workflow_$date0.log)
-		echo "Workflow beginning in $mode mode" > $log
+		echo "
+Chained workflow beginning in $mode mode" > $log
 		date "+%a %b %I:%M %p %Z %Y" >> $log
 		res1=$(date +%s.%N)
 		echo "
@@ -407,7 +408,7 @@ Reference: $chimera_refs
 	else
 
 	echo "		Chimera filtered sequences detected.
-		($seqs)
+		$seqs
 		Skipping chimera checking step.
 	"
 
@@ -556,7 +557,7 @@ fi
 
 	else	
 	echo "		Alignment file detected.
-		($outdir/cdhit_otus/pynast_aligned_seqs/merged_rep_set_aligned.fasta)
+		$outdir/cdhit_otus/pynast_aligned_seqs/merged_rep_set_aligned.fasta
 		Skipping sequence alignment step.
 	"
 	fi
@@ -582,7 +583,7 @@ fi
 
 	else	
 	echo "		Alignment file detected.
-		($outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned.fasta)
+		$outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned.fasta
 		Skipping sequence alignment step.
 	"
 	fi
@@ -607,7 +608,7 @@ fi
 
 	else
 	echo "		Filtered alignment detected.
-		($outdir/cdhit_otus/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta)
+		$outdir/cdhit_otus/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta
 		Skipping alignment filtering step.
 	"
 	fi
@@ -632,7 +633,7 @@ fi
 
 	else
 	echo "		Filtered alignment detected.
-		($outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta)
+		$outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta
 		Skipping alignment filtering step.
 	"
 	fi
@@ -656,7 +657,7 @@ fi
 
 	else
 	echo "		Phylogenetic tree detected.
-		($outdir/cdhit_otus/pynast_aligned_seqs/fasttree_phylogeny.tre)
+		$outdir/cdhit_otus/pynast_aligned_seqs/fasttree_phylogeny.tre
 		Skipping make phylogeny step.
 	"
 	fi
@@ -680,12 +681,11 @@ fi
 
 	else
 	echo "		Phylogenetic tree detected.
-		($outdir/cdhit_otus/mafft_aligned_seqs/fasttree_phylogeny.tre)
+		$outdir/cdhit_otus/mafft_aligned_seqs/fasttree_phylogeny.tre
 		Skipping make phylogeny step.
 	"
 	fi
 	fi
-
 
 ## Assign taxonomy (RDP)
 
@@ -704,11 +704,10 @@ fi
 
 	else
 	echo "		Taxonomy assignments detected.
-		($outdir/cdhit_otus/rdp_taxonomy_assignment/merged_rep_set_tax_assignments.txt)
+		$outdir/cdhit_otus/rdp_taxonomy_assignment/merged_rep_set_tax_assignments.txt
 		Skipping taxonomy assignment step.
 	"
 	fi
-
 
 ## Make raw otu table
 
@@ -725,7 +724,7 @@ fi
 
 	else
 	echo "		Raw OTU table detected.
-		($outdir/cdhit_otus/raw_otu_table.biom)
+		$outdir/cdhit_otus/raw_otu_table.biom
 		Moving to final filtering steps.
 	"
 	fi
