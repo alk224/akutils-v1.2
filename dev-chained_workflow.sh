@@ -482,7 +482,6 @@ fi
 if [[ ! -f cdhit_otus/prefix_rep_set_otus.txt ]]; then
 
 	echo "		Picking OTUs against collapsed rep set.
-$parameter_count
 	"
 	echo "Picking OTUs against collapsed rep set:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
