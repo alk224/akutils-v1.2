@@ -119,7 +119,7 @@ set -e
 
 		Checking for prior workflow progress...
 		"
-		if [[ -e $outdir/eqw_workflow.log ]]; then
+		if [[ -e $outdir/eqw_workflow*.log ]]; then
 		date0=`date +%Y%m%d_%I%M%p`
 		log=($outdir/eqw_workflow_$date0.log)
 		echo "		Workflow restarting in $mode mode"
@@ -136,7 +136,7 @@ Workflow restarting in $mode mode" > $log
 		mkdir -p $outdir
 	fi
 
-	if [[ ! -e $outdir/eqw_workflow.log ]]; then
+	if [[ ! -e $outdir/eqw_workflow*.log ]]; then
 		echo "		Beginning eqw workflow script in $mode mode"
 		date1=`date "+%a %b %I:%M %p %Z %Y"`
 		echo "		$date1"
@@ -150,7 +150,6 @@ Workflow beginning in $mode mode" > $log
 		" >> $log
 
 	fi
-		log=($outdir/eqw_workflow.log)
 
 ## Check that no more than one parameter file is present
 
@@ -329,8 +328,6 @@ if [[ -f $outdir/split_libraries/seqs.fna ]]; then
 	fi
 
 ## split_libraries_fastq.py command
-
-	log=($outdir/eqw_workflow.log)
 
 if [[ ! -f $outdir/split_libraries/seqs.fna ]]; then
 	
