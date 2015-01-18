@@ -480,10 +480,18 @@ if [[ ! -f cdhit_otus/prefix_rep_set_otus.txt ]]; then
 	"
 	echo "Picking OTUs against collapsed rep set:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
+
+	if [[ $parameter_count == 1 ]]; then
+	echo "
+	pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -p $param_file
+	" >> $log
+	`pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -p param_file`
+	else
 	echo "
 	pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus
 	" >> $log
 	`pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus`
+	fi
 
 	else
 	echo "		Main OTU picking already completed.
