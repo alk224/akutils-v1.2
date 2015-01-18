@@ -570,8 +570,8 @@ fi
 	if [[ ! -f $outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned.fasta ]]; then
 
 	echo "		Aligning sequences.
-		Method: Mafft on $alignseqs_threads cores
-		Template: none
+		Method: Mafft on a single core.
+		Template: none.
 	"
 	echo "Aligning sequences:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log

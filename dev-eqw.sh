@@ -409,7 +409,7 @@ Reference: $chimera_refs
 	else
 
 	echo "		Chimera filtered sequences detected.
-		($seqs)
+		$seqs
 		Skipping chimera checking step.
 	"
 
@@ -477,7 +477,7 @@ seqname=`basename $seqpath`
 
 	else
 	echo "		OTU map detected.
-		($outdir/uclust_otu_picking/final_otu_map.txt)
+		$outdir/uclust_otu_picking/final_otu_map.txt
 		Skipping OTU picking step.
 	"
 	fi
@@ -541,7 +541,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 
 	else	
 	echo "		Alignment file detected.
-		($outdir/open_reference_output/pynast_aligned_seqs/final_rep_set_aligned.fasta)
+		$outdir/open_reference_output/pynast_aligned_seqs/final_rep_set_aligned.fasta
 		Skipping sequence alignment step.
 	"
 	fi
@@ -554,8 +554,8 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 	if [[ ! -f $outdir/open_reference_output/mafft_aligned_seqs/final_rep_set_aligned.fasta ]]; then
 
 	echo "		Aligning sequences.
-		Method: Mafft on $alignseqs_threads cores
-		Template: none
+		Method: Mafft on a single core.
+		Template: none.
 	"
 	echo "Aligning sequences:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
@@ -567,7 +567,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 
 	else	
 	echo "		Alignment file detected.
-		($outdir/open_reference_output/mafft_aligned_seqs/final_rep_set_aligned.fasta)
+		$outdir/open_reference_output/mafft_aligned_seqs/final_rep_set_aligned.fasta
 		Skipping sequence alignment step.
 	"
 	fi
@@ -592,7 +592,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 
 	else
 	echo "		Filtered alignment detected.
-		($outdir/open_reference_output/pynast_aligned_seqs/final_rep_set_aligned_pfiltered.fasta)
+		$outdir/open_reference_output/pynast_aligned_seqs/final_rep_set_aligned_pfiltered.fasta
 		Skipping alignment filtering step.
 	"
 	fi
@@ -617,7 +617,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 
 	else
 	echo "		Filtered alignment detected.
-		($outdir/open_reference_output/mafft_aligned_seqs/final_rep_set_aligned_pfiltered.fasta)
+		$outdir/open_reference_output/mafft_aligned_seqs/final_rep_set_aligned_pfiltered.fasta
 		Skipping alignment filtering step.
 	"
 	fi
@@ -641,7 +641,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 
 	else
 	echo "		Phylogenetic tree detected.
-		($outdir/open_reference_output/pynast_aligned_seqs/fasttree_phylogeny.tre)
+		$outdir/open_reference_output/pynast_aligned_seqs/fasttree_phylogeny.tre
 		Skipping make phylogeny step.
 	"
 	fi
@@ -665,7 +665,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 
 	else
 	echo "		Phylogenetic tree detected.
-		($outdir/open_reference_output/mafft_aligned_seqs/fasttree_phylogeny.tre)
+		$outdir/open_reference_output/mafft_aligned_seqs/fasttree_phylogeny.tre
 		Skipping make phylogeny step.
 	"
 	fi
@@ -689,7 +689,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 
 	else
 	echo "		Taxonomy assignments detected.
-		($outdir/open_reference_output/rdp_taxonomy_assignment/final_rep_set_tax_assignments.txt)
+		$outdir/open_reference_output/rdp_taxonomy_assignment/final_rep_set_tax_assignments.txt
 		Skipping taxonomy assignment step.
 	"
 	fi
@@ -710,7 +710,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 
 	else
 	echo "		Raw OTU table detected.
-		($outdir/open_reference_output/raw_otu_table.biom)
+		$outdir/open_reference_output/raw_otu_table.biom
 		Moving to final filtering steps.
 	"
 	fi
