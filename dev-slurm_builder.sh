@@ -210,6 +210,9 @@ fi
 	sed -ire "s@--workdir=.*@--workdir=$workdir/@g" $slurm
 
 
+## set executable
+chmod a+x $slurm
+
 echo "
 		$slurm options updated.
 		Working directory is defined as
