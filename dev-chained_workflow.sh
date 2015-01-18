@@ -735,22 +735,6 @@ fi
 	( `biom summarize-table -i $outdir/cdhit_otus/raw_otu_table.biom -o $outdir/cdhit_otus/raw_otu_table.summary` ) &
 	fi
 
-## Final filtering steps for OTU tables
-## Remove singletons and doubletons
-
-	if [[ ! -f $outdir/cdhit_otus/raw_otu_table_no_singletons_no_doubletons.biom ]]; then
-	
-	echo "Filtering singletons/doubletons from OTU table:" >> $log
-	date "+%a %b %I:%M %p %Z %Y" >> $log
-	echo "
-	filter_otus_from_otu_table.py -i $outdir/cdhit_otus/raw_otu_table.biom -o $outdir/cdhit_otus/raw_otu_table_no_singletons_no_doubletons.biom -n 3
-	" >> $log
-	`filter_otus_from_otu_table.py -i $outdir/cdhit_otus/raw_otu_table.biom -o $outdir/cdhit_otus/raw_otu_table_no_singletons_no_doubletons.biom -n 3`
-	fi
-
-	if [[ ! -f $outdir/cdhit_otus/raw_otu_table_no_singletons_no_doubletons.summary ]]; then
-	( `biom summarize-table -i $outdir/cdhit_otus/raw_otu_table_no_singletons_no_doubletons.biom -o $outdir/cdhit_otus/raw_otu_table_no_singletons_no_doubletons.summary` ) &
-	fi
 wait
 
 ## remove jobs directory
