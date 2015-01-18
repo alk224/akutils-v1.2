@@ -119,9 +119,12 @@ set -e
 		"
 		if [[ -e $outdir/eqw_workflow.log ]]; then
 		log=($outdir/eqw_workflow.log)
+		echo "		Workflow restarting in $mode mode"
+		date "+%a %b %I:%M %p %Z %Y"
+		res1=$(date +%s.%N)
 			echo "
 Workflow restarting in $mode mode" >> $log
-			date >> $log
+			date "+%a %b %I:%M %p %Z %Y" >> $log
 		fi
 	fi
 
@@ -130,12 +133,12 @@ Workflow restarting in $mode mode" >> $log
 	fi
 
 	if [[ ! -e $outdir/eqw_workflow.log ]]; then
-		echo "		Beginning qiime_workflow_script in $mode mode
-		"
+		echo "		Beginning eqw workflow script in $mode mode"
+		date "+%a %b %I:%M %p %Z %Y"
 		touch $outdir/eqw_workflow.log
 		log=($outdir/eqw_workflow.log)
 		echo "Workflow beginning in $mode mode" >> $log
-		date >> $log
+		date "+%a %b %I:%M %p %Z %Y" >> $log
 		echo "
 ---
 		" >> $log
@@ -346,7 +349,7 @@ if [[ ! -f $outdir/split_libraries/seqs.fna ]]; then
 	fi
 
 	echo "Split libraries command:" >> $log
-	date >> $log
+	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
 	split_libraries_fastq.py -i rd.fq -b idx.fq -m $map -o $outdir/split_libraries -q $qual --barcode_type $barcodetype
 	" >> $log
@@ -381,7 +384,7 @@ seqs=$outdir/split_libraries/seqs.fna
 "
 	echo "
 Chimera filtering commands:" >> $log
-	date >> $log
+	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "Method: usearch61
 Reference: $chimera_refs
 
@@ -416,7 +419,7 @@ Reference: $chimera_refs
 	"
 	echo "
 Reverse complement command:"
-	date >> $log
+	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
 	adjust_seq_orientation.py -i $seqs -r -o $outdir/split_libraries/seqs_rc.fna
 	" >> $log
@@ -447,7 +450,7 @@ seqname=`basename $seqpath`
 	"
 	cat $param_file
 	echo "Picking open reference OTUs:" >> $log
-	date >> $log
+	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
 	pick_open_reference_otus.py -i $seqs -r $refs -o $outdir/uclust_otu_picking --prefilter_percent_id 0.0 -aO $otupicking_threads --suppress_align_and_tree --#suppress_taxonomy_assignment -p $param_file
 	" >> $log
@@ -456,7 +459,7 @@ seqname=`basename $seqpath`
 	else
 
 	echo "Picking open reference OTUs:" >> $log
-	date >> $log
+	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
 	pick_open_reference_otus.py -i $seqs -r $refs -o $outdir/uclust_otu_picking --prefilter_percent_id 0.0 -aO $otupicking_threads --suppress_align_and_tree --#suppress_taxonomy_assignment
 	" >> $log
@@ -521,7 +524,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 		Template: $alignment_template
 	"
 	echo "Aligning sequences:" >> $log
-	date >> $log
+	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
 	parallel_align_seqs_pynast.py -i $outdir/open_reference_output/final_rep_set.fna -o $outdir/open_reference_output/pynast_aligned_seqs -t $alignment_template -O $alignseqs_threads
 	" >> $log
@@ -547,7 +550,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 		Template: none
 	"
 	echo "Aligning sequences:" >> $log
-	date >> $log
+	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
 	align_seqs.py -i $outdir/open_reference_output/final_rep_set.fna -o $outdir/open_reference_output/mafft_aligned_seqs -m mafft
 	" >> $log
@@ -572,7 +575,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 		Lanemask file: $alignment_lanemask.
 	"
 	echo "Filtering alignment:" >> $log
-	date >> $log
+	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
 	filter_alignment.py -i $outdir/open_reference_output/pynast_aligned_seqs/final_rep_set_aligned.fasta -o $outdir/open_reference_output/pynast_aligned_seqs/ -m $alignment_lanemask
 	" >> $log
@@ -597,7 +600,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 		Entropy threshold: 0.1
 	"
 	echo "Filtering alignment:" >> $log
-	date >> $log
+	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
 	filter_alignment.py -i $outdir/open_reference_output/mafft_aligned_seqs/final_rep_set_aligned.fasta -o $outdir/open_reference_output/mafft_aligned_seqs/ -e 0.1
 	" >> $log
@@ -622,7 +625,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 		Method: Fasttree
 	"
 	echo "Making phylogeny:" >> $log
-	date >> $log
+	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
 	make_phylogeny.py -i $outdir/open_reference_output/pynast_aligned_seqs/final_rep_set_aligned_pfiltered.fasta -o $outdir/open_reference_output/pynast_aligned_seqs/fasttree_phylogeny.tre
 	" >> $log
@@ -646,7 +649,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 		Method: Fasttree
 	"
 	echo "Making phylogeny:" >> $log
-	date >> $log
+	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
 	make_phylogeny.py -i $outdir/open_reference_output/mafft_aligned_seqs/final_rep_set_aligned_pfiltered.fasta -o $outdir/open_reference_output/mafft_aligned_seqs/fasttree_phylogeny.tre
 	" >> $log
@@ -669,7 +672,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 		Method: RDP Classifier on $taxassignment_threads cores.
 	"
 	echo "Assigning taxonomy (RDP):" >> $log
-	date >> $log
+	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
 	parallel_assign_taxonomy_rdp.py -i $outdir/open_reference_output/final_rep_set.fna -o $outdir/open_reference_output/rdp_taxonomy_assignment -c $rdp_confidence -r $refs -t $tax --rdp_max_memory $rdp_max_memory -O $taxassignment_threads
 	" >> $log
@@ -691,7 +694,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 	echo "		Making raw OTU table.
 	"
 	echo "Making OTU table:" >> $log
-	date >> $log
+	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
 	make_otu_table.py -i $outdir/open_reference_output/final_otu_map.txt -t $outdir/open_reference_output/rdp_taxonomy_assignment/final_rep_set_tax_assignments.txt -o $outdir/open_reference_output/raw_otu_table.biom
 	" >> $log
@@ -717,7 +720,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 	if [[ ! -f $outdir/open_reference_output/raw_otu_table_no_singletons_no_doubletons.biom ]]; then
 	
 	echo "Filtering singletons/doubletons from OTU table:" >> $log
-	date >> $log
+	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
 	filter_otus_from_otu_table.py -i $outdir/open_reference_output/raw_otu_table.biom -o $outdir/open_reference_output/raw_otu_table_no_singletons_no_doubletons.biom -n 3
 	" >> $log
@@ -735,10 +738,24 @@ wait
 	rm -r $outdir/jobs
 	fi
 
+res2=$(date +%s.%N)
+dt=$(echo "$res2 - $res1" | bc)
+dd=$(echo "$dt/86400" | bc)
+dt2=$(echo "$dt-86400*$dd" | bc)
+dh=$(echo "$dt2/3600" | bc)
+dt3=$(echo "$dt2-3600*$dh" | bc)
+dm=$(echo "$dt3/60" | bc)
+ds=$(echo "$dt3-60*$dm" | bc)
+
+runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
+
 echo "		Workflow steps completed.
+
+		$runtime
 "
 echo "---
 
 All workflow steps completed." >> $log
-date >> $log
+date "+%a %b %I:%M %p %Z %Y" >> $log
+echo $runtime >> $log
 
