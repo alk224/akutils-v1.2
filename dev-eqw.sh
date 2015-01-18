@@ -175,9 +175,10 @@ Workflow beginning in $mode mode" > $log
 		Found parameters file.
 		($param_file)
 	"
-	echo "Using custom parameters file ($outdir/$param_file)
-	Parameters file contents:
-	" >> $log
+	echo "Using custom parameters file.
+$outdir/$param_file
+
+Parameters file contents:" >> $log
 		cat $param_file >> $log
 
 	elif [[ $parameter_count == 0 ]]; then
@@ -344,7 +345,7 @@ if [[ ! -f $outdir/split_libraries/seqs.fna ]]; then
 	barcodetype=$((`sed '2q;d' idx.fq | egrep "\w+" | wc -m`-1))
 	fi
 	qvalue=$((qual+1))
-	echo "		Performing split_libraries.py command (q$qvalue)"
+	echo "		Performing split_libraries command (q$qvalue)."
 	if [[ $barcodetype == "golay_12" ]]; then
 	echo " 		12 base Golay index codes detected...
 	"
@@ -450,8 +451,9 @@ seqname=`basename $seqpath`
 
 	if [[ `ls $param_file | wc -w` == 1 ]]; then
 
-	echo "		Picking OTUs.  Passing in parameters file
-		($param_file) to modify default settings
+	echo "		Picking OTUs.  Passing in parameters file to 
+		modify default settings
+		$param_file
 	"
 	cat $param_file
 	echo "Picking open reference OTUs:" >> $log
@@ -483,8 +485,10 @@ seqname=`basename $seqpath`
 
 	if [[ ! -f $outdir/uclust_otu_picking/final_rep_set.fna ]]; then
 
-	echo "Pick representative sequences command as issued:
-pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $outdir/uclust_otu_picking/final_rep_set.fna
+	echo "Pick representative sequences:" >> $log
+	date "+%a %b %I:%M %p %Z %Y" >> $log
+	echo "
+	pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $outdir/uclust_otu_picking/final_rep_set.fna
 	" >> $log
 
 `pick_rep_set.py -i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $outdir/uclust_otu_picking/final_rep_set.fna`
@@ -528,7 +532,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 		Method: Pynast on $alignseqs_threads cores
 		Template: $alignment_template
 	"
-	echo "Aligning sequences:" >> $log
+	echo "Aligning sequences (pynast):" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
 	parallel_align_seqs_pynast.py -i $outdir/open_reference_output/final_rep_set.fna -o $outdir/open_reference_output/pynast_aligned_seqs -t $alignment_template -O $alignseqs_threads
@@ -554,7 +558,7 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 		Method: Mafft on a single core.
 		Template: none.
 	"
-	echo "Aligning sequences:" >> $log
+	echo "Aligning sequences (mafft):" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
 	align_seqs.py -i $outdir/open_reference_output/final_rep_set.fna -o $outdir/open_reference_output/mafft_aligned_seqs -m mafft
@@ -626,10 +630,10 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 
 	if [[ ! -f $outdir/open_reference_output/pynast_aligned_seqs/fasttree_phylogeny.tre ]]; then
 
-	echo "		Constructing phylogeny based on sample sequences.
+	echo "		Constructing phylogeny based on sample sequences (in background).
 		Method: Fasttree
 	"
-	echo "Making phylogeny:" >> $log
+	echo "Making phylogeny (in background):" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
 	make_phylogeny.py -i $outdir/open_reference_output/pynast_aligned_seqs/final_rep_set_aligned_pfiltered.fasta -o $outdir/open_reference_output/pynast_aligned_seqs/fasttree_phylogeny.tre
@@ -650,10 +654,10 @@ pick_rep_set.py	-i $outdir/uclust_otu_picking/final_otu_map.txt -f $seqs -o $out
 
 	if [[ ! -f $outdir/open_reference_output/mafft_aligned_seqs/fasttree_phylogeny.tre ]]; then
 
-	echo "		Constructing phylogeny based on sample sequences.
+	echo "		Constructing phylogeny based on sample sequences (in background).
 		Method: Fasttree
 	"
-	echo "Making phylogeny:" >> $log
+	echo "Making phylogeny (in background):" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
 	make_phylogeny.py -i $outdir/open_reference_output/mafft_aligned_seqs/final_rep_set_aligned_pfiltered.fasta -o $outdir/open_reference_output/mafft_aligned_seqs/fasttree_phylogeny.tre
