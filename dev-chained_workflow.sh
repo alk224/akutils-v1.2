@@ -178,9 +178,8 @@ Workflow restarting in $mode mode" > $log
 	echo "Using custom parameters file.
 $outdir/$param_file
 
-	Parameters file contents:
-	" >> $log
-		grep similarity $param_file >> $log
+Parameters file contents:" >> $log
+	grep similarity $param_file >> $log
 
 	elif [[ $parameter_count == 0 ]]; then
 	echo "
@@ -493,7 +492,7 @@ $parameter_count
 	echo "
 	pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -s $sim
 	" >> $log
-	pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -s $sim
+	`pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -s $sim`
 	else
 	echo "
 	pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus
