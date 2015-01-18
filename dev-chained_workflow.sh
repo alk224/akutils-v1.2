@@ -176,7 +176,9 @@ Workflow restarting in $mode mode" > $log
 		Found parameters file.
 		($param_file)
 	"
-	echo "Using custom parameters file ($outdir/$param_file)
+	echo "Using custom parameters file.
+$outdir/$param_file
+
 	Parameters file contents:
 	" >> $log
 		cat $param_file >> $log
@@ -492,7 +494,7 @@ if [[ ! -f cdhit_otus/prefix_rep_set_otus.txt ]]; then
 	echo "
 	pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -p $param_file
 	" >> $log
-	`pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -p param_file`
+	`pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -p $param_file`
 	else
 	echo "
 	pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus
