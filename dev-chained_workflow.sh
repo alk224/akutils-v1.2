@@ -247,7 +247,8 @@ echo "
 	echo "		Using local eqw config file.
 		$config
 	"
-	echo "Referencing local eqw config file.
+	echo "
+Referencing local eqw config file.
 $config
 	" >> $log
 	else
@@ -259,7 +260,8 @@ $config
 		echo "		Using global eqw config file.
 		$config
 		"
-		echo "Referencing global eqw config file.
+		echo "
+Referencing global eqw config file.
 $config
 		" >> $log
 		fi
