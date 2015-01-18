@@ -120,7 +120,8 @@ set -e
 		if [[ -e $outdir/chained_workflow.log ]]; then
 		log=($outdir/chained_workflow.log)
 		echo "		Workflow restarting in $mode mode"
-		date "+%a %b %I:%M %p %Z %Y"
+		date1=`date "+%a %b %I:%M %p %Z %Y"`
+		echo "		$date1"
 		res1=$(date +%s.%N)
 			echo "
 Workflow restarting in $mode mode" >> $log
@@ -134,7 +135,8 @@ Workflow restarting in $mode mode" >> $log
 
 	if [[ ! -e $outdir/chained_workflow.log ]]; then
 		echo "		Beginning chained workflow script in $mode mode"
-		date "+%a %b %I:%M %p %Z %Y"
+		date1=`date "+%a %b %I:%M %p %Z %Y"`
+		echo "		$date1"
 		touch $outdir/chained_workflow.log
 		log=($outdir/chained_workflow.log)
 		echo "Workflow beginning in $mode mode" >> $log
@@ -345,7 +347,7 @@ if [[ ! -f $outdir/split_libraries/seqs.fna ]]; then
 	echo " 		12 base Golay index codes detected...
 	"
 	else
-	echo "$barcodetype base indexes detected...
+	echo "		$barcodetype base indexes detected...
 	"
 	fi
 

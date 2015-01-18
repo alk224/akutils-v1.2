@@ -120,7 +120,8 @@ set -e
 		if [[ -e $outdir/eqw_workflow.log ]]; then
 		log=($outdir/eqw_workflow.log)
 		echo "		Workflow restarting in $mode mode"
-		date "+%a %b %I:%M %p %Z %Y"
+		date1=`date "+%a %b %I:%M %p %Z %Y"`
+		echo "		$date1"
 		res1=$(date +%s.%N)
 			echo "
 Workflow restarting in $mode mode" >> $log
@@ -134,7 +135,8 @@ Workflow restarting in $mode mode" >> $log
 
 	if [[ ! -e $outdir/eqw_workflow.log ]]; then
 		echo "		Beginning eqw workflow script in $mode mode"
-		date "+%a %b %I:%M %p %Z %Y"
+		date1=`date "+%a %b %I:%M %p %Z %Y"`
+		echo "		$date1"
 		touch $outdir/eqw_workflow.log
 		log=($outdir/eqw_workflow.log)
 		echo "Workflow beginning in $mode mode" >> $log
@@ -344,7 +346,7 @@ if [[ ! -f $outdir/split_libraries/seqs.fna ]]; then
 	echo " 		12 base Golay index codes detected...
 	"
 	else
-	echo "$barcodetype base indexes detected...
+	echo "		$barcodetype base indexes detected...
 	"
 	fi
 
