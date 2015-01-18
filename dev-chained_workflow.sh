@@ -150,7 +150,6 @@ Workflow restarting in $mode mode" > $log
 		" >> $log
 
 	fi
-#		log=($outdir/chained_workflow.log)
 
 ## Check that no more than one parameter file is present
 
@@ -331,8 +330,6 @@ if [[ -f $outdir/split_libraries/seqs.fna ]]; then
 	fi
 
 ## split_libraries_fastq.py command
-
-	log=($outdir/chained_workflow.log)
 
 if [[ ! -f $outdir/split_libraries/seqs.fna ]]; then
 	
