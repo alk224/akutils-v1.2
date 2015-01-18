@@ -206,8 +206,8 @@ fi
 #	"
 #	fi
 
-	sed -ire "s@--output=.*@--output=$workdir/std_err.txt@g" $slurm
-	sed -ire "s@--workdir=.*@--workdir=$workdir/@g" $slurm
+	sed -i -e -r "s@--output=.*@--output=$workdir/std_err.txt@g" $slurm
+	sed -i -e -r "s@--workdir=.*@--workdir=$workdir/@g" $slurm
 
 
 ## set executable
