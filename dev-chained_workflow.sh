@@ -492,7 +492,7 @@ $parameter_count
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 
 	if [[ $parameter_count == 1 ]]; then
-	sim=`grep similarity $param_file | cut -d " " -f 2`
+	sim=`grep "similarity" $param_file | cut -d " " -f 2`
 	echo "
 	pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -s $sim
 	" >> $log
