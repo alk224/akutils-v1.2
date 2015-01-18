@@ -776,7 +776,9 @@ echo "		Workflow steps completed.
 "
 echo "---
 
-All workflow steps completed." >> $log
+All workflow steps completed.  Hooray!" >> $log
 date "+%a %b %I:%M %p %Z %Y" >> $log
-echo $runtime >> $log
+echo "
+$runtime 
+" >> $log
 
