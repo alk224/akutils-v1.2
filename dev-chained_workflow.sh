@@ -174,7 +174,7 @@ Workflow restarting in $mode mode" > $log
 		param_file=(`ls $outdir/parameter*`)
 	echo "
 		Found parameters file.
-		($param_file)
+		$param_file
 	"
 	echo "Using custom parameters file.
 $outdir/$param_file
@@ -486,6 +486,7 @@ fi
 if [[ ! -f cdhit_otus/prefix_rep_set_otus.txt ]]; then
 
 	echo "		Picking OTUs against collapsed rep set.
+$parameter_count
 	"
 	echo "Picking OTUs against collapsed rep set:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
