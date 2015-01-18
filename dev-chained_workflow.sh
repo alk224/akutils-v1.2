@@ -181,7 +181,7 @@ $outdir/$param_file
 
 	Parameters file contents:
 	" >> $log
-		cat $param_file >> $log
+		grep similarity $param_file >> $log
 
 	elif [[ $parameter_count == 0 ]]; then
 	echo "
@@ -491,10 +491,11 @@ if [[ ! -f cdhit_otus/prefix_rep_set_otus.txt ]]; then
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 
 	if [[ $parameter_count == 1 ]]; then
+	sim=`grep similarity $param_file | cut -d " " -f 2`
 	echo "
-	pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -p $param_file
+	pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -s $sim
 	" >> $log
-	`pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -p $param_file`
+	`pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -s $sim`
 	else
 	echo "
 	pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus
