@@ -299,7 +299,7 @@ $config
 
 if [[ -f $outdir/split_libraries/seqs.fna ]]; then
 	echo "		Split libraries output detected. 
-		($outdir/split_libraries/seqs.fna)
+		$outdir/split_libraries/seqs.fna
 		Skipping split_libraries_fastq.py step,
 	"
 	else
