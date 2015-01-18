@@ -113,18 +113,21 @@ set -e
 ## Check if output directory already exists
 
 	if [[ -d $outdir ]]; then
-		echo "		Output directory already exists ($outdir).
+		echo "
+		Output directory already exists.
+		$outdir
 
 		Checking for prior workflow progress...
 		"
 		if [[ -e $outdir/eqw_workflow.log ]]; then
-		log=($outdir/eqw_workflow.log)
+		date0=`date +%Y%m%d_%I%M%p`
+		log=($outdir/eqw_workflow_$date0.log)
 		echo "		Workflow restarting in $mode mode"
 		date1=`date "+%a %b %I:%M %p %Z %Y"`
 		echo "		$date1"
 		res1=$(date +%s.%N)
 			echo "
-Workflow restarting in $mode mode" >> $log
+Workflow restarting in $mode mode" > $log
 			date "+%a %b %I:%M %p %Z %Y" >> $log
 		fi
 	fi
@@ -137,9 +140,10 @@ Workflow restarting in $mode mode" >> $log
 		echo "		Beginning eqw workflow script in $mode mode"
 		date1=`date "+%a %b %I:%M %p %Z %Y"`
 		echo "		$date1"
-		touch $outdir/eqw_workflow.log
-		log=($outdir/eqw_workflow.log)
-		echo "Workflow beginning in $mode mode" >> $log
+		date0=`date +%Y%m%d_%I%M%p`
+		log=($outdir/eqw_workflow_$date0.log)
+		echo "
+Workflow beginning in $mode mode" > $log
 		date "+%a %b %I:%M %p %Z %Y" >> $log
 		echo "
 ---
