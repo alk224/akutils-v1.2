@@ -119,7 +119,7 @@ set -e
 
 		Checking for prior workflow progress...
 		"
-		if [[ -e $outdir/chained_workflow.log ]]; then
+		if [[ -e $outdir/chained_workflow*.log ]]; then
 		date0=`date +%Y%m%d_%I%M%p`
 		log=($outdir/chained_workflow_$date0.log)
 		echo "		Workflow restarting in $mode mode"
@@ -136,7 +136,7 @@ Workflow restarting in $mode mode" > $log
 		mkdir -p $outdir
 	fi
 
-	if [[ ! -e $outdir/chained_workflow.log ]]; then
+	if [[ ! -e $outdir/chained_workflow*.log ]]; then
 		echo "		Beginning chained workflow script in $mode mode"
 		date1=`date "+%a %b %I:%M %p %Z %Y"`
 		echo "		$date1"
@@ -150,7 +150,7 @@ Workflow restarting in $mode mode" > $log
 		" >> $log
 
 	fi
-		log=($outdir/chained_workflow.log)
+#		log=($outdir/chained_workflow.log)
 
 ## Check that no more than one parameter file is present
 
