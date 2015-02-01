@@ -154,7 +154,7 @@ Chained workflow beginning in $mode mode" > $log
 
 ## Check that no more than one parameter file is present
 
-	parameter_count=(`ls $outdir/parameter* | wc -w`)
+	parameter_count=(`ls $outdir/parameter* 2>/dev/null | wc -w`)
 
 	if [[ $parameter_count -ge 2 ]]; then
 
@@ -297,6 +297,7 @@ $config
 	rdp_max_memory=(`grep "RDP_max_memory" $config | grep -v "#" | cut -f 2`)
 	prefix_len=(`grep "Prefix_length" $config | grep -v "#" | cut -f 2`)
 	suffix_len=(`grep "Suffix_length" $config | grep -v "#" | cut -f 2`)
+	otupicker=(`grep "OTU_picker" $config | grep -v "#" | cut -f 2`)
 	
 ## Check for split_libraries outputs and inputs
 
@@ -362,12 +363,29 @@ if [[ ! -f $outdir/split_libraries/seqs.fna ]]; then
 	echo "
 	split_libraries_fastq.py -i rd.fq -b idx.fq -m $map -o $outdir/split_libraries -q $qual --barcode_type $barcodetype
 	" >> $log
+	res2=$(date +%s.%N)
 
 	`split_libraries_fastq.py -i rd.fq -b idx.fq -m $map -o $outdir/split_libraries -q $qual --barcode_type $barcodetype`
+
+res3=$(date +%s.%N)
+dt=$(echo "$res3 - $res2" | bc)
+dd=$(echo "$dt/86400" | bc)
+dt2=$(echo "$dt-86400*$dd" | bc)
+dh=$(echo "$dt2/3600" | bc)
+dt3=$(echo "$dt2-3600*$dh" | bc)
+dm=$(echo "$dt3/60" | bc)
+ds=$(echo "$dt3-60*$dm" | bc)
+
+sl_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
+echo "Split libraries runtime: $sl_runtime
+
+" >> $log
 	wait
 fi
 
 seqs=$outdir/split_libraries/seqs.fna
+numseqs0=`cat $seqs | wc -l`
+numseqs=$(($numseqs0/2))
 
 ## Check for split libraries success
 
@@ -391,6 +409,7 @@ seqs=$outdir/split_libraries/seqs.fna
 		Method: usearch61
 		Reference: $chimera_refs
 		Subsearches: $chimera_threads
+		Input sequences: $numseqs
 "
 	echo "
 Chimera filtering commands:" >> $log
@@ -403,7 +422,7 @@ Subsearches: $chimera_threads
 
 	filter_fasta.py -f $outdir/split_libraries/seqs.fna -o $outdir/split_libraries/seqs_chimera_filtered.fna -s $outdir/usearch61_chimera_checking/chimeras.txt -n
 	" >> $log
-
+res4=$(date +%s.%N)
 	cd $outdir/split_libraries
 	fasta-splitter.pl -n $chimera_threads seqs.fna
 	cd ..
@@ -432,6 +451,21 @@ Subsearches: $chimera_threads
 	wait
 	rm $outdir/split_libraries/seqs.part-*
 seqs=$outdir/split_libraries/seqs_chimera_filtered.fna
+
+res5=$(date +%s.%N)
+dt=$(echo "$res5 - $res4" | bc)
+dd=$(echo "$dt/86400" | bc)
+dt2=$(echo "$dt-86400*$dd" | bc)
+dh=$(echo "$dt2/3600" | bc)
+dt3=$(echo "$dt2-3600*$dh" | bc)
+dm=$(echo "$dt3/60" | bc)
+ds=$(echo "$dt3-60*$dm" | bc)
+
+chim_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "Chimera filtering runtime: $chim_runtime
+
+" >> $log
+
 	echo ""
 	else
 
@@ -442,8 +476,6 @@ seqs=$outdir/split_libraries/seqs_chimera_filtered.fna
 seqs=$outdir/split_libraries/seqs_chimera_filtered.fna
 	fi
 	fi
-
-
 
 ## Reverse complement demultiplexed sequences if necessary
 
@@ -466,105 +498,195 @@ Reverse complement command:"
 	echo "		Demultiplexed sequences were reverse complemented.
 	"
 	seqs=$outdir/split_libraries/seqs_rc.fna
+	fi
 	else
 	echo "		Sequences already in proper orientation.
 	"
 	fi
-	fi
 
 ## chained OTU picking
 
+numseqs0=`cat $seqs | wc -l`
+numseqs=(`expr $numseqs0 / 2`)
+
 seqpath="${seqs%.*}"
 seqname=`basename $seqpath`
-presufdir=
-echo $presufdir
+presufdir=prefix$prefix_len\_suffix$suffix_len/
 
-exit 0
-
-if [[ ! -f prefix$prefix_len\_suffix$suffix_len/$seqname\_otus.txt ]]; then
-
+if [[ ! -f $presufdir/$seqname\_otus.txt ]]; then
+res6=$(date +%s.%N)
 	echo "		Collapsing sequences with prefix/suffix picker.
+		Input sequences: $numseqs
+		Prefix length: $prefix_len
+		Suffix length: $suffix_len
 	"
-	echo "Collapsing sequences with prefix/suffix picker:" >> $log
+	echo "Collapsing $numseqs sequences with prefix/suffix picker." >> $log
+	date "+%a %b %I:%M %p %Z %Y" >> $log
+	echo "Input sequences: $numseqs
+Prefix length: $prefix_len
+Suffix length: $suffix_len" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
-	pick_otus.py -m prefix_suffix -p $prefix_len -u $suffix_len -i $seqs -o prefix$prefix_len\_suffix$suffix_len	
+	pick_otus.py -m prefix_suffix -p $prefix_len -u $suffix_len -i $seqs -o $presufdir	
 	" >> $log
-	`pick_otus.py -m prefix_suffix -p $prefix_len -u $suffix_len -i $seqs -o prefix$prefix_len\_suffix$suffix_len`
+	`pick_otus.py -m prefix_suffix -p $prefix_len -u $suffix_len -i $seqs -o $presufdir`
+
+res7=$(date +%s.%N)
+dt=$(echo "$res7 - $res6" | bc)
+dd=$(echo "$dt/86400" | bc)
+dt2=$(echo "$dt-86400*$dd" | bc)
+dh=$(echo "$dt2/3600" | bc)
+dt3=$(echo "$dt2-3600*$dh" | bc)
+dm=$(echo "$dt3/60" | bc)
+ds=$(echo "$dt3-60*$dm" | bc)
+
+pref_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "Prefix/suffix collapse runtime: $pref_runtime
+
+" >> $log
 	
 	else
 	echo "		Prefix/suffix step previously completed.
 	"
 fi
 
-if [[ ! -f prefix50_suffix0/prefix_rep_set.fasta ]]; then
-
+if [[ ! -f $presufdir/prefix_rep_set.fasta ]]; then
+res8=$(date +%s.%N)
 	echo "		Picking rep set with prefix/suffix-collapsed OTU map.
 	"
 	echo "Picking rep set with prefix/suffix-collapsed OTU map:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
-	pick_rep_set.py -i prefix50_suffix0/$seqname\_otus.txt -f $seqs -o prefix50_suffix0/prefix_rep_set.fasta
+	pick_rep_set.py -i $presufdir/$seqname\_otus.txt -f $seqs -o $presufdir/prefix_rep_set.fasta
 	" >> $log
-	`pick_rep_set.py -i prefix50_suffix0/$seqname\_otus.txt -f $seqs -o prefix50_suffix0/prefix_rep_set.fasta`
+	`pick_rep_set.py -i $presufdir/$seqname\_otus.txt -f $seqs -o $presufdir/prefix_rep_set.fasta`
+
+res9=$(date +%s.%N)
+dt=$(echo "$res9 - $res8" | bc)
+dd=$(echo "$dt/86400" | bc)
+dt2=$(echo "$dt-86400*$dd" | bc)
+dh=$(echo "$dt2/3600" | bc)
+dt3=$(echo "$dt2-3600*$dh" | bc)
+dm=$(echo "$dt3/60" | bc)
+ds=$(echo "$dt3-60*$dm" | bc)
+
+repset_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "Pick rep set runtime: $repset_runtime
+
+" >> $log
 
 	else
 	echo "		Prefix/suffix rep set already present.
 	"
 fi
 
-if [[ ! -f cdhit_otus/prefix_rep_set_otus.txt ]]; then
+otupickdir=$otupicker\_otus
+
+if [[ ! -f $otupickdir/prefix_rep_set_otus.txt ]]; then
+res10=$(date +%s.%N)
+
+numseqs1=`cat $presufdir/prefix_rep_set.fasta | wc -l`
+numseqs2=(`expr $numseqs1 / 2`)
 
 	echo "		Picking OTUs against collapsed rep set.
+		Input sequences: $numseqs2
+		Method: $otupicker
 	"
-	echo "Picking OTUs against collapsed rep set:" >> $log
+	echo "Picking OTUs against collapsed rep set." >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
+	echo "Input sequences: $numseqs2" >> $log
+	echo "Method: $otupicker" >> $log
 
 	if [[ $parameter_count == 1 ]]; then
 	sim=`grep "similarity" $param_file | cut -d " " -f 2`
+	echo "Similarity: $sim" >> $log
 	echo "
-	pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -s $sim
+	parallel_pick_otus_blast.py -i $presufdir/prefix_rep_set.fasta -o $otupickdir -s $sim -O $otupicking_threads -r $refs
 	" >> $log
-	`pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -s $sim`
+	`parallel_pick_otus_blast.py -i $presufdir/prefix_rep_set.fasta -o $otupickdir -s $sim -O $otupicking_threads -r $refs`
 	else
+	echo "Similarity: 0.97" >> $log
 	echo "
-	pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus
+	parallel_pick_otus_blast.py -i $presufdir/prefix_rep_set.fasta -o $otupickdir -O $otupicking_threads -r $refs -s 0.97
 	" >> $log
-	`pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus`
+	`parallel_pick_otus_blast.py -i $presufdir/prefix_rep_set.fasta -o $otupickdir -O $otupicking_threads -r $refs -s 0.97`
 	fi
+
+res11=$(date +%s.%N)
+dt=$(echo "$res11 - $res10" | bc)
+dd=$(echo "$dt/86400" | bc)
+dt2=$(echo "$dt-86400*$dd" | bc)
+dh=$(echo "$dt2/3600" | bc)
+dt3=$(echo "$dt2-3600*$dh" | bc)
+dm=$(echo "$dt3/60" | bc)
+ds=$(echo "$dt3-60*$dm" | bc)
+
+otu_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "OTU picking runtime: $otu_runtime
+
+	" >> $log
 
 	else
 	echo "		Main OTU picking already completed.
 	"
 fi
 
-if [[ ! -f cdhit_otus/merged_otu_map.txt ]]; then
-
+if [[ ! -f $otupickdir/merged_otu_map.txt ]]; then
+res12=$(date +%s.%N)
 	echo "		Merging OTU maps.
 	"
 	echo "Merging OTU maps:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
-	merge_otu_maps.py -i prefix50_suffix0/$seqname\_otus.txt,cdhit_otus/prefix_rep_set_otus.txt -o cdhit_otus/merged_otu_map.txt
+	merge_otu_maps.py -i $presufdir/$seqname\_otus.txt,$otupickdir/prefix_rep_set_otus.txt -o $otupickdir/merged_otu_map.txt
 	" >> $log
-	`merge_otu_maps.py -i prefix50_suffix0/$seqname\_otus.txt,cdhit_otus/prefix_rep_set_otus.txt -o cdhit_otus/merged_otu_map.txt`
+	`merge_otu_maps.py -i $presufdir/$seqname\_otus.txt,$otupickdir/prefix_rep_set_otus.txt -o $otupickdir/merged_otu_map.txt`
+
+res13=$(date +%s.%N)
+dt=$(echo "$res13 - $res12" | bc)
+dd=$(echo "$dt/86400" | bc)
+dt2=$(echo "$dt-86400*$dd" | bc)
+dh=$(echo "$dt2/3600" | bc)
+dt3=$(echo "$dt2-3600*$dh" | bc)
+dm=$(echo "$dt3/60" | bc)
+ds=$(echo "$dt3-60*$dm" | bc)
+
+merge_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "Merge OTU maps runtime: $merge_runtime
+
+	" >> $log
 
 	else
 	echo "		OTU maps already merged.
 	"
 fi
 
-if [[ ! -f cdhit_otus/merged_rep_set.fna ]]; then
-
+if [[ ! -f $otupickdir/merged_rep_set.fna ]]; then
+res14=$(date +%s.%N)
 	echo "		Picking rep set against merged OTU map.
 	"
 	echo "Picking rep set against merged OTU map:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "	
-	pick_rep_set.py -i cdhit_otus/merged_otu_map.txt -f $seqs -o cdhit_otus/merged_rep_set.fna
+	pick_rep_set.py -i $otupickdir/merged_otu_map.txt -f $seqs -o $otupickdir/merged_rep_set.fna
 	" >> $log
-	`pick_rep_set.py -i cdhit_otus/merged_otu_map.txt -f $seqs -o cdhit_otus/merged_rep_set.fna`
+	`pick_rep_set.py -i $otupickdir/merged_otu_map.txt -f $seqs -o $otupickdir/merged_rep_set.fna`
 	
+res15=$(date +%s.%N)
+dt=$(echo "$res15 - $res14" | bc)
+dd=$(echo "$dt/86400" | bc)
+dt2=$(echo "$dt-86400*$dd" | bc)
+dh=$(echo "$dt2/3600" | bc)
+dt3=$(echo "$dt2-3600*$dh" | bc)
+dm=$(echo "$dt3/60" | bc)
+ds=$(echo "$dt3-60*$dm" | bc)
+
+mergerep_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "Pick rep set runtime: $mergerep_runtime
+
+	" >> $log
+
+
 	else
 	echo "		Merged rep set already completed.
 	"
@@ -574,8 +696,8 @@ fi
 
 	if [[ $mode == "16S" ]]; then
 
-	if [[ ! -f $outdir/cdhit_otus/pynast_aligned_seqs/merged_rep_set_aligned.fasta ]]; then
-
+	if [[ ! -f $outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned.fasta ]]; then
+res16=$(date +%s.%N)
 	echo "		Aligning sequences.
 		Method: Pynast on $alignseqs_threads cores
 		Template: $alignment_template
@@ -583,14 +705,28 @@ fi
 	echo "Aligning sequences:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
-	parallel_align_seqs_pynast.py -i $outdir/cdhit_otus/merged_rep_set.fna -o $outdir/cdhit_otus/pynast_aligned_seqs -t $alignment_template -O $alignseqs_threads
+	parallel_align_seqs_pynast.py -i $outdir/$otupickdir/merged_rep_set.fna -o $outdir/$otupickdir/pynast_aligned_seqs -t $alignment_template -O $alignseqs_threads
 	" >> $log
-	`parallel_align_seqs_pynast.py -i $outdir/cdhit_otus/merged_rep_set.fna -o $outdir/cdhit_otus/pynast_aligned_seqs -t $alignment_template -O $alignseqs_threads`
+	`parallel_align_seqs_pynast.py -i $outdir/$otupickdir/merged_rep_set.fna -o $outdir/$otupickdir/pynast_aligned_seqs -t $alignment_template -O $alignseqs_threads`
 	wait
+
+res17=$(date +%s.%N)
+dt=$(echo "$res17 - $res16" | bc)
+dd=$(echo "$dt/86400" | bc)
+dt2=$(echo "$dt-86400*$dd" | bc)
+dh=$(echo "$dt2/3600" | bc)
+dt3=$(echo "$dt2-3600*$dh" | bc)
+dm=$(echo "$dt3/60" | bc)
+ds=$(echo "$dt3-60*$dm" | bc)
+
+align_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "Pynast alignment runtime: $align_runtime
+
+	" >> $log
 
 	else	
 	echo "		Alignment file detected.
-		$outdir/cdhit_otus/pynast_aligned_seqs/merged_rep_set_aligned.fasta
+		$outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned.fasta
 		Skipping sequence alignment step.
 	"
 	fi
@@ -600,8 +736,8 @@ fi
 
 	if [[ $mode == "other" ]]; then
 
-	if [[ ! -f $outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned.fasta ]]; then
-
+	if [[ ! -f $outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned.fasta ]]; then
+res18=$(date +%s.%N)
 	echo "		Aligning sequences.
 		Method: Mafft on a single core.
 		Template: none.
@@ -609,14 +745,28 @@ fi
 	echo "Aligning sequences:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
-	align_seqs.py -i $outdir/cdhit_otus/merged_rep_set.fna -o $outdir/cdhit_otus/mafft_aligned_seqs -m mafft
+	align_seqs.py -i $outdir/$otupickdir/merged_rep_set.fna -o $outdir/$otupickdir/mafft_aligned_seqs -m mafft
 	" >> $log
-	`align_seqs.py -i $outdir/cdhit_otus/merged_rep_set.fna -o $outdir/cdhit_otus/mafft_aligned_seqs -m mafft`
+	`align_seqs.py -i $outdir/$otupickdir/merged_rep_set.fna -o $outdir/$otupickdir/mafft_aligned_seqs -m mafft`
 	wait
+
+res19=$(date +%s.%N)
+dt=$(echo "$res19 - $res18" | bc)
+dd=$(echo "$dt/86400" | bc)
+dt2=$(echo "$dt-86400*$dd" | bc)
+dh=$(echo "$dt2/3600" | bc)
+dt3=$(echo "$dt2-3600*$dh" | bc)
+dm=$(echo "$dt3/60" | bc)
+ds=$(echo "$dt3-60*$dm" | bc)
+
+align_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "Mafft alignment runtime: $align_runtime
+
+	" >> $log
 
 	else	
 	echo "		Alignment file detected.
-		$outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned.fasta
+		$outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned.fasta
 		Skipping sequence alignment step.
 	"
 	fi
@@ -626,22 +776,36 @@ fi
 
 	if [[ $mode == "16S" ]]; then
 
-	if [[  ! -f $outdir/cdhit_otus/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta ]]; then
-	
+	if [[  ! -f $outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta ]]; then
+res20=$(date +%s.%N)
 	echo "		Filtering sequence alignment.
 		Lanemask file: $alignment_lanemask.
 	"
 	echo "Filtering alignment:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
-	filter_alignment.py -i $outdir/cdhit_otus/pynast_aligned_seqs/merged_rep_set_aligned.fasta -o $outdir/cdhit_otus/pynast_aligned_seqs/ -m $alignment_lanemask
+	filter_alignment.py -i $outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned.fasta -o $outdir/$otupickdir/pynast_aligned_seqs/ -m $alignment_lanemask
 	" >> $log
-	`filter_alignment.py -i $outdir/cdhit_otus/pynast_aligned_seqs/merged_rep_set_aligned.fasta -o $outdir/cdhit_otus/pynast_aligned_seqs/ -m $alignment_lanemask`
+	`filter_alignment.py -i $outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned.fasta -o $outdir/$otupickdir/pynast_aligned_seqs/ -m $alignment_lanemask`
 	wait
+
+res21=$(date +%s.%N)
+dt=$(echo "$res21 - $res20" | bc)
+dd=$(echo "$dt/86400" | bc)
+dt2=$(echo "$dt-86400*$dd" | bc)
+dh=$(echo "$dt2/3600" | bc)
+dt3=$(echo "$dt2-3600*$dh" | bc)
+dm=$(echo "$dt3/60" | bc)
+ds=$(echo "$dt3-60*$dm" | bc)
+
+filt_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "Alignment filtering runtime: $filt_runtime
+
+	" >> $log
 
 	else
 	echo "		Filtered alignment detected.
-		$outdir/cdhit_otus/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta
+		$outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta
 		Skipping alignment filtering step.
 	"
 	fi
@@ -651,22 +815,36 @@ fi
 
 	if [[ $mode == "other" ]]; then
 
-	if [[  ! -f $outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta ]]; then
-	
+	if [[  ! -f $outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta ]]; then
+res22=$(date +%s.%N)
 	echo "		Filtering sequence alignment.
 		Entropy threshold: 0.1
 	"
 	echo "Filtering alignment:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
-	filter_alignment.py -i $outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned.fasta -o $outdir/cdhit_otus/mafft_aligned_seqs/ -e 0.1
+	filter_alignment.py -i $outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned.fasta -o $outdir/$otupickdir/mafft_aligned_seqs/ -e 0.1
 	" >> $log
-	`filter_alignment.py -i $outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned.fasta -o $outdir/cdhit_otus/mafft_aligned_seqs/ -e 0.1`
+	`filter_alignment.py -i $outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned.fasta -o $outdir/$otupickdir/mafft_aligned_seqs/ -e 0.1`
 	wait
+
+res23=$(date +%s.%N)
+dt=$(echo "$res23 - $res22" | bc)
+dd=$(echo "$dt/86400" | bc)
+dt2=$(echo "$dt-86400*$dd" | bc)
+dh=$(echo "$dt2/3600" | bc)
+dt3=$(echo "$dt2-3600*$dh" | bc)
+dm=$(echo "$dt3/60" | bc)
+ds=$(echo "$dt3-60*$dm" | bc)
+
+filt_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "Alignment filtering runtime: $filt_runtime
+
+	" >> $log
 
 	else
 	echo "		Filtered alignment detected.
-		$outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta
+		$outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta
 		Skipping alignment filtering step.
 	"
 	fi
@@ -676,7 +854,7 @@ fi
 
 	if [[ $mode == "16S" ]]; then
 
-	if [[ ! -f $outdir/cdhit_otus/pynast_aligned_seqs/fasttree_phylogeny.tre ]]; then
+	if [[ ! -f $outdir/$otupickdir/pynast_aligned_seqs/fasttree_phylogeny.tre ]]; then
 
 	echo "		Constructing phylogeny based on sample sequences.
 		Method: Fasttree
@@ -684,13 +862,13 @@ fi
 	echo "Making phylogeny:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
-	make_phylogeny.py -i $outdir/cdhit_otus/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta -o $outdir/cdhit_otus/pynast_aligned_seqs/fasttree_phylogeny.tre
+	make_phylogeny.py -i $outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta -o $outdir/$otupickdir/pynast_aligned_seqs/fasttree_phylogeny.tre
 	" >> $log
-	( `make_phylogeny.py -i $outdir/cdhit_otus/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta -o $outdir/cdhit_otus/pynast_aligned_seqs/fasttree_phylogeny.tre` ) &
+	( `make_phylogeny.py -i $outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta -o $outdir/$otupickdir/pynast_aligned_seqs/fasttree_phylogeny.tre` ) &
 
 	else
 	echo "		Phylogenetic tree detected.
-		$outdir/cdhit_otus/pynast_aligned_seqs/fasttree_phylogeny.tre
+		$outdir/$otupickdir/pynast_aligned_seqs/fasttree_phylogeny.tre
 		Skipping make phylogeny step.
 	"
 	fi
@@ -700,7 +878,7 @@ fi
 
 	if [[ $mode == "other" ]]; then
 
-	if [[ ! -f $outdir/cdhit_otus/mafft_aligned_seqs/fasttree_phylogeny.tre ]]; then
+	if [[ ! -f $outdir/$otupickdir/mafft_aligned_seqs/fasttree_phylogeny.tre ]]; then
 
 	echo "		Constructing phylogeny based on sample sequences.
 		Method: Fasttree
@@ -708,67 +886,93 @@ fi
 	echo "Making phylogeny:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
-	make_phylogeny.py -i $outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta -o $outdir/cdhit_otus/mafft_aligned_seqs/fasttree_phylogeny.tre
+	make_phylogeny.py -i $outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta -o $outdir/$otupickdir/mafft_aligned_seqs/fasttree_phylogeny.tre
 	" >> $log
-	( `make_phylogeny.py -i $outdir/cdhit_otus/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta -o $outdir/cdhit_otus/mafft_aligned_seqs/fasttree_phylogeny.tre` ) &
+	( `make_phylogeny.py -i $outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta -o $outdir/$otupickdir/mafft_aligned_seqs/fasttree_phylogeny.tre` ) &
 
 	else
 	echo "		Phylogenetic tree detected.
-		$outdir/cdhit_otus/mafft_aligned_seqs/fasttree_phylogeny.tre
+		$outdir/$otupickdir/mafft_aligned_seqs/fasttree_phylogeny.tre
 		Skipping make phylogeny step.
 	"
 	fi
 	fi
 
-## Assign taxonomy (RDP)
+## Assign taxonomy (BLAST)
 
-	if [[ ! -f $outdir/cdhit_otus/rdp_taxonomy_assignment/merged_rep_set_tax_assignments.txt ]]; then
+taxdir=$outdir/$otupickdir/blast_taxonomy_assignment
 
+	if [[ ! -f $taxdir/merged_rep_set_tax_assignments.txt ]]; then
+res24=$(date +%s.%N)
 	echo "		Assigning taxonomy.
 		Method: RDP Classifier on $taxassignment_threads cores.
 	"
-	echo "Assigning taxonomy (RDP):" >> $log
+	echo "Assigning taxonomy (BLAST):" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
-	parallel_assign_taxonomy_rdp.py -i $outdir/cdhit_otus/merged_rep_set.fna -o $outdir/cdhit_otus/rdp_taxonomy_assignment -c $rdp_confidence -r $refs -t $tax --rdp_max_memory $rdp_max_memory -O $taxassignment_threads
+	parallel_assign_taxonomy_blast.py -i $outdir/$otupickdir/merged_rep_set.fna -o $taxdir -r $refs -t $tax -O $taxassignment_threads
 	" >> $log
-	`parallel_assign_taxonomy_rdp.py -i $outdir/cdhit_otus/merged_rep_set.fna -o $outdir/cdhit_otus/rdp_taxonomy_assignment -c $rdp_confidence -r $refs -t $tax --rdp_max_memory $rdp_max_memory -O $taxassignment_threads`
+	`parallel_assign_taxonomy_blast.py -i $outdir/$otupickdir/merged_rep_set.fna -o $taxdir -r $refs -t $tax -O $taxassignment_threads`
 	wait
+
+res25=$(date +%s.%N)
+dt=$(echo "$res25 - $res24" | bc)
+dd=$(echo "$dt/86400" | bc)
+dt2=$(echo "$dt-86400*$dd" | bc)
+dh=$(echo "$dt2/3600" | bc)
+dt3=$(echo "$dt2-3600*$dh" | bc)
+dm=$(echo "$dt3/60" | bc)
+ds=$(echo "$dt3-60*$dm" | bc)
+
+tax_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "Tax assignment runtime: $tax_runtime
+
+	" >> $log
+
 
 	else
 	echo "		Taxonomy assignments detected.
-		$outdir/cdhit_otus/rdp_taxonomy_assignment/merged_rep_set_tax_assignments.txt
+		$taxdir/merged_rep_set_tax_assignments.txt
 		Skipping taxonomy assignment step.
 	"
 	fi
 
 ## Make raw otu table
 
-	if [[ ! -f $outdir/cdhit_otus/raw_otu_table.biom ]]; then
+	if [[ ! -f $outdir/$otupickdir/raw_otu_table.biom ]]; then
 	
 	echo "		Making raw OTU table.
 	"
 	echo "Making OTU table:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
-	make_otu_table.py -i $outdir/cdhit_otus/merged_otu_map.txt -t $outdir/cdhit_otus/rdp_taxonomy_assignment/merged_rep_set_tax_assignments.txt -o $outdir/cdhit_otus/raw_otu_table.biom
+	make_otu_table.py -i $outdir/$otupickdir/merged_otu_map.txt -t $taxdir/merged_rep_set_tax_assignments.txt -o $outdir/$otupickdir/raw_otu_table.biom
 	" >> $log
-	`make_otu_table.py -i $outdir/cdhit_otus/merged_otu_map.txt -t $outdir/cdhit_otus/rdp_taxonomy_assignment/merged_rep_set_tax_assignments.txt -o $outdir/cdhit_otus/raw_otu_table.biom`
+	`make_otu_table.py -i $outdir/$otupickdir/merged_otu_map.txt -t $taxdir/merged_rep_set_tax_assignments.txt -o $outdir/$otupickdir/raw_otu_table.biom`
 
 	else
 	echo "		Raw OTU table detected.
-		$outdir/cdhit_otus/raw_otu_table.biom
+		$outdir/$otupickdir/raw_otu_table.biom
 		Moving to final filtering steps.
 	"
 	fi
 
 ## Summarize raw otu table in background
 
-	if [[ ! -f $outdir/cdhit_otus/raw_otu_table.summary ]]; then
-	( `biom summarize-table -i $outdir/cdhit_otus/raw_otu_table.biom -o $outdir/cdhit_otus/raw_otu_table.summary` ) &
+	if [[ ! -f $outdir/$otupickdir/raw_otu_table.summary ]]; then
+	( `biom summarize-table -i $outdir/$otupickdir/raw_otu_table.biom -o $outdir/$otupickdir/raw_otu_table.summary` ) &
 	fi
-
 wait
+
+## Print OTU table summary header to screen and log file
+
+	echo "		Unfiltered OTU table summary header:
+	"
+	head -15 $outdir/$otupickdir/raw_otu_table.summary
+
+	echo "Unfiltered OTU table summary header:
+	" >> $log
+	head -15 $outdir/$otupickdir/raw_otu_table.summary >> $log
 
 ## remove jobs directory
 
@@ -776,8 +980,8 @@ wait
 	rm -r $outdir/jobs
 	fi
 
-res2=$(date +%s.%N)
-dt=$(echo "$res2 - $res1" | bc)
+res26=$(date +%s.%N)
+dt=$(echo "$res26 - $res1" | bc)
 dd=$(echo "$dt/86400" | bc)
 dt2=$(echo "$dt-86400*$dd" | bc)
 dh=$(echo "$dt2/3600" | bc)
