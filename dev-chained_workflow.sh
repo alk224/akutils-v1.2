@@ -5,7 +5,7 @@ set -e
 
 	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
 		echo "
-		eqw.sh (EnGGen QIIME workflow)
+		chained_workflow.sh 
 
 		This script takes an input directory and attempts to
 		process contents through a qiime workflow.  The workflow
@@ -15,13 +15,13 @@ set -e
 		instead.  Config files can be defined with the config
 		utility by issuing:
 
-		eqw.sh config
+		chained_workflow.sh config
 
 		Usage (order is important!!):
-		eqw.sh <input folder> <mode>
+		chained_workflow.sh <input folder> <mode>
 
 		Example:
-		eqw.sh ./ 16S
+		chained_workflow.sh ./ 16S
 
 		This example will attempt to process data residing in the
 		current directory through a complete qiime workflow.  If
@@ -43,7 +43,7 @@ set -e
 		You can generate a config file and set up the necessary
 		fields by running the egw config utility:
 
-		eqw.sh config
+		chained_workflow.sh config
 
 		Mapping file:
 		Mapping files are formatted for QIIME.  Index sequences
@@ -76,7 +76,7 @@ set -e
 ## If config supplied, run config utility instead
 
 	if [[ "$1" == "config" ]]; then
-		eqw_config_utility.sh
+		akutils_config_utility.sh
 		exit 0
 	fi
 
@@ -99,7 +99,7 @@ set -e
 		Valid modes are 16S or other.
 
 		Usage (order is important!!):
-		eqw.sh <input folder> <mode>
+		chained_workflow.sh <input folder> <mode>
 		"
 		exit 1
 	fi
@@ -223,7 +223,7 @@ echo "
 scriptdir="$( cd "$( dirname "$0" )" && pwd )"
 
 
-for line in `cat $scriptdir/eqw_resources/eqw.dependencies.list`; do
+for line in `cat $scriptdir/akutils_resources/chained_workflow.dependencies.list`; do
 	dependcount=`command -v $line 2>/dev/null | wc -w`
 	if [[ $dependcount == 0 ]]; then
 	echo "
@@ -243,29 +243,29 @@ echo "
 
 ##Read in variables from config file
 
-	local_config_count=(`ls $1/eqw*.config 2>/dev/null | wc -w`)
+	local_config_count=(`ls $1/akutils*.config 2>/dev/null | wc -w`)
 	if [[ $local_config_count -ge 1 ]]; then
 
-	config=`ls $1/eqw*.config`
+	config=`ls $1/akutils*.config`
 
-	echo "		Using local eqw config file.
+	echo "		Using local akutils config file.
 		$config
 	"
 	echo "
-Referencing local eqw config file.
+Referencing local akutils config file.
 $config
 	" >> $log
 	else
-		global_config_count=(`ls $scriptdir/eqw_resources/eqw*.config 2>/dev/null | wc -w`)
+		global_config_count=(`ls $scriptdir/akutils_resources/akutils*.config 2>/dev/null | wc -w`)
 		if [[ $global_config_count -ge 1 ]]; then
 
-		config=`ls $scriptdir/eqw_resources/eqw*.config`
+		config=`ls $scriptdir/akutils_resources/akutils*.config`
 
-		echo "		Using global eqw config file.
+		echo "		Using global akutils config file.
 		$config
 		"
 		echo "
-Referencing global eqw config file.
+Referencing global akutils config file.
 $config
 		" >> $log
 		fi
@@ -295,7 +295,11 @@ $config
 	multx_errors=(`grep "Multx_errors" $config | grep -v "#" | cut -f 2`)
 	rdp_confidence=(`grep "RDP_confidence" $config | grep -v "#" | cut -f 2`)
 	rdp_max_memory=(`grep "RDP_max_memory" $config | grep -v "#" | cut -f 2`)
-	
+	prefix_length=(`grep "Prefix_length" $config | grep -v "#" | cut -f 2`)
+	suffix_length=(`grep "Suffix_length" $config | grep -v "#" | cut -f 2`)	
+	OTU_picker=(`grep "OTU_picker" $config | grep -v "#" | cut -f 2`)	
+	Tax_assigner=(`grep "Tax_assigner" $config | grep -v "#" | cut -f 2`)	
+
 ## Check for split_libraries outputs and inputs
 
 if [[ -f $outdir/split_libraries/seqs.fna ]]; then
@@ -388,32 +392,60 @@ seqs=$outdir/split_libraries/seqs.fna
 	echo "		Filtering chimeras.
 		Method: usearch61
 		Reference: $chimera_refs
+		Subsearches: $chimera_threads
 "
 	echo "
 Chimera filtering commands:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "Method: usearch61
 Reference: $chimera_refs
+Subsearches: $chimera_threads
 
 	identify_chimeric_seqs.py -m usearch61 -i $outdir/split_libraries/seqs.fna -r $chimera_refs -o $outdir/usearch61_chimera_checking
 
 	filter_fasta.py -f $outdir/split_libraries/seqs.fna -o $outdir/split_libraries/seqs_chimera_filtered.fna -s $outdir/usearch61_chimera_checking/chimeras.txt -n
 	" >> $log
 
-	`identify_chimeric_seqs.py -m usearch61 -i $outdir/split_libraries/seqs.fna -r $chimera_refs -o $outdir/usearch61_chimera_checking`
+	cd $outdir/split_libraries
+	fasta-splitter.pl -n $chimera_threads seqs.fna
+	cd ..
+	mkdir -p $outdir/usearch61_chimera_checking
+	echo ""	
+
+	for seqpart in $outdir/split_libraries/seqs.part-* ; do
+
+		seqpartbase=$( basename $seqpart .fna )
+	`identify_chimeric_seqs.py -m usearch61 -i $seqpart -r $chimera_refs -o $outdir/usearch61_chimera_checking/$seqpartbase`
+	echo "		Completed $seqpartbase"
+	done	
 	wait
-	`filter_fasta.py -f $outdir/split_libraries/seqs.fna -o $outdir/split_libraries/seqs_chimera_filtered.fna -s $outdir/usearch61_chimera_checking/chimeras.txt -n`
+	echo ""
+	cat $outdir/usearch61_chimera_checking/seqs.part-*/chimeras.txt > $outdir/usearch61_chimera_checking/all_chimeras.txt
+		chimeracount=`cat $outdir/usearch61_chimera_checking/all_chimeras.txt | wc -l`
+		seqcount1=`cat $outdir/split_libraries/seqs.fna | wc -l`
+		seqcount=`expr $seqcount1 / 2`
+	echo "		Identified $chimeracount chimeric sequences from $seqcount
+		total reads in your data."
+	echo "		Identified $chimeracount chimeric sequences from $seqcount
+		total reads in your data.
+	" >> $log
+
+	`filter_fasta.py -f $outdir/split_libraries/seqs.fna -o $outdir/split_libraries/seqs_chimera_filtered.fna -s $outdir/usearch61_chimera_checking/all_chimeras.txt -n`
 	wait
+	rm $outdir/split_libraries/seqs.part-*
+seqs=$outdir/split_libraries/seqs_chimera_filtered.fna
 	echo ""
 	else
 
 	echo "		Chimera filtered sequences detected.
-		$seqs
+		$outdir/split_libraries/seqs_chimera_filtered.fna
 		Skipping chimera checking step.
 	"
+seqs=$outdir/split_libraries/seqs_chimera_filtered.fna
+	fi
+	fi
 
-	fi
-	fi
+
 
 ## Reverse complement demultiplexed sequences if necessary
 
@@ -446,41 +478,47 @@ Reverse complement command:"
 
 seqpath="${seqs%.*}"
 seqname=`basename $seqpath`
+presufout=prefix$Prefix_length\_suffix$Suffix_length
 
 
-if [[ ! -f prefix50_suffix0/$seqname\_otus.txt ]]; then
+if [[ ! -f $presufout/$seqname\_otus.txt ]]; then
 
 	echo "		Collapsing sequences with prefix/suffix picker.
+		Prefix length: $Prefix_length
+		Suffix length: $Suffix_length
 	"
 	echo "Collapsing sequences with prefix/suffix picker:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
-	pick_otus.py -m prefix_suffix -p 50 -u 0 -i $seqs -o prefix50_suffix0	
+	pick_otus.py -m prefix_suffix -p $Prefix_length -u $Suffix_length -i $seqs -o $presufout	
 	" >> $log
-	`pick_otus.py -m prefix_suffix -p 50 -u 0 -i $seqs -o prefix50_suffix0`
+	`pick_otus.py -m prefix_suffix -p $Prefix_length -u $Suffix_length -i $seqs -o $presufout`
 	
 	else
 	echo "		Prefix/suffix step previously completed.
 	"
 fi
 
-if [[ ! -f prefix50_suffix0/prefix_rep_set.fasta ]]; then
+if [[ ! -f $presufout/prefix_rep_set.fasta ]]; then
 
 	echo "		Picking rep set with prefix/suffix-collapsed OTU map.
 	"
 	echo "Picking rep set with prefix/suffix-collapsed OTU map:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
-	pick_rep_set.py -i prefix50_suffix0/$seqname\_otus.txt -f $seqs -o prefix50_suffix0/prefix_rep_set.fasta
+	pick_rep_set.py -i $presufout/$seqname\_otus.txt -f $seqs -o $presufout/prefix_rep_set.fasta
 	" >> $log
-	`pick_rep_set.py -i prefix50_suffix0/$seqname\_otus.txt -f $seqs -o prefix50_suffix0/prefix_rep_set.fasta`
+	`pick_rep_set.py -i $presufout/$seqname\_otus.txt -f $seqs -o $presufout/prefix_rep_set.fasta`
 
 	else
 	echo "		Prefix/suffix rep set already present.
 	"
 fi
 
-if [[ ! -f cdhit_otus/prefix_rep_set_otus.txt ]]; then
+mainotuout=$OTU_picker\_otu_picking
+
+
+if [[ ! -f $mainotuout/prefix_rep_set_otus.txt ]]; then
 
 	echo "		Picking OTUs against collapsed rep set.
 	"
@@ -488,12 +526,32 @@ if [[ ! -f cdhit_otus/prefix_rep_set_otus.txt ]]; then
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 
 	if [[ $parameter_count == 1 ]]; then
-	sim=`grep "similarity" $param_file | cut -d " " -f 2`
+#	sim=`grep "similarity" $param_file | cut -d " " -f 2`
+
+# change OTU picking commands here
+
+	if [[ $OTU_picker == cdhit mothur 
+
+	elif [[ $OTU_picker == closed_ref
+
+	elif [[ $OTU_picker == open_ref
+
+	elif [[ $OTU_picker == blast
+
+
+
 	echo "
 	pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -s $sim
 	" >> $log
 	`pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -s $sim`
 	else
+
+
+
+
+
+
+
 	echo "
 	pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus
 	" >> $log
