@@ -905,7 +905,7 @@ taxdir=$outdir/$otupickdir/blast_taxonomy_assignment
 	if [[ ! -f $taxdir/merged_rep_set_tax_assignments.txt ]]; then
 res24=$(date +%s.%N)
 	echo "		Assigning taxonomy.
-		Method: RDP Classifier on $taxassignment_threads cores.
+		Method: BLAST on $taxassignment_threads cores.
 	"
 	echo "Assigning taxonomy (BLAST):" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
@@ -968,11 +968,11 @@ wait
 
 	echo "		Unfiltered OTU table summary header:
 	"
-	head -15 $outdir/$otupickdir/raw_otu_table.summary
+	head -14 $outdir/$otupickdir/raw_otu_table.summary
 
 	echo "Unfiltered OTU table summary header:
 	" >> $log
-	head -15 $outdir/$otupickdir/raw_otu_table.summary >> $log
+	head -14 $outdir/$otupickdir/raw_otu_table.summary >> $log
 
 ## remove jobs directory
 
