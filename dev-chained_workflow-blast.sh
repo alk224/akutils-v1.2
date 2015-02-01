@@ -295,6 +295,8 @@ $config
 	multx_errors=(`grep "Multx_errors" $config | grep -v "#" | cut -f 2`)
 	rdp_confidence=(`grep "RDP_confidence" $config | grep -v "#" | cut -f 2`)
 	rdp_max_memory=(`grep "RDP_max_memory" $config | grep -v "#" | cut -f 2`)
+	prefix_len=(`grep "Prefix_length" $config | grep -v "#" | cut -f 2`)
+	suffix_len=(`grep "Suffix_length" $config | grep -v "#" | cut -f 2`)
 	
 ## Check for split_libraries outputs and inputs
 
@@ -474,18 +476,21 @@ Reverse complement command:"
 
 seqpath="${seqs%.*}"
 seqname=`basename $seqpath`
+presufdir=
+echo $presufdir
 
+exit 0
 
-if [[ ! -f prefix50_suffix0/$seqname\_otus.txt ]]; then
+if [[ ! -f prefix$prefix_len\_suffix$suffix_len/$seqname\_otus.txt ]]; then
 
 	echo "		Collapsing sequences with prefix/suffix picker.
 	"
 	echo "Collapsing sequences with prefix/suffix picker:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
-	pick_otus.py -m prefix_suffix -p 50 -u 0 -i $seqs -o prefix50_suffix0	
+	pick_otus.py -m prefix_suffix -p $prefix_len -u $suffix_len -i $seqs -o prefix$prefix_len\_suffix$suffix_len	
 	" >> $log
-	`pick_otus.py -m prefix_suffix -p 50 -u 0 -i $seqs -o prefix50_suffix0`
+	`pick_otus.py -m prefix_suffix -p $prefix_len -u $suffix_len -i $seqs -o prefix$prefix_len\_suffix$suffix_len`
 	
 	else
 	echo "		Prefix/suffix step previously completed.
