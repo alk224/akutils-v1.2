@@ -638,7 +638,7 @@ res12=$(date +%s.%N)
 	echo "Merging OTU maps:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
-	merge_otu_maps.py -i $presufdir/$seqname\_otus.txt,$otupickdir/prefix_rep_set_otus.txt -o $otupickdir/merged_otu_map.txt
+	merge_otu_maps.py -i $presufdir/$seqname@_otus.txt,$otupickdir/prefix_rep_set_otus.txt -o $otupickdir/merged_otu_map.txt
 	" >> $log
 	`merge_otu_maps.py -i $presufdir/$seqname\_otus.txt,$otupickdir/prefix_rep_set_otus.txt -o $otupickdir/merged_otu_map.txt`
 
