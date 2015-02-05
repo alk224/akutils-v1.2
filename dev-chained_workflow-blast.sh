@@ -5,7 +5,7 @@ set -e
 
 	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
 		echo "
-		chained_workflow.sh 
+		chained_workflow-blast.sh 
 
 		This script takes an input directory and attempts to
 		process contents through a qiime workflow.  The workflow
@@ -15,13 +15,17 @@ set -e
 		instead.  Config files can be defined with the config
 		utility by issuing:
 
-		chained_workflow.sh config
+		chained_workflow-blast.sh config
+		
+		Or by calling the config program directly:
+
+		akutils_config_utility.sh
 
 		Usage (order is important!!):
-		chained_workflow.sh <input folder> <mode>
+		chained_workflow-blast.sh <input folder> <mode>
 
 		Example:
-		chained_workflow.sh ./ 16S
+		chained_workflow-blast.sh ./ 16S
 
 		This example will attempt to process data residing in the
 		current directory through a complete qiime workflow.  If
@@ -32,24 +36,37 @@ set -e
 		reprocess the steps that are already completed.
 
 		Order of processing attempts:
-		1) Checks for <input folder>/split_libraries/seqs.fna.  
+		Checks for <input folder>/split_libraries/seqs.fna.  
 		If present, moves forward to chimera filter or OTU
 		picking.  If absent, checks for fastq files to process
 		(as idx.fq and rd.fq).  Requires a mapping file be 
 		present (map*).
+
+		Workflow details:
+		1) Split libraries (set -q in config)
+		2) Chimera filtering with usearch61 (16S only)
+		3) Prefix/suffix collapsing (set in config)
+		4) Parallel BLAST OTU picking (set CPUs in config)
+		5) Parallel Pynast alignment (16S only, CPUs in config)
+		6) MAFFT alignment (other only)
+		7) Parallel BLAST taxonomy assignment
+		8) Make and summarize OTU table (no filtering at all)
 
 		Config file:
 		To get this script to work you need a valid config file.
 		You can generate a config file and set up the necessary
 		fields by running the egw config utility:
 
-		chained_workflow.sh config
+		chained_workflow-dev.sh config
 
 		Mapping file:
 		Mapping files are formatted for QIIME.  Index sequences
 		contained therein must be in the CORRECT orientation.
 
 		Parameters file:
+
+		*** Note: only similarity is referenced at the moment
+
 		Parameters for the steps starting at OTU picking can be
 		modified by placing a qiime-formatted parameters file in
 		your working directory.  The parameters file must begin
@@ -119,9 +136,9 @@ set -e
 
 		Checking for prior workflow progress...
 		"
-		if [[ -e $outdir/chained_workflow*.log ]]; then
+		if [[ -e $outdir/chained_workflow-blast*.log ]]; then
 		date0=`date +%Y%m%d_%I%M%p`
-		log=($outdir/chained_workflow_$date0.log)
+		log=($outdir/chained_workflow-blast_$date0.log)
 		echo "		Chained workflow restarting in $mode mode"
 		date1=`date "+%a %b %I:%M %p %Z %Y"`
 		echo "		$date1"
@@ -136,12 +153,12 @@ Chained workflow restarting in $mode mode" > $log
 		mkdir -p $outdir
 	fi
 
-	if [[ ! -e $outdir/chained_workflow*.log ]]; then
+	if [[ ! -e $outdir/chained_workflow-blast*.log ]]; then
 		echo "		Beginning chained workflow script in $mode mode"
 		date1=`date "+%a %b %I:%M %p %Z %Y"`
 		echo "		$date1"
 		date0=`date +%Y%m%d_%I%M%p`
-		log=($outdir/chained_workflow_$date0.log)
+		log=($outdir/chained_workflow-blast_$date0.log)
 		echo "
 Chained workflow beginning in $mode mode" > $log
 		date "+%a %b %I:%M %p %Z %Y" >> $log
@@ -297,7 +314,7 @@ $config
 	rdp_max_memory=(`grep "RDP_max_memory" $config | grep -v "#" | cut -f 2`)
 	prefix_len=(`grep "Prefix_length" $config | grep -v "#" | cut -f 2`)
 	suffix_len=(`grep "Suffix_length" $config | grep -v "#" | cut -f 2`)
-	otupicker=(`grep "OTU_picker" $config | grep -v "#" | cut -f 2`)
+#	otupicker=(`grep "OTU_picker" $config | grep -v "#" | cut -f 2`)
 	
 ## Check for split_libraries outputs and inputs
 
@@ -376,8 +393,8 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-sl_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
-echo "Split libraries runtime: $sl_runtime
+sl_runtime=`printf "Split libraries runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
+echo "$sl_runtime
 
 " >> $log
 	wait
@@ -461,8 +478,8 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-chim_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
-echo "Chimera filtering runtime: $chim_runtime
+chim_runtime=`printf "Chimera filtering runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "$chim_runtime
 
 " >> $log
 
@@ -540,8 +557,8 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-pref_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
-echo "Prefix/suffix collapse runtime: $pref_runtime
+pref_runtime=`printf "Prefix/suffix collapse runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "$pref_runtime
 
 " >> $log
 	
@@ -570,8 +587,8 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-repset_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
-echo "Pick rep set runtime: $repset_runtime
+repset_runtime=`printf "Pick rep set runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "$repset_runtime
 
 " >> $log
 
@@ -580,7 +597,7 @@ echo "Pick rep set runtime: $repset_runtime
 	"
 fi
 
-otupickdir=$otupicker\_otus
+otupickdir=blast_otus
 
 if [[ ! -f $otupickdir/prefix_rep_set_otus.txt ]]; then
 res10=$(date +%s.%N)
@@ -590,12 +607,12 @@ numseqs2=(`expr $numseqs1 / 2`)
 
 	echo "		Picking OTUs against collapsed rep set.
 		Input sequences: $numseqs2
-		Method: $otupicker
+		Method: BLAST
 	"
 	echo "Picking OTUs against collapsed rep set." >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "Input sequences: $numseqs2" >> $log
-	echo "Method: $otupicker" >> $log
+	echo "Method: BLAST" >> $log
 
 	if [[ $parameter_count == 1 ]]; then
 	sim=`grep "similarity" $param_file | cut -d " " -f 2`
@@ -621,8 +638,8 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-otu_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
-echo "OTU picking runtime: $otu_runtime
+otu_runtime=`printf "OTU picking runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "$otu_runtime
 
 	" >> $log
 
@@ -651,8 +668,8 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-merge_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
-echo "Merge OTU maps runtime: $merge_runtime
+merge_runtime=`printf "Merge OTU maps runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "$merge_runtime
 
 	" >> $log
 
@@ -681,8 +698,8 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-mergerep_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
-echo "Pick rep set runtime: $mergerep_runtime
+mergerep_runtime=`printf "Pick rep set runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "$mergerep_runtime
 
 	" >> $log
 
@@ -719,8 +736,8 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-align_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
-echo "Pynast alignment runtime: $align_runtime
+align_runtime=`printf "Pynast alignment runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "$align_runtime
 
 	" >> $log
 
@@ -759,8 +776,8 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-align_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
-echo "Mafft alignment runtime: $align_runtime
+align_runtime=`printf "Mafft alignment runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "$align_runtime
 
 	" >> $log
 
@@ -798,8 +815,8 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-filt_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
-echo "Alignment filtering runtime: $filt_runtime
+filt_runtime=`printf "Alignment filtering runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "$filt_runtime
 
 	" >> $log
 
@@ -837,8 +854,8 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-filt_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
-echo "Alignment filtering runtime: $filt_runtime
+filt_runtime=`printf "Alignment filtering runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "$filt_runtime
 
 	" >> $log
 
@@ -924,8 +941,8 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-tax_runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
-echo "Tax assignment runtime: $tax_runtime
+tax_runtime=`printf "Tax assignment runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+echo "$tax_runtime
 
 	" >> $log
 
