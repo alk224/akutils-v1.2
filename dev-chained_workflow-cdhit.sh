@@ -5,7 +5,7 @@ set -e
 
 	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
 		echo "
-		chained_workflow-blast.sh 
+		chained_workflow-cdhit.sh 
 
 		This script takes an input directory and attempts to
 		process contents through a qiime workflow.  The workflow
@@ -15,17 +15,17 @@ set -e
 		instead.  Config files can be defined with the config
 		utility by issuing:
 
-		chained_workflow-blast.sh config
+		chained_workflow-cdhit.sh config
 		
 		Or by calling the config program directly:
 
 		akutils_config_utility.sh
 
 		Usage (order is important!!):
-		chained_workflow-blast.sh <input folder> <mode>
+		chained_workflow-cdhit.sh <input folder> <mode>
 
 		Example:
-		chained_workflow-blast.sh ./ 16S
+		chained_workflow-cdhit.sh ./ 16S
 
 		This example will attempt to process data residing in the
 		current directory through a complete qiime workflow.  If
@@ -46,7 +46,7 @@ set -e
 		1) Split libraries (set -q in config)
 		2) Chimera filtering with usearch61 (16S only)
 		3) Prefix/suffix collapsing (set in config)
-		4) Parallel BLAST OTU picking (set CPUs in config)
+		4) CD-hit de novo OTU picking
 		5) Parallel Pynast alignment (16S only, CPUs in config)
 		6) MAFFT alignment (other only)
 		7) Parallel BLAST taxonomy assignment
@@ -57,7 +57,7 @@ set -e
 		You can generate a config file and set up the necessary
 		fields by running the egw config utility:
 
-		chained_workflow-dev.sh config
+		chained_workflow-cdhit.sh config
 
 		Mapping file:
 		Mapping files are formatted for QIIME.  Index sequences
@@ -136,9 +136,9 @@ set -e
 
 		Checking for prior workflow progress...
 		"
-		if [[ -e $outdir/chained_workflow-blast*.log ]]; then
+		if [[ -e $outdir/chained_workflow-cdhit*.log ]]; then
 		date0=`date +%Y%m%d_%I%M%p`
-		log=($outdir/chained_workflow-blast_$date0.log)
+		log=($outdir/chained_workflow-cdhit_$date0.log)
 		echo "		Chained workflow restarting in $mode mode"
 		date1=`date "+%a %b %I:%M %p %Z %Y"`
 		echo "		$date1"
@@ -153,12 +153,12 @@ Chained workflow restarting in $mode mode" > $log
 		mkdir -p $outdir
 	fi
 
-	if [[ ! -e $outdir/chained_workflow-blast*.log ]]; then
+	if [[ ! -e $outdir/chained_workflow-cdhit*.log ]]; then
 		echo "		Beginning chained workflow script in $mode mode"
 		date1=`date "+%a %b %I:%M %p %Z %Y"`
 		echo "		$date1"
 		date0=`date +%Y%m%d_%I%M%p`
-		log=($outdir/chained_workflow-blast_$date0.log)
+		log=($outdir/chained_workflow-cdhit_$date0.log)
 		echo "
 Chained workflow beginning in $mode mode" > $log
 		date "+%a %b %I:%M %p %Z %Y" >> $log
@@ -597,7 +597,7 @@ echo "$repset_runtime
 	"
 fi
 
-otupickdir=blast_otus
+otupickdir=cdhit_otus
 
 if [[ ! -f $otupickdir/prefix_rep_set_otus.txt ]]; then
 res10=$(date +%s.%N)
@@ -607,26 +607,26 @@ numseqs2=(`expr $numseqs1 / 2`)
 
 	echo "		Picking OTUs against collapsed rep set.
 		Input sequences: $numseqs2
-		Method: BLAST
+		Method: CD-HIT
 	"
 	echo "Picking OTUs against collapsed rep set." >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "Input sequences: $numseqs2" >> $log
-	echo "Method: BLAST" >> $log
+	echo "Method: CD-HIT" >> $log
 
 	if [[ $parameter_count == 1 ]]; then
 	sim=`grep "similarity" $param_file | cut -d " " -f 2`
 	echo "Similarity: $sim" >> $log
 	echo "
-	parallel_pick_otus_blast.py -i $presufdir/prefix_rep_set.fasta -o $otupickdir -s $sim -O $otupicking_threads -r $refs
+	pick_otus.py -m cdhit -M 6000 -i $presufdir/prefix_rep_set.fasta -o $otupickdir -s $sim -r $refs
 	" >> $log
-	`parallel_pick_otus_blast.py -i $presufdir/prefix_rep_set.fasta -o $otupickdir -s $sim -O $otupicking_threads -r $refs`
+	`pick_otus.py -m cdhit -M 6000 -i $presufdir/prefix_rep_set.fasta -o $otupickdir -s $sim -r $refs`
 	else
 	echo "Similarity: 0.97" >> $log
 	echo "
-	parallel_pick_otus_blast.py -i $presufdir/prefix_rep_set.fasta -o $otupickdir -O $otupicking_threads -r $refs -s 0.97
+	pick_otus.py -m cdhit -M 6000 -i $presufdir/prefix_rep_set.fasta -o $otupickdir -r $refs -s 0.97
 	" >> $log
-	`parallel_pick_otus_blast.py -i $presufdir/prefix_rep_set.fasta -o $otupickdir -O $otupicking_threads -r $refs -s 0.97`
+	`pick_otus.py -m cdhit -M 6000 -i $presufdir/prefix_rep_set.fasta -o $otupickdir -r $refs -s 0.97`
 	fi
 
 res11=$(date +%s.%N)
@@ -638,13 +638,13 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-otu_runtime=`printf "BLAST OTU picking runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+otu_runtime=`printf "CD-HIT OTU picking runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
 echo "$otu_runtime
 
 	" >> $log
 
 	else
-	echo "		BLAST OTU picking already completed.
+	echo "		CD-HIT OTU picking already completed.
 	"
 fi
 

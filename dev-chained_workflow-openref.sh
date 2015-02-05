@@ -5,7 +5,7 @@ set -e
 
 	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
 		echo "
-		chained_workflow-blast.sh 
+		chained_workflow-openref.sh 
 
 		This script takes an input directory and attempts to
 		process contents through a qiime workflow.  The workflow
@@ -15,17 +15,17 @@ set -e
 		instead.  Config files can be defined with the config
 		utility by issuing:
 
-		chained_workflow-blast.sh config
+		chained_workflow-openref.sh config
 		
 		Or by calling the config program directly:
 
 		akutils_config_utility.sh
 
 		Usage (order is important!!):
-		chained_workflow-blast.sh <input folder> <mode>
+		chained_workflow-openref.sh <input folder> <mode>
 
 		Example:
-		chained_workflow-blast.sh ./ 16S
+		chained_workflow-openref.sh ./ 16S
 
 		This example will attempt to process data residing in the
 		current directory through a complete qiime workflow.  If
@@ -46,7 +46,7 @@ set -e
 		1) Split libraries (set -q in config)
 		2) Chimera filtering with usearch61 (16S only)
 		3) Prefix/suffix collapsing (set in config)
-		4) Parallel BLAST OTU picking (set CPUs in config)
+		4) Open reference OTU picking (UCLUST, set CPUs in config)
 		5) Parallel Pynast alignment (16S only, CPUs in config)
 		6) MAFFT alignment (other only)
 		7) Parallel BLAST taxonomy assignment
@@ -136,9 +136,9 @@ set -e
 
 		Checking for prior workflow progress...
 		"
-		if [[ -e $outdir/chained_workflow-blast*.log ]]; then
+		if [[ -e $outdir/chained_workflow-openref*.log ]]; then
 		date0=`date +%Y%m%d_%I%M%p`
-		log=($outdir/chained_workflow-blast_$date0.log)
+		log=($outdir/chained_workflow-openref_$date0.log)
 		echo "		Chained workflow restarting in $mode mode"
 		date1=`date "+%a %b %I:%M %p %Z %Y"`
 		echo "		$date1"
@@ -153,12 +153,12 @@ Chained workflow restarting in $mode mode" > $log
 		mkdir -p $outdir
 	fi
 
-	if [[ ! -e $outdir/chained_workflow-blast*.log ]]; then
+	if [[ ! -e $outdir/chained_workflow-openref*.log ]]; then
 		echo "		Beginning chained workflow script in $mode mode"
 		date1=`date "+%a %b %I:%M %p %Z %Y"`
 		echo "		$date1"
 		date0=`date +%Y%m%d_%I%M%p`
-		log=($outdir/chained_workflow-blast_$date0.log)
+		log=($outdir/chained_workflow-openref_$date0.log)
 		echo "
 Chained workflow beginning in $mode mode" > $log
 		date "+%a %b %I:%M %p %Z %Y" >> $log
@@ -197,7 +197,7 @@ Chained workflow beginning in $mode mode" > $log
 $outdir/$param_file
 
 Parameters file contents:" >> $log
-	grep similarity $param_file >> $log
+	cat $param_file >> $log
 
 	elif [[ $parameter_count == 0 ]]; then
 	echo "
@@ -314,7 +314,8 @@ $config
 	rdp_max_memory=(`grep "RDP_max_memory" $config | grep -v "#" | cut -f 2`)
 	prefix_len=(`grep "Prefix_length" $config | grep -v "#" | cut -f 2`)
 	suffix_len=(`grep "Suffix_length" $config | grep -v "#" | cut -f 2`)
-#	otupicker=(`grep "OTU_picker" $config | grep -v "#" | cut -f 2`)
+	maxaccepts=(`grep "Max_accepts" $config | grep -v "#" | cut -f 2`)
+	maxrejects=(`grep "Max_rejects" $config | grep -v "#" | cut -f 2`)
 	
 ## Check for split_libraries outputs and inputs
 
@@ -605,28 +606,46 @@ res10=$(date +%s.%N)
 numseqs1=`cat $presufdir/prefix_rep_set.fasta | wc -l`
 numseqs2=(`expr $numseqs1 / 2`)
 
+	if [[ $parameter_count == 1 ]]; then
+	sim=`grep similarity $param_file | cut -d " " -f 2`
+	maxaccepts=`grep max_accepts $param_file | cut -d " " -f 2`
+	maxrejects=`grep max_rejects $param_file | cut -d " " -f 2`
+	fi
+	if [[ ! -z $sim ]]; then
+	sim=0.97
+	fi
+	if [[ ! -z $maxaccepts ]]; then
+	maxaccepts=20
+	fi
+	if [[ ! -z $maxrejects ]]; then
+	maxrejects=500
+	fi
+
 	echo "		Picking OTUs against collapsed rep set.
 		Input sequences: $numseqs2
-		Method: BLAST
+		Method: Open reference (UCLUST)
+		Similarity: $sim
+		Max accepts: $maxaccepts
+		Max rejects: $maxrejects
 	"
 	echo "Picking OTUs against collapsed rep set." >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "Input sequences: $numseqs2" >> $log
-	echo "Method: BLAST" >> $log
+	echo "Method: Open reference (UCLUST)" >> $log
+	echo "Similarity: $sim" >> $log
+	echo "Max accepts: $maxaccepts" >> $log
+	echo "Max rejects: $maxrejects" >> $log
 
 	if [[ $parameter_count == 1 ]]; then
-	sim=`grep "similarity" $param_file | cut -d " " -f 2`
-	echo "Similarity: $sim" >> $log
 	echo "
-	parallel_pick_otus_blast.py -i $presufdir/prefix_rep_set.fasta -o $otupickdir -s $sim -O $otupicking_threads -r $refs
+	pick_open_reference_otus.py -i $presufdir/prefix_rep_set.fasta -o $otupickdir -p $param_file -aO $otupicking_threads -r $refs --prefilter_percent_id 0.0 --suppress_taxonomy_assignment --suppress_align_and_tree
 	" >> $log
-	`parallel_pick_otus_blast.py -i $presufdir/prefix_rep_set.fasta -o $otupickdir -s $sim -O $otupicking_threads -r $refs`
+	`pick_open_reference_otus.py -i $presufdir/prefix_rep_set.fasta -o $otupickdir -p $param_file -aO $otupicking_threads -r $refs --prefilter_percent_id 0.0 --suppress_taxonomy_assignment --suppress_align_and_tree`
 	else
-	echo "Similarity: 0.97" >> $log
 	echo "
-	parallel_pick_otus_blast.py -i $presufdir/prefix_rep_set.fasta -o $otupickdir -O $otupicking_threads -r $refs -s 0.97
+	pick_open_reference_otus.py -i $presufdir/prefix_rep_set.fasta -o $otupickdir -aO $otupicking_threads -r $refs --prefilter_percent_id 0.0 --suppress_taxonomy_assignment --suppress_align_and_tree
 	" >> $log
-	`parallel_pick_otus_blast.py -i $presufdir/prefix_rep_set.fasta -o $otupickdir -O $otupicking_threads -r $refs -s 0.97`
+	`pick_open_reference_otus.py -i $presufdir/prefix_rep_set.fasta -o $otupickdir -aO $otupicking_threads -r $refs --prefilter_percent_id 0.0 --suppress_taxonomy_assignment --suppress_align_and_tree`
 	fi
 
 res11=$(date +%s.%N)
@@ -638,13 +657,13 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-otu_runtime=`printf "BLAST OTU picking runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+otu_runtime=`printf "Open reference OTU picking runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
 echo "$otu_runtime
 
 	" >> $log
 
 	else
-	echo "		BLAST OTU picking already completed.
+	echo "		Open reference OTU picking already completed.
 	"
 fi
 
