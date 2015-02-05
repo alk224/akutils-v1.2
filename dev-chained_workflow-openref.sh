@@ -103,7 +103,7 @@ set -e
 
 		echo "
 		Usage (order is important!!):
-		Qiime_workflow.sh <input folder> <mode>
+		chained_workflow-openref.sh <input folder> <mode>
 		"
 		exit 1
 	fi
@@ -116,7 +116,7 @@ set -e
 		Valid modes are 16S or other.
 
 		Usage (order is important!!):
-		chained_workflow.sh <input folder> <mode>
+		chained_workflow-openref.sh <input folder> <mode>
 		"
 		exit 1
 	fi
@@ -598,7 +598,7 @@ echo "$repset_runtime
 	"
 fi
 
-otupickdir=blast_otus
+otupickdir=openref_otus
 
 if [[ ! -f $otupickdir/prefix_rep_set_otus.txt ]]; then
 res10=$(date +%s.%N)
