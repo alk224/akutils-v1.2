@@ -611,13 +611,13 @@ numseqs2=(`expr $numseqs1 / 2`)
 	maxaccepts=`grep max_accepts $param_file | cut -d " " -f 2`
 	maxrejects=`grep max_rejects $param_file | cut -d " " -f 2`
 	fi
-	if [[ ! -z $sim ]]; then
+	if [[ -z $sim ]]; then
 	sim=0.97
 	fi
-	if [[ ! -z $maxaccepts ]]; then
+	if [[ -z $maxaccepts ]]; then
 	maxaccepts=20
 	fi
-	if [[ ! -z $maxrejects ]]; then
+	if [[ -z $maxrejects ]]; then
 	maxrejects=500
 	fi
 
