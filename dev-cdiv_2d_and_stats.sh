@@ -53,7 +53,7 @@ sleep 2
 echo summarize_taxa:level     2,3,4,5,6,7 > phylogenetic_core_diversity_parameters.txt
 echo summarize_taxa:absolute_abundance     True >> phylogenetic_core_diversity_parameters.txt
 echo plot_taxa_summary:include_html_counts     True >> phylogenetic_core_diversity_parameters.txt
-echo beta_diversity:metrics     abund_jaccard,binary_jaccard,bray_curtis,unweighted_unifrac,weighted_unifrac,binary_chord,chord,hellinger,kulczynski >> phylogenetic_core_diversity_parameters.txt
+echo beta_diversity:metrics	abund_jaccard,binary_jaccard,bray_curtis,unweighted_unifrac,weighted_unifrac,binary_chord,chord,hellinger,kulczynski >> phylogenetic_core_diversity_parameters.txt
 
 otuname=$(basename $otutable .biom)
 

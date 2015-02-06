@@ -973,19 +973,39 @@ echo "$tax_runtime
 	"
 	fi
 
-## Make raw otu table
+## Make initial otu table (needs hdf5 conversion)
+
+	if [[ ! -f $outdir/$otupickdir/initial_otu_table.biom ]]; then
+	
+	echo "		Making initial OTU table.
+	"
+	echo "Making initial OTU table:" >> $log
+	date "+%a %b %I:%M %p %Z %Y" >> $log
+	echo "
+	make_otu_table.py -i $outdir/$otupickdir/merged_otu_map.txt -t $taxdir/merged_rep_set_tax_assignments.txt -o $outdir/$otupickdir/initial_otu_table.biom
+	" >> $log
+	`make_otu_table.py -i $outdir/$otupickdir/merged_otu_map.txt -t $taxdir/merged_rep_set_tax_assignments.txt -o $outdir/$otupickdir/initial_otu_table.biom`
+
+	else
+	echo "		Initial OTU table detected.
+		$outdir/$otupickdir/initial_otu_table.biom
+	"
+	fi
+
+## Convert initial table to raw table (hdf5)
 
 	if [[ ! -f $outdir/$otupickdir/raw_otu_table.biom ]]; then
 	
-	echo "		Making raw OTU table.
+	echo "		Making raw hdf5 OTU table.
 	"
-	echo "Making OTU table:" >> $log
+	echo "Making raw hdf5 OTU table:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
-	make_otu_table.py -i $outdir/$otupickdir/merged_otu_map.txt -t $taxdir/merged_rep_set_tax_assignments.txt -o $outdir/$otupickdir/raw_otu_table.biom
+	biom convert -i $outdir/$otupickdir/initial_otu_table.biom -o $outdir/$otupickdir/raw_otu_table.biom --table-type=\"OTU table\" --to-hdf5
 	" >> $log
-	`make_otu_table.py -i $outdir/$otupickdir/merged_otu_map.txt -t $taxdir/merged_rep_set_tax_assignments.txt -o $outdir/$otupickdir/raw_otu_table.biom`
-
+	`biom convert -i $outdir/$otupickdir/initial_otu_table.biom -o $outdir/$otupickdir/raw_otu_table.biom --table-type="OTU table" --to-hdf5`
+	wait
+	rm $outdir/$otupickdir/initial_otu_table.biom
 	else
 	echo "		Raw OTU table detected.
 		$outdir/$otupickdir/raw_otu_table.biom
