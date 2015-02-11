@@ -2,32 +2,32 @@
 set -e
 
 ## check whether user had supplied -h or --help. If yes display help 
-
-	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
-		echo "
-		eqw.sh (EnGGen QIIME workflow)
-
-		This script takes an input directory and attempts to
-		process contents through a qiime workflow.  The workflow
-		references a config file.  You can reference a global
-		config file (default), or a local one, if present in the
-		directory this script is executed on, will be referenced
-		instead.  Config files can be defined with the config
-		utility by issuing:
-
-		eqw.sh config
-
-		Usage (order is important!!):
-		eqw.sh <input folder> <mode>
-
-		Example:
-		eqw.sh ./ 16S
-
-		This example will attempt to process data residing in the
-		current directory through a complete qiime workflow.  If
-		certain conventions are met, the workflow will skip all
-		steps that have already been processed.  It will try to
-		guess why some step failed and give you feedback if/when
+#
+#	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
+#		echo "
+#		eqw.sh (EnGGen QIIME workflow)
+#
+#		This script takes an input directory and attempts to
+#		process contents through a qiime workflow.  The workflow
+#		references a config file.  You can reference a global
+#		config file (default), or a local one, if present in the
+#		directory this script is executed on, will be referenced
+#		instead.  Config files can be defined with the config
+#		utility by issuing:
+#
+#		eqw.sh config
+#
+#		Usage (order is important!!):
+#		eqw.sh <input folder> <mode>
+#
+#		Example:
+#		eqw.sh ./ 16S
+#
+#		This example will attempt to process data residing in the
+#		current directory through a complete qiime workflow.  If
+#		certain conventions are met, the workflow will skip all
+#		steps that have already been processed.  It will try to
+#		guess why some step failed and give you feedback if/when
 		it crashes.  Then when you restart it, it won't try to
 		reprocess the steps that are already completed.
 

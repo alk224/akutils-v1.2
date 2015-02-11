@@ -709,212 +709,212 @@ echo "$mergerep_runtime
 	"
 fi
 
-## Align sequences (16S mode)
-
-	if [[ $mode == "16S" ]]; then
-
-	if [[ ! -f $outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned.fasta ]]; then
-res16=$(date +%s.%N)
-	echo "		Aligning sequences.
-		Method: Pynast on $alignseqs_threads cores
-		Template: $alignment_template
-	"
-	echo "Aligning sequences:" >> $log
-	date "+%a %b %I:%M %p %Z %Y" >> $log
-	echo "
-	parallel_align_seqs_pynast.py -i $outdir/$otupickdir/merged_rep_set.fna -o $outdir/$otupickdir/pynast_aligned_seqs -t $alignment_template -O $alignseqs_threads
-	" >> $log
-	`parallel_align_seqs_pynast.py -i $outdir/$otupickdir/merged_rep_set.fna -o $outdir/$otupickdir/pynast_aligned_seqs -t $alignment_template -O $alignseqs_threads`
-	wait
-
-res17=$(date +%s.%N)
-dt=$(echo "$res17 - $res16" | bc)
-dd=$(echo "$dt/86400" | bc)
-dt2=$(echo "$dt-86400*$dd" | bc)
-dh=$(echo "$dt2/3600" | bc)
-dt3=$(echo "$dt2-3600*$dh" | bc)
-dm=$(echo "$dt3/60" | bc)
-ds=$(echo "$dt3-60*$dm" | bc)
-
-align_runtime=`printf "Pynast alignment runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
-echo "$align_runtime
-
-	" >> $log
-
-	else	
-	echo "		Alignment file detected.
-		$outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned.fasta
-		Skipping sequence alignment step.
-	"
-	fi
-	fi
-
-## Align sequences (other mode)
-
-	if [[ $mode == "other" ]]; then
-
-	if [[ ! -f $outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned.fasta ]]; then
-res18=$(date +%s.%N)
-	echo "		Aligning sequences.
-		Method: Mafft on a single core.
-		Template: none.
-	"
-	echo "Aligning sequences:" >> $log
-	date "+%a %b %I:%M %p %Z %Y" >> $log
-	echo "
-	align_seqs.py -i $outdir/$otupickdir/merged_rep_set.fna -o $outdir/$otupickdir/mafft_aligned_seqs -m mafft
-	" >> $log
-	`align_seqs.py -i $outdir/$otupickdir/merged_rep_set.fna -o $outdir/$otupickdir/mafft_aligned_seqs -m mafft`
-	wait
-
-res19=$(date +%s.%N)
-dt=$(echo "$res19 - $res18" | bc)
-dd=$(echo "$dt/86400" | bc)
-dt2=$(echo "$dt-86400*$dd" | bc)
-dh=$(echo "$dt2/3600" | bc)
-dt3=$(echo "$dt2-3600*$dh" | bc)
-dm=$(echo "$dt3/60" | bc)
-ds=$(echo "$dt3-60*$dm" | bc)
-
-align_runtime=`printf "Mafft alignment runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
-echo "$align_runtime
-
-	" >> $log
-
-	else	
-	echo "		Alignment file detected.
-		$outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned.fasta
-		Skipping sequence alignment step.
-	"
-	fi
-	fi
-
-## Filtering alignment (16S mode)
-
-	if [[ $mode == "16S" ]]; then
-
-	if [[  ! -f $outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta ]]; then
-res20=$(date +%s.%N)
-	echo "		Filtering sequence alignment.
-		Lanemask file: $alignment_lanemask.
-	"
-	echo "Filtering alignment:" >> $log
-	date "+%a %b %I:%M %p %Z %Y" >> $log
-	echo "
-	filter_alignment.py -i $outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned.fasta -o $outdir/$otupickdir/pynast_aligned_seqs/ -m $alignment_lanemask
-	" >> $log
-	`filter_alignment.py -i $outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned.fasta -o $outdir/$otupickdir/pynast_aligned_seqs/ -m $alignment_lanemask`
-	wait
-
-res21=$(date +%s.%N)
-dt=$(echo "$res21 - $res20" | bc)
-dd=$(echo "$dt/86400" | bc)
-dt2=$(echo "$dt-86400*$dd" | bc)
-dh=$(echo "$dt2/3600" | bc)
-dt3=$(echo "$dt2-3600*$dh" | bc)
-dm=$(echo "$dt3/60" | bc)
-ds=$(echo "$dt3-60*$dm" | bc)
-
-filt_runtime=`printf "Alignment filtering runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
-echo "$filt_runtime
-
-	" >> $log
-
-	else
-	echo "		Filtered alignment detected.
-		$outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta
-		Skipping alignment filtering step.
-	"
-	fi
-	fi
-
-## Filtering alignment (other mode)
-
-	if [[ $mode == "other" ]]; then
-
-	if [[  ! -f $outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta ]]; then
-res22=$(date +%s.%N)
-	echo "		Filtering sequence alignment.
-		Entropy threshold: 0.1
-	"
-	echo "Filtering alignment:" >> $log
-	date "+%a %b %I:%M %p %Z %Y" >> $log
-	echo "
-	filter_alignment.py -i $outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned.fasta -o $outdir/$otupickdir/mafft_aligned_seqs/ -e 0.1
-	" >> $log
-	`filter_alignment.py -i $outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned.fasta -o $outdir/$otupickdir/mafft_aligned_seqs/ -e 0.1`
-	wait
-
-res23=$(date +%s.%N)
-dt=$(echo "$res23 - $res22" | bc)
-dd=$(echo "$dt/86400" | bc)
-dt2=$(echo "$dt-86400*$dd" | bc)
-dh=$(echo "$dt2/3600" | bc)
-dt3=$(echo "$dt2-3600*$dh" | bc)
-dm=$(echo "$dt3/60" | bc)
-ds=$(echo "$dt3-60*$dm" | bc)
-
-filt_runtime=`printf "Alignment filtering runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
-echo "$filt_runtime
-
-	" >> $log
-
-	else
-	echo "		Filtered alignment detected.
-		$outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta
-		Skipping alignment filtering step.
-	"
-	fi
-	fi
-
-## Make phylogeny in background (16S mode)
-
-	if [[ $mode == "16S" ]]; then
-
-	if [[ ! -f $outdir/$otupickdir/pynast_aligned_seqs/fasttree_phylogeny.tre ]]; then
-
-	echo "		Constructing phylogeny based on sample sequences.
-		Method: Fasttree
-	"
-	echo "Making phylogeny:" >> $log
-	date "+%a %b %I:%M %p %Z %Y" >> $log
-	echo "
-	make_phylogeny.py -i $outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta -o $outdir/$otupickdir/pynast_aligned_seqs/fasttree_phylogeny.tre
-	" >> $log
-	( `make_phylogeny.py -i $outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta -o $outdir/$otupickdir/pynast_aligned_seqs/fasttree_phylogeny.tre` ) &
-
-	else
-	echo "		Phylogenetic tree detected.
-		$outdir/$otupickdir/pynast_aligned_seqs/fasttree_phylogeny.tre
-		Skipping make phylogeny step.
-	"
-	fi
-	fi
-
-## Make phylogeny in background (other mode)
-
-	if [[ $mode == "other" ]]; then
-
-	if [[ ! -f $outdir/$otupickdir/mafft_aligned_seqs/fasttree_phylogeny.tre ]]; then
-
-	echo "		Constructing phylogeny based on sample sequences.
-		Method: Fasttree
-	"
-	echo "Making phylogeny:" >> $log
-	date "+%a %b %I:%M %p %Z %Y" >> $log
-	echo "
-	make_phylogeny.py -i $outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta -o $outdir/$otupickdir/mafft_aligned_seqs/fasttree_phylogeny.tre
-	" >> $log
-	( `make_phylogeny.py -i $outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta -o $outdir/$otupickdir/mafft_aligned_seqs/fasttree_phylogeny.tre` ) &
-
-	else
-	echo "		Phylogenetic tree detected.
-		$outdir/$otupickdir/mafft_aligned_seqs/fasttree_phylogeny.tre
-		Skipping make phylogeny step.
-	"
-	fi
-	fi
-
+### Align sequences (16S mode)
+#
+#	if [[ $mode == "16S" ]]; then
+#
+#	if [[ ! -f $outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned.fasta ]]; then
+#res16=$(date +%s.%N)
+#	echo "		Aligning sequences.
+#		Method: Pynast on $alignseqs_threads cores
+#		Template: $alignment_template
+#	"
+#	echo "Aligning sequences:" >> $log
+#	date "+%a %b %I:%M %p %Z %Y" >> $log
+#	echo "
+#	parallel_align_seqs_pynast.py -i $outdir/$otupickdir/merged_rep_set.fna -o $outdir/$otupickdir/pynast_aligned_seqs -t $alignment_template -O $alignseqs_threads
+#	" >> $log
+#	`parallel_align_seqs_pynast.py -i $outdir/$otupickdir/merged_rep_set.fna -o $outdir/$otupickdir/pynast_aligned_seqs -t $alignment_template -O $alignseqs_threads`
+#	wait
+#
+#res17=$(date +%s.%N)
+#dt=$(echo "$res17 - $res16" | bc)
+#dd=$(echo "$dt/86400" | bc)
+#dt2=$(echo "$dt-86400*$dd" | bc)
+#dh=$(echo "$dt2/3600" | bc)
+#dt3=$(echo "$dt2-3600*$dh" | bc)
+#dm=$(echo "$dt3/60" | bc)
+#ds=$(echo "$dt3-60*$dm" | bc)
+#
+#align_runtime=`printf "Pynast alignment runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+#echo "$align_runtime
+#
+#	" >> $log
+#
+#	else	
+#	echo "		Alignment file detected.
+#		$outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned.fasta
+#		Skipping sequence alignment step.
+#	"
+#	fi
+#	fi
+#
+### Align sequences (other mode)
+#
+#	if [[ $mode == "other" ]]; then
+#
+#	if [[ ! -f $outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned.fasta ]]; then
+#res18=$(date +%s.%N)
+#	echo "		Aligning sequences.
+#		Method: Mafft on a single core.
+#		Template: none.
+#	"
+#	echo "Aligning sequences:" >> $log
+#	date "+%a %b %I:%M %p %Z %Y" >> $log
+#	echo "
+#	align_seqs.py -i $outdir/$otupickdir/merged_rep_set.fna -o $outdir/$otupickdir/mafft_aligned_seqs -m mafft
+#	" >> $log
+#	`align_seqs.py -i $outdir/$otupickdir/merged_rep_set.fna -o $outdir/$otupickdir/mafft_aligned_seqs -m mafft`
+#	wait
+#
+#res19=$(date +%s.%N)
+#dt=$(echo "$res19 - $res18" | bc)
+#dd=$(echo "$dt/86400" | bc)
+#dt2=$(echo "$dt-86400*$dd" | bc)
+#dh=$(echo "$dt2/3600" | bc)
+#dt3=$(echo "$dt2-3600*$dh" | bc)
+#dm=$(echo "$dt3/60" | bc)
+#ds=$(echo "$dt3-60*$dm" | bc)
+#
+#align_runtime=`printf "Mafft alignment runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+#echo "$align_runtime
+#
+#	" >> $log
+#
+#	else	
+#	echo "		Alignment file detected.
+#		$outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned.fasta
+#		Skipping sequence alignment step.
+#	"
+#	fi
+#	fi
+#
+### Filtering alignment (16S mode)
+#
+#	if [[ $mode == "16S" ]]; then
+#
+#	if [[  ! -f $outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta ]]; then
+#res20=$(date +%s.%N)
+#	echo "		Filtering sequence alignment.
+#		Lanemask file: $alignment_lanemask.
+#	"
+#	echo "Filtering alignment:" >> $log
+#	date "+%a %b %I:%M %p %Z %Y" >> $log
+#	echo "
+#	filter_alignment.py -i $outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned.fasta -o $outdir/$otupickdir/pynast_aligned_seqs/ -m $alignment_lanemask
+#	" >> $log
+#	`filter_alignment.py -i $outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned.fasta -o $outdir/$otupickdir/pynast_aligned_seqs/ -m $alignment_lanemask`
+#	wait
+#
+#res21=$(date +%s.%N)
+#dt=$(echo "$res21 - $res20" | bc)
+#dd=$(echo "$dt/86400" | bc)
+#dt2=$(echo "$dt-86400*$dd" | bc)
+#dh=$(echo "$dt2/3600" | bc)
+#dt3=$(echo "$dt2-3600*$dh" | bc)
+#dm=$(echo "$dt3/60" | bc)
+#ds=$(echo "$dt3-60*$dm" | bc)
+#
+#filt_runtime=`printf "Alignment filtering runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+#echo "$filt_runtime
+#
+#	" >> $log
+#
+#	else
+#	echo "		Filtered alignment detected.
+#		$outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta
+#		Skipping alignment filtering step.
+#	"
+#	fi
+#	fi
+#
+### Filtering alignment (other mode)
+#
+#	if [[ $mode == "other" ]]; then
+#
+#	if [[  ! -f $outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta ]]; then
+#res22=$(date +%s.%N)
+#	echo "		Filtering sequence alignment.
+#		Entropy threshold: 0.1
+#	"
+#	echo "Filtering alignment:" >> $log
+#	date "+%a %b %I:%M %p %Z %Y" >> $log
+#	echo "
+#	filter_alignment.py -i $outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned.fasta -o $outdir/$otupickdir/mafft_aligned_seqs/ -e 0.1
+#	" >> $log
+#	`filter_alignment.py -i $outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned.fasta -o $outdir/$otupickdir/mafft_aligned_seqs/ -e 0.1`
+#	wait
+#
+#res23=$(date +%s.%N)
+#dt=$(echo "$res23 - $res22" | bc)
+#dd=$(echo "$dt/86400" | bc)
+#dt2=$(echo "$dt-86400*$dd" | bc)
+#dh=$(echo "$dt2/3600" | bc)
+#dt3=$(echo "$dt2-3600*$dh" | bc)
+#dm=$(echo "$dt3/60" | bc)
+#ds=$(echo "$dt3-60*$dm" | bc)
+#
+#filt_runtime=`printf "Alignment filtering runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+#echo "$filt_runtime
+#
+#	" >> $log
+#
+#	else
+#	echo "		Filtered alignment detected.
+#		$outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta
+#		Skipping alignment filtering step.
+#	"
+#	fi
+#	fi
+#
+### Make phylogeny in background (16S mode)
+#
+#	if [[ $mode == "16S" ]]; then
+#
+#	if [[ ! -f $outdir/$otupickdir/pynast_aligned_seqs/fasttree_phylogeny.tre ]]; then
+#
+#	echo "		Constructing phylogeny based on sample sequences.
+#		Method: Fasttree
+#	"
+#	echo "Making phylogeny:" >> $log
+#	date "+%a %b %I:%M %p %Z %Y" >> $log
+#	echo "
+#	make_phylogeny.py -i $outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta -o $outdir/$otupickdir/pynast_aligned_seqs/fasttree_phylogeny.tre
+#	" >> $log
+#	( `make_phylogeny.py -i $outdir/$otupickdir/pynast_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta -o $outdir/$otupickdir/pynast_aligned_seqs/fasttree_phylogeny.tre` ) &
+#
+#	else
+#	echo "		Phylogenetic tree detected.
+#		$outdir/$otupickdir/pynast_aligned_seqs/fasttree_phylogeny.tre
+#		Skipping make phylogeny step.
+#	"
+#	fi
+#	fi
+#
+### Make phylogeny in background (other mode)
+#
+#	if [[ $mode == "other" ]]; then
+#
+#	if [[ ! -f $outdir/$otupickdir/mafft_aligned_seqs/fasttree_phylogeny.tre ]]; then
+#
+#	echo "		Constructing phylogeny based on sample sequences.
+#		Method: Fasttree
+#	"
+#	echo "Making phylogeny:" >> $log
+#	date "+%a %b %I:%M %p %Z %Y" >> $log
+#	echo "
+#	make_phylogeny.py -i $outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta -o $outdir/$otupickdir/mafft_aligned_seqs/fasttree_phylogeny.tre
+#	" >> $log
+#	( `make_phylogeny.py -i $outdir/$otupickdir/mafft_aligned_seqs/merged_rep_set_aligned_pfiltered.fasta -o $outdir/$otupickdir/mafft_aligned_seqs/fasttree_phylogeny.tre` ) &
+#
+#	else
+#	echo "		Phylogenetic tree detected.
+#		$outdir/$otupickdir/mafft_aligned_seqs/fasttree_phylogeny.tre
+#		Skipping make phylogeny step.
+#	"
+#	fi
+#	fi
+#
 ## Assign taxonomy (BLAST)
 
 taxdir=$outdir/$otupickdir/blast_taxonomy_assignment
