@@ -5,31 +5,31 @@ set -e
 
 	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
 		echo "
-		This script will process a normalized OTU table in
-		a statistically admissible way (without rarefying).
+		This script will process a non-normalized OTU table.
 		Output will be the same as with the core diversity
 		analysis in qiime, but also including biplots, 2d
-		PCoA plots, and collated statistical outputs for
-		input categories for permanova and anosim.
+		PCoA plots, collated statistical outputs for input
+		categories for permanova and anosim, heatmaps, and
+		maybe more.
 
 		Usage (order is important!!):
-		cdiv_for_normalized_tables.sh <otu_table> <output_dir> <mapping_file> <comma_separated_categories> <rarefaction_depth> <processors_to_use> <tree_file>
+		cdiv_for_nonnormalized_tables.sh <otu_table> <output_dir> <mapping_file> <comma_separated_categories> <rarefaction_depth> <processors_to_use> <tree_file>
 
 		<tree_file> is optional.  Analysis will be nonphylogenetic 
 		if no tree file is supplied.
 		
 		Example:
-		cdiv_for_normalized_tables.sh CSS_table.biom core_div map.txt Site,Date 1000 12 phylogeny.tre
+		cdiv_for_nonnormalized_tables.sh OTU_table.biom core_div map.txt Site,Date 1000 12 phylogeny.tre
 
-		Will process the table, CSS_table.biom using the mapping
+		Will process the table, OTU_table.biom using the mapping
 		file, map.txt, and categories Site and Date through the
 		workflow on 12 cores with phylogenetic and nonphylogenetic
-		metrics against the tree, phylogeny.tre.  Alpha diversity
-		will be assessed at a depth of 1000 reads.  Output will be
+		metrics against the tree, phylogeny.tre.  Diversity will
+		be assessed at a depth of 1000 reads.  Output will be
 		in a subdirectory called core_div.
 
-		Phylogenetic metrics: weighted_unifrac
-		Nonphylogenetic metrics: bray_curtis, chord, hellinger, kulczynski
+		Phylogenetic metrics: unweighted_unifrac, weighted_unifrac
+		Nonphylogenetic metrics: bray_curtis, binary_chord, chord, hellinger, kulczynski
 
 		It is important that your input table be properly
 		filtered before running this workflow, or your output
@@ -46,7 +46,7 @@ set -e
 	if [[ "$#" -le 5 ]] || [[ "$#" -ge 8 ]]; then 
 		echo "
 		Usage (order is important!!):
-		cdiv_for_normalized_tables.sh <otu_table> <output_dir> <mapping_file> <comma_separated_categories> <rarefaction_depth> <processors_to_use> <tree_file>
+		cdiv_for_nonnormalized_tables.sh <otu_table> <output_dir> <mapping_file> <comma_separated_categories> <rarefaction_depth> <processors_to_use> <tree_file>
 
 		<tree_file> is optional.  Analysis will be nonphylogenetic 
 		if no tree file is supplied.
@@ -79,10 +79,10 @@ log=$outdir/log_$date0.txt
 
 	if [[ -z $tree ]]; then
 	mode=nonphylogenetic
-	metrics=bray_curtis,chord,hellinger,kulczynski
+	metrics=bray_curtis,binary_chord,chord,hellinger,kulczynski
 	else
 	mode=phylogenetic
-	metrics=bray_curtis,chord,hellinger,kulczynski,weighted_unifrac
+	metrics=bray_curtis,binary_chord,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac
 	fi
 
 	echo "
@@ -115,14 +115,26 @@ echo $date1 >> $log
 
 	table=$outdir/table.biom
 
-	if [[ ! -f $outdir/biom_table_summary.txt ]]; then
+## Single rarefaction
+
+	if [[ ! -f $outdir/table_even$depth.biom ]]; then
+	echo "
+Single rarefaction command:
+	single_rarefaction.py -i $table -o $outdir/table_even$depth.biom -d $depth" >> $log
+	single_rarefaction.py -i $table -o $outdir/table_even$depth.biom -d $depth
+	fi
+
+	table=$outdir/table_even$depth.biom
+
+	if [[ ! -f $outdir/biom_table_even$depth\_summary.txt ]]; then
 	echo "
 Summarize table command:
-	biom summarize-table -i $table -o $outdir/biom_table_summary.txt" >> $log
+	biom summarize-table -i $table -o $outdir/biom_table_even${depth}_summary.txt" >> $log
 
-	biom summarize-table -i $table -o $outdir/biom_table_summary.txt
+	biom summarize-table -i $table -o $outdir/biom_table_even$depth\_summary.txt
 
 	fi
+
 
 ## Beta diversity
 
@@ -144,8 +156,8 @@ Parallel beta diversity command:
 
 ## Rename output files
 
-	for dm in $outdir/bdiv/*_table.txt; do
-	dmbase=$( basename $dm _table.txt )
+	for dm in $outdir/bdiv/*_table_even$depth.txt; do
+	dmbase=$( basename $dm _table_even$depth.txt )
 	mv $dm $outdir/bdiv/$dmbase\_dm.txt
 	done
 
@@ -415,12 +427,12 @@ echo "<html>
 <head><title>QIIME results</title></head>
 <body>
 <a href=\"http://www.qiime.org\" target=\"_blank\"><img src=\"http://qiime.org/_static/wordpressheader.png\" alt=\"www.qiime.org\"\"/></a><p>
-<h2> akutils core diversity workflow for normalized OTU tables </h2><p>
+<h2> akutils core diversity workflow for non-normalized OTU tables </h2><p>
 <a href=\"https://github.com/alk224/akutils\" target=\_blank\"><h3> https://github.com/alk224/akutils </h3></a><p>
 <table border=1>
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Run summary data </td></tr>
 <tr><td>Master run log</td><td> <a href=\" $logfile \" target=\"_blank\"> $logfile </a></td></tr>
-<tr><td> BIOM table statistics </td><td> <a href=\"./biom_table_summary.txt\" target=\"_blank\"> biom_table_summary.txt </a></td></tr>" > $outdir/index.html
+<tr><td> BIOM table statistics </td><td> <a href=\"./biom_table_even${depth}_summary.txt\" target=\"_blank\"> biom_table_even${depth}_summary.txt </a></td></tr>" > $outdir/index.html
 
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Group significance results </td></tr>
@@ -482,7 +494,7 @@ echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> OTU heatmaps </td></tr>
 <tr><td> OTU heatmap (unsorted) </td><td> <a href=\"heatmaps/otu_heatmap_unsorted.pdf\" target=\"_blank\"> otu_heatmap_unsorted.pdf </a></td></tr>" >> $outdir/index.html
 	for line in `cat $outdir/categories.tempfile`; do
-echo "<tr><td> OTU heatmap (${line}) </td><td> <a href=\"heatmaps/otu_heatmap_${line}.pdf\" target=\"_blank\"> heatmaps/otu_heatmap_${line}.pdf </a></td></tr>" >> $outdir/index.html
+echo "<tr><td> OTU heatmap (${line}) </td><td> <a href=\"heatmaps/otu_heatmap_${line}.pdf\" target=\"_blank\"> otu_heatmap_${line}.pdf </a></td></tr>" >> $outdir/index.html
 	done
 
 echo "
