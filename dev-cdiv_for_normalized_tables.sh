@@ -29,7 +29,7 @@ set -e
 		in a subdirectory called core_div.
 
 		Phylogenetic metrics: unweighted_unifrac, weighted_unifrac
-		Nonphylogenetic metrics: abund_jaccard, binary_jaccard, bray_curtis, binary_chord, chord, hellinger, kulczynski, manhattan, gower
+		Nonphylogenetic metrics: abund_jaccard, binary_jaccard, bray_curtis, binary_chord, chord, hellinger, kulczynski
 
 		It is important that your input table be properly
 		filtered before running this workflow, or your output
@@ -69,25 +69,20 @@ outdir=$out/$otuname/
 date0=`date +%Y%m%d_%I%M%p`
 log=$outdir/log_$date0.txt
 
-## Make output directory or exit if it already exists
+## Make output directory
 
 	if [[ ! -d $outdir ]]; then
 	mkdir -p $outdir
-	else
-	echo "
-		Output directory already exists.  Exiting.
-	"
-	exit 1
 	fi
 
 ## Set workflow mode (phylogenetic or nonphylogenetic) and log start
 
 	if [[ -z $tree ]]; then
 	mode=nonphylogenetic
-	metrics=abund_jaccard,binary_jaccard,bray_curtis,binary_chord,chord,hellinger,kulczynski,manhattan,gower
+	metrics=abund_jaccard,binary_jaccard,bray_curtis,binary_chord,chord,hellinger,kulczynski
 	else
 	mode=phylogenetic
-	metrics=abund_jaccard,binary_jaccard,bray_curtis,binary_chord,chord,hellinger,kulczynski,manhattan,gower,unweighted_unifrac,weighted_unifrac
+	metrics=abund_jaccard,binary_jaccard,bray_curtis,binary_chord,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac
 	fi
 
 	echo "
@@ -112,23 +107,24 @@ echo $date1 >> $log
 
 ## Summarize input table
 
+	if [[ ! -f $outdir/table.biom ]]; then
 	cp $intable $outdir/table.biom
+	fi
+
 	table=$outdir/table.biom
 
+	if [[ ! -f $outdir/biom_table_summary.txt ]]; then
 	echo "
 Summarize table command:
 	biom summarize-table -i $table -o $outdir/biom_table_summary.txt" >> $log
 
 	biom summarize-table -i $table -o $outdir/biom_table_summary.txt
 
-	if [[ ! -s $outdir/biom_table_summary.txt ]]; then
-	echo "
-		Biom table summary is size zero.  Exiting
-	"
-	exit 1
 	fi
 
 ## Beta diversity
+
+	if [[ ! -d $outdir/bdiv ]]; then
 
 	if [[ "$mode" == phylogenetic ]]; then
 	echo "
@@ -171,7 +167,11 @@ Make emperor commands:" >> $log
 	make_emperor.py -i $pc -o $outdir/bdiv/$pcbase\_emperor_pcoa_plot/ -m $mapfile
 	done
 
+	fi
+
 ## Anosim and permanova stats
+
+	if [[ ! -f $outdir/permanova_results_collated.txt ]] || [[ ! -f $outdir/anosim_results_collated.txt ]]; then
 
 echo > $outdir/permanova_results_collated.txt
 echo > $outdir/anosim_results_collated.txt
@@ -197,12 +197,16 @@ Compare categories commands:" >> $log
 		done
 done
 
+	fi
 
 ## Multiple rarefactions
+
+	if [[ ! -d $outdir/arare_max$depth ]]; then
+
 	echo "
 Multiple rarefaction command:
-	parallel_multiple_rarefactions.py -T -i $table -m 10 -x $depth -s 99 -o $outdir/arare_max$depth/rarefaction/ -O $cores" >> $log
-	parallel_multiple_rarefactions.py -T -i $table -m 10 -x $depth -s 99 -o $outdir/arare_max$depth/rarefaction/ -O $cores
+	parallel_multiple_rarefactions.py -T -i $table -m 5 -x $depth -s 99 -o $outdir/arare_max$depth/rarefaction/ -O $cores" >> $log
+	parallel_multiple_rarefactions.py -T -i $table -m 5 -x $depth -s 99 -o $outdir/arare_max$depth/rarefaction/ -O $cores
 
 ## Alpha diversity
         if [[ "$mode" == phylogenetic ]]; then
@@ -218,7 +222,12 @@ Alpha diversity command:
         parallel_alpha_diversity.py -T -i $outdir/arare_max$depth/rarefaction/ -o $outdir/arare_max$depth/alpha_div/ -O $cores -m chao1,observed_species,shannon
 	fi
 
+	fi
+
 ## Make 2D plots in background
+
+	if [[ ! -d $outdir/2D_bdiv_plots ]]; then
+
 	echo "
 Make 2D plots commands:" >> $log
 	for pc in $outdir/bdiv/*_pc.txt; do
@@ -226,7 +235,12 @@ Make 2D plots commands:" >> $log
 	( make_2d_plots.py -i $pc -m $mapfile -o $outdir/2D_bdiv_plots ) &
 	done
 
+	fi
+
 ## Collate alpha
+
+	if [[ ! -d $outdir/arare_max$depth ]]; then
+
 	echo "
 Collate alpha command:
 	collate_alpha.py -i $outdir/arare_max$depth/alpha_div/ -o $outdir/arare_max$depth/alpha_div_collated/" >> $log
@@ -235,12 +249,18 @@ Collate alpha command:
 	rm -r $outdir/arare_max$depth/rarefaction/ $outdir/arare_max$depth/alpha_div/
 
 ## Make rarefaction plots
+
 	echo "
 Make rarefaction plots command:
 	make_rarefaction_plots.py -i $outdir/arare_max$depth/alpha_div_collated/ -m $mapfile -o $outdir/arare_max$depth/alpha_rarefaction_plots/" >> $log
 	make_rarefaction_plots.py -i $outdir/arare_max$depth/alpha_div_collated/ -m $mapfile -o $outdir/arare_max$depth/alpha_rarefaction_plots/
 
+	fi
+
 ## Sort OTU table
+
+	if [[ ! -d $outdir/taxa_plots ]]; then
+
 	echo "
 Sort OTU table command:
 	sort_otu_table.py -i $table -o $outdir/taxa_plots/table_sorted.biom" >> $log
@@ -249,20 +269,25 @@ Sort OTU table command:
 	sortedtable=($outdir/taxa_plots/table_sorted.biom)
 
 ## Summarize taxa
+
 	echo "
 Summarize taxa command:
 	summarize_taxa.py -i $sortedtable -o $outdir/taxa_plots/ -L 2,3,4,5,6,7" >> $log
 	summarize_taxa.py -i $sortedtable -o $outdir/taxa_plots/ -L 2,3,4,5,6,7
 
 ## Plot taxa summaries
+
 	echo "
 Plot taxa summaries command:
 	plot_taxa_summary.py -i $outdir/taxa_plots/table_sorted_L2.txt,$outdir/taxa_plots/table_sorted_L3.txt,$outdir/taxa_plots/table_sorted_L4.txt,$outdir/taxa_plots/table_sorted_L5.txt,$outdir/taxa_plots/table_sorted_L6.txt,$outdir/taxa_plots/table_sorted_L7.txt -o $outdir/taxa_plots/taxa_summary_plots/ -c bar" >> $log
 	plot_taxa_summary.py -i $outdir/taxa_plots/table_sorted_L2.txt,$outdir/taxa_plots/table_sorted_L3.txt,$outdir/taxa_plots/table_sorted_L4.txt,$outdir/taxa_plots/table_sorted_L5.txt,$outdir/taxa_plots/table_sorted_L6.txt,$outdir/taxa_plots/table_sorted_L7.txt -o $outdir/taxa_plots/taxa_summary_plots/ -c bar
 
+	fi
+
 ## Taxa summaries for each category
 
 	for line in `cat $outdir/categories.tempfile`; do
+	if [[ ! -d $outdir/taxa_plots_$line ]]; then
 	echo "
 Summarize taxa commands by category $line:
 	collapse_samples.py -m $mapfile -b $table --output_biom_fp $outdir/taxa_plots_$line/$line\_otu_table.biom --output_mapping_fp $outdir/taxa_plots_$line/$line_map.txt --collapse_fields $line
@@ -279,10 +304,13 @@ Summarize taxa commands by category $line:
 	summarize_taxa.py -i $outdir/taxa_plots_$line/$line\_otu_table_sorted.biom -o $outdir/taxa_plots_$line/ -L 2,3,4,5,6,7
 
 	plot_taxa_summary.py -i $outdir/taxa_plots_$line/$line\_otu_table_sorted_L2.txt,$outdir/taxa_plots_$line/$line\_otu_table_sorted_L3.txt,$outdir/taxa_plots_$line/$line\_otu_table_sorted_L4.txt,$outdir/taxa_plots_$line/$line\_otu_table_sorted_L5.txt,$outdir/taxa_plots_$line/$line\_otu_table_sorted_L6.txt,$outdir/taxa_plots_$line/$line\_otu_table_sorted_L7.txt -o $outdir/taxa_plots_$line/taxa_summary_plots/ -c bar,pie
-
+	fi
 	done
 
 ## Distance boxplots for each category
+
+	if [[ ! -d $outdir/bdiv ]]; then
+
 	echo "
 Make distance boxplots commands:" >> $log
 
@@ -290,22 +318,31 @@ Make distance boxplots commands:" >> $log
 
 		for dm in $outdir/bdiv/*dm.txt; do
 		dmbase=$( basename $dm _dm.txt )
+
 		echo "	make_distance_boxplots.py -d $outdir/bdiv/$dmbase\_dm.txt -f $line -o $outdir/bdiv/$dmbase\_boxplots/ -m $mapfile -n 999" >> $log
 		( make_distance_boxplots.py -d $outdir/bdiv/$dmbase\_dm.txt -f $line -o $outdir/bdiv/$dmbase\_boxplots/ -m $mapfile -n 999 ) &
 		done
 
 	done
 
+	fi
+
 ## Group significance for each category
+
+	if [[ ! -f $outdir/group_significance_* ]]; then
 	echo "
 Group significance commands:" >> $log
-
+	fi
 	for line in `cat $outdir/categories.tempfile`; do
-	echo "	group_significance.py -i $table -m $mapfile -c $line -o $outdir/group_significance_$line.txt" >> $log
-	( group_significance.py -i $table -m $mapfile -c $line -o $outdir/group_significance_$line.txt ) &
+	if [[ ! -f $outdir/group_significance_gtest_$line.txt ]]; then
+	echo "	group_significance.py -i $table -m $mapfile -c $line -o $outdir/group_significance_gtest_$line.txt -s g_test" >> $log
+	group_significance.py -i $table -m $mapfile -c $line -o $outdir/group_significance_gtest_$line.txt -s g_test
+	fi
 	done
 
 ## Make biplots
+
+	if [[ ! -d $outdir/biplots ]]; then
 	echo "
 Make biplots commands:" >> $log
 
@@ -321,27 +358,100 @@ Make biplots commands:" >> $log
 		done
 	done
 
+	fi
+
 ## Make html file
 
-logpath=`ls $outdir/log_*`
-logfile=`basename $logpath`
+	if [[ ! -f $outdir/index.html ]]; then
+
+logfile=`basename $log`
 
 echo "<html>
 <head><title>QIIME results</title></head>
 <body>
 <a href=\"http://www.qiime.org\" target=\"_blank\"><img src=\"http://qiime.org/_static/wordpressheader.png\" alt=\"www.qiime.org\"\"/></a><p>
 <table border=1>
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center>Run summary data</td></tr>
-<tr><td>Master run log</td><td> <a href=\"$logfile\" target=\"_blank\">$logfile</a></td></tr>
-<tr><td>BIOM table statistics</td><td> <a href=\"./biom_table_summary.txt\" target=\"_blank\">biom_table_summary.txt</a></td></tr>" > $outdir/index.html
+<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Run summary data </td></tr>
+<tr><td>Master run log</td><td> <a href=\" $logfile \" target=\"_blank\"> $logfile </a></td></tr>
+<tr><td> BIOM table statistics </td><td> <a href=\"./biom_table_summary.txt\" target=\"_blank\"> biom_table_summary.txt </a></td></tr>" > $outdir/index.html
+
+echo "
+<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Taxa summaries </td></tr>
+<tr><td> Taxonomy plots </td><td> <a href=\"./taxa_plots/taxa_summary_plots/bar_charts.html\" target=\"_blank\"> Bar charts </a></td></tr>" >> $outdir/index.html
+
+	for line in `cat $outdir/categories.tempfile`; do
+echo "
+<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Taxa summaries - $line </td></tr>
+<tr><td> Taxonomy plots </td><td> <a href=\"./taxa_plots_$line/taxa_summary_plots/bar_charts.html\" target=\"_blank\"> Bar charts </a></td></tr>
+<tr><td> Taxonomy plots </td><td> <a href=\"./taxa_plots_$line/taxa_summary_plots/pie_charts.html\" target=\"_blank\"> Pie charts </a></td></tr>" >> $outdir/index.html
+	done
 
 
+echo "
+<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Alpha diversity </td></tr>
+<tr><td> Rarefaction </td><td> <a href=\"./arare_max$depth/alpha_rarefaction_plots/rarefaction_plots.html\" target=\"_blank\"> Diversity plots </a></td></tr>" >> $outdir/index.html
+
+	fi
+
+echo "
+<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Beta diversity </td></tr>" >> $outdir/index.html
+
+	for dm in $outdir/bdiv/*_dm.txt; do
+	dmbase=`basename $dm _dm.txt`
+
+echo "<tr><td> 3D plots - ${dmbase} </td><td> <a href=\"./bdiv/${dmbase}_emperor_pcoa_plot/index.html\" target=\"_blank\"> PCoA.html </a></td></tr>
+<tr><td> 2D plots - ${dmbase} </td><td> <a href=\"./2D_bdiv_plots/${dmbase}_pc_2D_PCoA_plots.html\" target=\"_blank\"> PCoA.html </a></td></tr>" >> $outdir/index.html
+
+	done
+
+	for dm in $outdir/bdiv/*_dm.txt; do
+	dmbase=`basename $dm _dm.txt`
+	for line in `cat $outdir/categories.tempfile`; do
+
+echo "<tr><td> Distance boxplots - ${dmbase} </td><td> <a href=\"./bdiv/${dmbase}_boxplots/${line}_Distances.pdf\" target=\"_blank\"> ${line}_Distances.pdf </a></td></tr>
+<tr><td> Distance statistics - ${dmbase} </td><td> <a href=\"./bdiv/${dmbase}_boxplots/${line}_Stats.txt\" target=\"_blank\"> ${line}_Stats.txt </a></td></tr>" >> $outdir/index.html
+
+	done
+	done
+
+echo "
+<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Biplots </td></tr>" >> $outdir/index.html
+
+	for dm in $outdir/bdiv/*_dm.txt; do
+	dmbase=`basename $dm _dm.txt`
+	for level in $outdir/biplots/$dmbase/table_sorted_*/; do
+	lev=`basename $level`
+	Lev=`echo $lev | sed 's/table_sorted_//'`
+	Level=`echo $Lev | sed 's/L/Level /'`
+
+
+echo "<tr><td> Biplot - ${dmbase} - ${Level} </td><td> <a href=\"biplots/${dmbase}/table_sorted_${Lev}/index.html\" target=\"_blank\"> biplot.html </a></td></tr>" >> $outdir/index.html
+
+	done
+	done
+
+echo "
+<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Statistical comparisons </td></tr>
+<tr><td> Anosim results </td><td> <a href=\"anosim_results_collated.txt\" target=\"_blank\"> anosim_results_collated.txt </a></td></tr>
+<tr><td> Permanova results </td><td> <a href=\"permanova_results_collated.txt\" target=\"_blank\"> permanova_results_collated.txt </a></td></tr>" >> $outdir/index.html
+
+	for line in `cat $outdir/categories.tempfile`; do
+
+echo "<tr><td> G-Test results - ${line} </td><td> <a href=\"group_significance_gtest_${line}.txt\" target=\"_blank\"> group_significance_gtest_${line}.txt </a></td></tr>" >> $outdir/index.html
+
+	done
 
 ## Tidy up
 
+	if [[ -f $outdir/categories.tempfile ]]; then
 	rm $outdir/categories.tempfile
+	fi
+	if [[ -d $outdir/anosim_temp ]]; then
 	rm -r $outdir/anosim_temp
+	fi
+	if [[ -d $outdir/permanova_temp ]]; then
 	rm -r $outdir/permanova_temp
+	fi
 
 ## Log workflow end
 
