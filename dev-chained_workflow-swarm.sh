@@ -503,6 +503,8 @@ seqs=$outdir/split_libraries/seqs_chimera_filtered.fna
 	fi
 
 	seqbase1=`basename $seqs .fna`
+echo $seqbase1
+echo $seqbase1\_ITSx_filtered.fna
 
 	if [[ ! -f $seqbase1\_ITSx_filtered.fna ]]; then
 
