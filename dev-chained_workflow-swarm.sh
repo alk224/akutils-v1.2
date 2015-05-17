@@ -554,7 +554,11 @@ echo "$itsx_runtime
 	"
 
 	fi
-seqs=`ls $outdir/split_libraries/seqs*_ITSx_filtered.fna`
+	if [[ -f $outdir/split_libraries/seqs_chimera_filtered_ITSx_filtered.fna ]]; then
+	seqs=$outdir/split_libraries/seqs_chimera_filtered_ITSx_filtered.fna
+	elif [[ -f $outdir/split_libraries/seqs_ITSx_filtered.fna ]]; then
+	seqs=$outdir/split_libraries/seqs_ITSx_filtered.fna
+	fi
 	fi
 
 ## Reverse complement demultiplexed sequences if necessary
@@ -684,8 +688,6 @@ fi
 ## Start sequential OTU picking
 
 for resolution in `cat swarm_resolutions.temp`; do
-
-otupickdir=swarm_otus_d$resolution
 
 if [[ ! -f $otupickdir/prefix_rep_set_otus.txt ]]; then
 res10=$(date +%s.%N)
