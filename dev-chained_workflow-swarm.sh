@@ -557,6 +557,9 @@ echo "$itsx_runtime
 seqs=`ls $outdir/split_libraries/seqs*_ITSx_filtered.fna`
 	fi
 
+echo $seqs
+exit
+
 ## Reverse complement demultiplexed sequences if necessary
 #
 #	if [[ $revcomp == "True" ]]; then
