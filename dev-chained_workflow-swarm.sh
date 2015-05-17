@@ -356,7 +356,7 @@ if [[ ! -f $outdir/split_libraries/seqs.fna ]]; then
 	qual=($slqual)
 	fi
 
-	## detect barcode lengthstophat rebuild fasta
+	## detect barcode lengths
 	if [[ `sed '2q;d' idx.fq | egrep "\w+" | wc -m` == 13  ]]; then
 	barcodetype=(golay_12)
 	else
@@ -494,7 +494,17 @@ seqs=$outdir/split_libraries/seqs_chimera_filtered.fna
 
 	if [[ $mode == "ITS" ]]; then
 
-	if [[ ! -f $outdir/split_libraries/seqs_ITSx_filtered.fna ]] || [[ ! -f $outdir/split_libraries/seqs_chimera_filtered_ITSx_filtered.fna ]]; then
+## Set seqs variable in case prior steps are skipped.  Prefer chimera filtered results.
+
+	if [[ -f $outdir/split_libraries/seqs_chimera_filtered.fna ]]; then
+	seqs=$outdir/split_libraries/seqs_chimera_filtered.fna
+	else
+	seqs=$outdir/split_libraries/seqs.fna
+	fi
+
+	seqbase1=`basename $seqs .fna`
+
+	if [[ ! -f $seqbase1\_ITSx_filtered.fna ]]; then
 
 	slcount0=`cat $seqs | wc -l`
 	slcount=`expr $slcount0 / 2`
