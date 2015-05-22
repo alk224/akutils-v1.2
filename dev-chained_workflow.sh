@@ -295,11 +295,7 @@ $config
 	multx_errors=(`grep "Multx_errors" $config | grep -v "#" | cut -f 2`)
 	rdp_confidence=(`grep "RDP_confidence" $config | grep -v "#" | cut -f 2`)
 	rdp_max_memory=(`grep "RDP_max_memory" $config | grep -v "#" | cut -f 2`)
-	prefix_length=(`grep "Prefix_length" $config | grep -v "#" | cut -f 2`)
-	suffix_length=(`grep "Suffix_length" $config | grep -v "#" | cut -f 2`)	
-	OTU_picker=(`grep "OTU_picker" $config | grep -v "#" | cut -f 2`)	
-	Tax_assigner=(`grep "Tax_assigner" $config | grep -v "#" | cut -f 2`)	
-
+	
 ## Check for split_libraries outputs and inputs
 
 if [[ -f $outdir/split_libraries/seqs.fna ]]; then
@@ -478,47 +474,41 @@ Reverse complement command:"
 
 seqpath="${seqs%.*}"
 seqname=`basename $seqpath`
-presufout=prefix$Prefix_length\_suffix$Suffix_length
 
 
-if [[ ! -f $presufout/$seqname\_otus.txt ]]; then
+if [[ ! -f prefix50_suffix0/$seqname\_otus.txt ]]; then
 
 	echo "		Collapsing sequences with prefix/suffix picker.
-		Prefix length: $Prefix_length
-		Suffix length: $Suffix_length
 	"
 	echo "Collapsing sequences with prefix/suffix picker:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
-	pick_otus.py -m prefix_suffix -p $Prefix_length -u $Suffix_length -i $seqs -o $presufout	
+	pick_otus.py -m prefix_suffix -p 50 -u 0 -i $seqs -o prefix50_suffix0	
 	" >> $log
-	`pick_otus.py -m prefix_suffix -p $Prefix_length -u $Suffix_length -i $seqs -o $presufout`
+	`pick_otus.py -m prefix_suffix -p 50 -u 0 -i $seqs -o prefix50_suffix0`
 	
 	else
 	echo "		Prefix/suffix step previously completed.
 	"
 fi
 
-if [[ ! -f $presufout/prefix_rep_set.fasta ]]; then
+if [[ ! -f prefix50_suffix0/prefix_rep_set.fasta ]]; then
 
 	echo "		Picking rep set with prefix/suffix-collapsed OTU map.
 	"
 	echo "Picking rep set with prefix/suffix-collapsed OTU map:" >> $log
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 	echo "
-	pick_rep_set.py -i $presufout/$seqname\_otus.txt -f $seqs -o $presufout/prefix_rep_set.fasta
+	pick_rep_set.py -i prefix50_suffix0/$seqname\_otus.txt -f $seqs -o prefix50_suffix0/prefix_rep_set.fasta
 	" >> $log
-	`pick_rep_set.py -i $presufout/$seqname\_otus.txt -f $seqs -o $presufout/prefix_rep_set.fasta`
+	`pick_rep_set.py -i prefix50_suffix0/$seqname\_otus.txt -f $seqs -o prefix50_suffix0/prefix_rep_set.fasta`
 
 	else
 	echo "		Prefix/suffix rep set already present.
 	"
 fi
 
-mainotuout=$OTU_picker\_otu_picking
-
-
-if [[ ! -f $mainotuout/prefix_rep_set_otus.txt ]]; then
+if [[ ! -f cdhit_otus/prefix_rep_set_otus.txt ]]; then
 
 	echo "		Picking OTUs against collapsed rep set.
 	"
@@ -526,32 +516,12 @@ if [[ ! -f $mainotuout/prefix_rep_set_otus.txt ]]; then
 	date "+%a %b %I:%M %p %Z %Y" >> $log
 
 	if [[ $parameter_count == 1 ]]; then
-#	sim=`grep "similarity" $param_file | cut -d " " -f 2`
-
-# change OTU picking commands here
-
-	if [[ $OTU_picker == cdhit mothur 
-
-	elif [[ $OTU_picker == closed_ref
-
-	elif [[ $OTU_picker == open_ref
-
-	elif [[ $OTU_picker == blast
-
-
-
+	sim=`grep "similarity" $param_file | cut -d " " -f 2`
 	echo "
 	pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -s $sim
 	" >> $log
 	`pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus -s $sim`
 	else
-
-
-
-
-
-
-
 	echo "
 	pick_otus.py -m cdhit -M 2000 -i prefix50_suffix0/prefix_rep_set.fasta -o cdhit_otus
 	" >> $log
