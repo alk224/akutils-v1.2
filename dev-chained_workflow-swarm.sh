@@ -417,7 +417,7 @@ numseqs=$(($numseqs0/2))
 
 	if [[ $chimera_refs != "undefined" ]]; then
 
-	if [[ ! -f $outdir/split_libraries/seqs_chimera_filtered.fna ]]; then
+#	if [[ ! -f $outdir/split_libraries/seqs_chimera_filtered.fna ]]; then
 
 	echo "		Filtering chimeras.
 		Method: vsearch (uchime_ref)
@@ -433,24 +433,28 @@ Reference: $chimera_refs
 	" >> $log
 res4=$(date +%s.%N)
 
-	echo "	vsearch --uchime_ref $outdir/split_libraries/seqs.fna --db $chimera_refs --threads $chimera_threads --nonchimeras $outdir/split_libraries/vsearch_nonchimeras.fna" >> $log
+#	echo "	vsearch --uchime_ref $outdir/split_libraries/seqs.fna --db $chimera_refs --threads $chimera_threads --nonchimeras $outdir/split_libraries/vsearch_nonchimeras.fna" >> $log
 
-	`vsearch --uchime_ref $outdir/split_libraries/seqs.fna --db $chimera_refs --threads $chimera_threads --nonchimeras $outdir/split_libraries/vsearch_nonchimeras.fna &>>$log`
+#	`vsearch --uchime_ref $outdir/split_libraries/seqs.fna --db $chimera_refs --threads $chimera_threads --nonchimeras $outdir/split_libraries/vsearch_nonchimeras.fna &>>$log`
 	wait
 
 ## Reformat output so that no sequences wrap
 
-	awk '!/^>/ { printf "%s", $0; n = "\n" } 
-	/^>/ { print n $0; n = "" }
-	END { printf "%s", n }
-	' $outdir/split_libraries/vsearch_nonchimeras.fna > $outdir/split_libraries/seqs_chimera_filtered.fna
-	wait
+#	awk '!/^>/ { printf "%s", $0; n = "\n" } 
+#	/^>/ { print n $0; n = "" }
+#	END { printf "%s", n }
+#	' $outdir/split_libraries/vsearch_nonchimeras.fna > $outdir/split_libraries/seqs_chimera_filtered.fna
+#	wait
 
 		chimeracount1=`cat $outdir/split_libraries/seqs_chimera_filtered.fna | wc -l`
 		chimeracount2=`expr $chimeracount1 / 2`
 		seqcount1=`cat $outdir/split_libraries/seqs.fna | wc -l`
 		seqcount=`expr $seqcount1 / 2`
-		chimeracount=`expr $seqcount - $chimeracount2`
+echo $seqcount
+echo $chimeracount2
+		chimeracount=`expr $seqcount \- $chimeracount2`
+echo $chimeracount
+
 	echo "		Identified $chimeracount chimeric sequences from $seqcount
 		total reads in your data."
 	echo "		Identified $chimeracount chimeric sequences from $seqcount
@@ -484,10 +488,10 @@ echo "$chim_runtime
 		Skipping chimera checking step.
 	"
 seqs=$outdir/split_libraries/seqs_chimera_filtered.fna
-	fi
-	else echo "		No chimera reference collection supplied.
-		Skipping chimera checking step.
-	"
+#	fi
+#	else echo "		No chimera reference collection supplied.
+#		Skipping chimera checking step.
+#	"
 	fi
 
 ## ITSx filtering (mode ITS only)
