@@ -24,5 +24,22 @@
 #
 ## Find scripts location
 scriptdir="$( cd "$( dirname "$0" )" && pwd )"
-## Find repo location
 repodir=`dirname $scriptdir`
+workdir=$(pwd)
+
+## Usage and help
+usage="$repodir/docs/template.usage"
+help="$repodir/docs/template.help"
+
+## Check whether user had supplied -h or --help. If yes display help 
+	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
+	less $repodir/docs/template.help
+		exit 0	
+	fi
+
+## If other than SOMENUMBEROF arguments supplied, display usage
+	if [[ "$#" -ne 2 ]]; then 
+	cat $usage
+	fi
+
+exit 0
