@@ -1,7 +1,6 @@
-
-*******************************************************************************
+#!/usr/bin/env bash
 #
-#  akutils -- facilitating sequence data analysis in QIIME
+#  unwrap_fasta.sh - Remove text wrapping from a fasta file
 #
 #  Version 1.1.0 (June 16, 2015)
 #
@@ -21,7 +20,39 @@
 #     appreciated but is not required.
 #  2. Altered source versions must be plainly marked as such, and must not be
 #     misrepresented as being the original software.
-#  3. This notice may not be removed or altered from any source distribution
+#  3. This notice may not be removed or altered from any source distribution.
 #
-*******************************************************************************
 
+## Check whether user had supplied -h or --help. If yes display help 
+
+	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
+	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
+	less $scriptdir/docs/unwrap_fasta.help
+	exit 0
+	fi 
+
+# if more or less than one arguments supplied, display usage 
+
+	if [  "$#" -ne 2 ] ;
+	then 
+		echo "
+Usage (order is important!!):
+unwrap_fasta.sh sequences.fasta sequences_unwrapped.fasta
+		"
+		exit 1
+	fi 
+
+## Define variables
+
+inseqs=$1
+outseqs=$2
+
+## Awk script
+
+	awk '!/^>/ { printf "%s", $0; n = "\n" } 
+	/^>/ { print n $0; n = "" }
+	END { printf "%s", n }
+	' $inseqs > $outseqs
+	wait
+
+exit 0

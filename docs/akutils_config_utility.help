@@ -1,0 +1,33 @@
+
+*************************************
+***                               ***
+***   akutils_config_utility.sh   ***
+***                               ***
+*************************************
+
+Interactive utility to setup akutils configuration options.
+
+Usage:
+   akutils_config_utility.sh
+
+Read existing values for akutils config file:
+   akutils_config_utility.sh read
+
+	-- If there is a local config file present, this will list the
+	values in that file.  If not, it will list the values in the
+	global config file.
+
+It is necessary to run this script prior to running any akutils
+workflows.  If changes have been made to the config struture of akutils
+and you do a git pull, you will need to rerun this script to rebuild
+your global file.
+
+Options:
+	--global   Make changes to your global config file
+	--local    Make changes to your local config file
+	--rebuild  Use the latest template file to generate a fresh
+	           config file (after some git pulls)
+
+Rebuilding is only necessary if you have updated akutils and 
+configurable options have changed.
+

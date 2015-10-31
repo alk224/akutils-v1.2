@@ -1,11 +1,10 @@
-
-*******************************************************************************
+#!/usr/bin/env bash
 #
-#  akutils -- facilitating sequence data analysis in QIIME
+#  SCRIPT NAME - SHORT DESCRIPTION
 #
-#  Version 1.1.0 (June 16, 2015)
+#  Version 1.0.0 (MONTH, 99, 2015)
 #
-#  Copyright (c) 2014-2015 Andrew Krohn
+#  Copyright (c) 2015 Andrew Krohn
 #
 #  This software is provided 'as-is', without any express or implied
 #  warranty. In no event will the authors be held liable for any damages
@@ -21,7 +20,9 @@
 #     appreciated but is not required.
 #  2. Altered source versions must be plainly marked as such, and must not be
 #     misrepresented as being the original software.
-#  3. This notice may not be removed or altered from any source distribution
+#  3. This notice may not be removed or altered from any source distribution.
 #
-*******************************************************************************
-
+## Find scripts location
+scriptdir="$( cd "$( dirname "$0" )" && pwd )"
+## Find repo location
+repodir=`dirname $scriptdir`

@@ -1,7 +1,6 @@
-
-*******************************************************************************
+#!/usr/bin/env Rscript
 #
-#  akutils -- facilitating sequence data analysis in QIIME
+#  otu_summary_stats.sh - summarize OTUs per taxon
 #
 #  Version 1.1.0 (June 16, 2015)
 #
@@ -21,7 +20,22 @@
 #     appreciated but is not required.
 #  2. Altered source versions must be plainly marked as such, and must not be
 #     misrepresented as being the original software.
-#  3. This notice may not be removed or altered from any source distribution
+#  3. This notice may not be removed or altered from any source distribution.
 #
-*******************************************************************************
+
+## Recieve input file from bash
+args <- commandArgs(TRUE)
+d <- read.table(args[1], sep="\t")
+
+## extract counts and produce summary stats
+
+titles <- c("mean", "median", "min", "max")
+otu_counts <- d[,2]
+stats <- c(mean(otu_counts), median(otu_counts), min(otu_counts), max(otu_counts))
+
+result = data.frame(stat = (titles), value = (stats))
+
+## write result to output file
+
+write.table(result, file = "otus_per_taxon_summary.txt", quote = FALSE, col.names = TRUE, sep = "\t", row.names = FALSE)
 
