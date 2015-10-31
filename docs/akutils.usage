@@ -1,0 +1,21 @@
+
+akutils - command to run akutils workflows and configure settings
+
+Usage:
+	akutils [command] [arguments]
+
+This is the control command for akutils. This command calls akutils workflows
+as well as configuration options.
+
+Configuration commands:
+	configure		-- configure akutils settings
+	read			-- list current configuration settings
+	check			-- check that commands are in your PATH
+	check-result		-- detailed results of depencency check
+	help			-- detailed help page
+
+Workflow commands:
+	otu_picking_workflow	-- run the akutils otu picking workflow
+	align_and_tree_workflow	-- run the akutils align/tree workflow
+	cdiv_and_stats_workflow -- run the akutils cdiv/stats workflow
+
