@@ -22,7 +22,20 @@
 #     misrepresented as being the original software.
 #  3. This notice may not be removed or altered from any source distribution.
 #
-## Find scripts location
+
+## Trap function on exit.
+function finish {
+if [[ -f $configtest ]]; then
+	rm $configtest
+fi
+if [[ -f $templatetest ]]; then
+	rm $templatetest
+fi
+}
+trap finish EXIT
+
+
+## Find scripts location and define variables
 scriptdir="$( cd "$( dirname "$0" )" && pwd )"
 repodir=`dirname $scriptdir`
 workdir=$(pwd)
@@ -31,18 +44,43 @@ globallocal="$2"
 stdout="$3"
 stderr="$4"
 randcode="$5"
+configtest="$repodir/temp/$randcode.config"
+templatetest="$repodir/temp/$randcode.template"
+
 
 ## Check config file against blank config file to determine if any new variables are available
-	grep -v "#" $configfile | sed '/^$/d' > $repodir/temp/$randcode_config
-	grep -v "#" $repodir/akutils_resources/blank_config.config | sed '/^$/d' > $repodir/temp/$randcode_template
+	grep -v "#" $configfile | sed '/^$/d' > $configtest
+	grep -v "#" $repodir/akutils_resources/blank_config.config | sed '/^$/d' > $templatetest
+	configuniq=`grep -cvFf $templatetest $configtest`
+	templateuniq=`grep -cvFf $configtest $templatetest`
+	if [[ "$configuniq" -ge "1" ]]; then
+	echo "
+Your config file contains $configuniq extra variable setting(s).
+Consider running the config utility and rebuilding your configuration
+options.
+
+The extra lines present are:"
+	grep -vFf $templatetest $configtest
+	fi
+	if [[ "$templateuniq" -ge "1" ]]; then
+	echo "
+$templateuniq additional configuration setting(s) are available, but not
+present in your configuration file. Consider running the config
+utility and rebuilding your configuration options.
+
+New configuration options available are:"
+	grep -vFf $configtest $templatetest
+	fi
 
 ## Read config file variables and print to screen
 	echo "
 Reading akutils configurable fields from $globallocal config file.
-$configfile
 	"
 	echo ""
 	grep -v "#" $configfile | sed '/^$/d'
 	echo ""
+
+## Remove temp 
+	if [[ -f "$configtest" ]]; then
 
 exit 0
