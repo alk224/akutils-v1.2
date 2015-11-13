@@ -1,0 +1,31 @@
+_akutils-dev()
+{
+  local cur prev opts base
+  COMPREPLY=()
+  cur="${COMP_WORDS[COMP_CWORD]}"
+  prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+  ## Basic options to autocomplete
+  opts="configure read check check-result help
+	otu_workflow align_tree_workflow cdiv_stats_workflow
+        "
+
+  ## Complete available akutils commands
+  case $prev in
+	akutils-dev)
+	  COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	  ;;
+  ## Complete options to some of the commands
+	otu_workflow)
+	  local otu="16S ITS other"
+	  COMPREPLY=( $(compgen -W "${otu}" -- ${cur}) )
+	  ;;
+	align_tree_workflow)
+	  local align="16S other"
+	  COMPREPLY=( $(compgen -W "${align}" -- ${cur}) )
+	  ;;
+
+  esac
+  return 0
+}
+complete -F _akutils-dev akutils-dev
