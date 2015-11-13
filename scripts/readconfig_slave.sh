@@ -47,10 +47,17 @@ randcode="$5"
 configtest="$repodir/temp/$randcode.config"
 templatetest="$repodir/temp/$randcode.template"
 
+## Read config file variables and print to screen
+	echo "
+Reading akutils configurable fields from $globallocal config file.
+File: $configfile"
+	echo ""
+	grep -v "#" $configfile | sed '/^$/d'
+	echo ""
 
 ## Check config file against blank config file to determine if any new variables are available
-	grep -v "#" $configfile | sed '/^$/d' > $configtest
-	grep -v "#" $repodir/akutils_resources/blank_config.config | sed '/^$/d' > $templatetest
+	grep -v "#" $configfile | cut -f1 | sed '/^$/d' > $configtest
+	grep -v "#" $repodir/akutils_resources/blank_config.config | cut -f1 | sed '/^$/d' > $templatetest
 	configuniq=`grep -cvFf $templatetest $configtest`
 	templateuniq=`grep -cvFf $configtest $templatetest`
 	if [[ "$configuniq" -ge "1" ]]; then
@@ -61,6 +68,7 @@ options.
 
 The extra lines present are:"
 	grep -vFf $templatetest $configtest
+	echo ""
 	fi
 	if [[ "$templateuniq" -ge "1" ]]; then
 	echo "
@@ -70,17 +78,7 @@ utility and rebuilding your configuration options.
 
 New configuration options available are:"
 	grep -vFf $configtest $templatetest
+	echo ""
 	fi
-
-## Read config file variables and print to screen
-	echo "
-Reading akutils configurable fields from $globallocal config file.
-	"
-	echo ""
-	grep -v "#" $configfile | sed '/^$/d'
-	echo ""
-
-## Remove temp 
-	if [[ -f "$configtest" ]]; then
 
 exit 0
