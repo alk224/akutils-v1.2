@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-#  readconfig_slave.sh - Print akutils configured variables to screen
+#  readconfig_slave.sh - Print akutils configured variables to screen.
 #
 #  Version 1.0.0 (November, 13, 2015)
 #
