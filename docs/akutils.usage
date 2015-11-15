@@ -5,7 +5,8 @@ Usage:
 	akutils [command] [arguments]
 
 This is the control command for akutils. This command calls akutils workflows
-as well as configuration options.
+as well as configuration options.  Bash auto-completion is enabled for
+commands and options.
 
 Configuration commands:
 	configure		-- configure akutils settings
