@@ -10,7 +10,7 @@ _akutils-dev()
 	otu_workflow align_tree_workflow cdiv_stats_workflow
         "
 
-  ## Complete available akutils commands
+  ## Complete available akutils command arguments
   case $prev in
 	akutils-dev)
 	  COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
@@ -24,6 +24,25 @@ _akutils-dev()
 	  local align="16S other"
 	  COMPREPLY=( $(compgen -W "${align}" -- ${cur}) )
 	  ;;
+        cdiv_stats_workflow)
+          local cdiv="input_otu_table.biom table_prefix_for_batch_mode"
+          COMPREPLY=( $(compgen -W "${cdiv}" -- ${cur}) )
+          ;;
+        input_otu_table.biom)
+          local table="map"
+          COMPREPLY=( $(compgen -W "${table}" -- ${cur}) )
+          ;;
+        table_prefix_for_batch_mode)
+          local table1="map"
+          COMPREPLY=( $(compgen -W "${table1}" -- ${cur}) )
+          ;;
+        input_otu_table.biom)
+          local table="map"
+          COMPREPLY=( $(compgen -W "${table}" -- ${cur}) )
+          ;;
+        $4)
+          local cores="cores"
+          COMPREPLY=( $(compgen -W "${cores}" -- ${cur}) )
 
   esac
   return 0
