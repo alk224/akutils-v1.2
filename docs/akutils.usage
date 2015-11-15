@@ -22,3 +22,11 @@ Workflow commands:
 	align_tree_workflow	-- run the akutils align/tree workflow
 	cdiv_stats_workflow	-- run the akutils cdiv/stats workflow
 
+Command-specific arguments:
+	otu_picking_workflow	16S -- pick OTUs in "16S" mode
+				ITS -- pick otus in "ITS" mode
+				other -- pick otus in "other" mode
+
+	align_tree_workflow	16S -- alignment and tree in "16S" mode
+	align_tree_workflow	other -- alignment and tree in "other" mode
+
