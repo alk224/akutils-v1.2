@@ -5,23 +5,31 @@
 ***             ***
 *******************
 
-akutils - command to run akutils workflows and configure settings
+akutils - core command to run akutils workflows and configure settings
 
 Usage:
 	akutils [command] [arguments]
 
 This is the control command for akutils. This command calls akutils workflows
-as well as configuration options.
+as well as configuration options.  Bash auto-completion is enabled for
+commands and most options.
 
 Configuration commands:
+	help			-- detailed help page
 	configure		-- configure akutils settings
 	read			-- list current configuration settings
 	check			-- check that commands are in your PATH
 	check-result		-- detailed results of depencency check
-	help			-- detailed help page
+	test			-- test workflow steps with test data
+	test-result		-- detailed results of workflow tests
 
 Workflow commands:
 	otu_picking_workflow	-- run the akutils otu picking workflow
-	align_and_tree_workflow	-- run the akutils align/tree workflow
-	cdiv_and_stats_workflow -- run the akutils cdiv/stats workflow
+	align_tree_workflow	-- run the akutils align/tree workflow
+	cdiv_stats_workflow	-- run the akutils cdiv/stats workflow
 
+Additional help for command-specific settings:
+	akutils otu_picking_workflow help	-- workflow details
+	akutils align_tree_workflow help	-- workflow details
+	akutils cdiv_stats_workflow help	-- workflow details
+	
