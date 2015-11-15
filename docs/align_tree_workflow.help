@@ -1,0 +1,48 @@
+
+***************************************
+***                                 ***
+***   akutils   align_tree_workflow ***
+***                                 ***
+***************************************
+
+akutils align_tree_workflow - run the akutils align/tree workflow
+
+Usage:
+	akutils align_tree_workflow [mode] [target]
+
+Run the alignment and tree building workflow in akutils. Command should be
+executed from the same top-level directory as the otu_picking_workflow option.
+
+Modes:
+	16S	-- Parallel PyNast alignment against alignment template file 
+			specified in active akutils config file, entropic sites
+			removed against lanemask file specified in config file,
+			then phylogenetic tree made with FastTree.
+	other	-- Parallel MAFFT alignment, top 10% entropic sites removed,
+			then phylogenetic tree made with FastTree.
+	help	-- This useful help screen.
+
+Targets:
+	otu picking directory	-- will run on rep set within directory
+	ALL			-- will sequentially operate on all otu
+					picking directories present
+Examples:
+	akutils align_tree_workflow 16S swarm_otus_d1
+	akutils align_tree_workflow 16S ALL
+
+Alignment details:
+	16S mode:	Very efficient alignment with full multithreading
+			support.
+	other mode:	Alignment with MAFFT is efficient, but will not
+			necessarily make full use of all available processors.
+
+Alignment filtering details:
+	16S mode:	Uses lanemask file specified in active akutils config
+			file. Short step, single core use.
+	other mode:	Top 10% of entropic sites removed. Short step, single
+			core use.
+
+Phylogenetic tree construction details:
+	either mode:	Uses FastTree with default settings in QIIME via the
+			"make_phylogeny.py" command.
+
