@@ -113,9 +113,13 @@ akutils test
 		exit 0
 	fi
 
-## Check whether user supplied align_tree_workflow.  If yes, run alignment and tree workflow.
+## Check whether user supplied align_tree_workflow.  If yes, run alignment and tree workflow or display specific usage.
 	if [[ "$1" == "align_tree_workflow" ]]; then
-	bash $scriptdir/align_tree_workflow.sh $stdout $stderr $randcode
+		if [[ -z "$2" ]]; then
+		cat $repodir/docs/align_tree_workflow.usage
+		exit 0
+		fi
+	bash $scriptdir/align_tree_workflow_slave.sh $stdout $stderr $randcode $2 $3
 	exit 0
 	fi
 
