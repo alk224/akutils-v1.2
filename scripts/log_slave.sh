@@ -16,5 +16,7 @@ cat $stdout >> $log
 echo "***** stderr:" >> $log
 cat $stderr >> $log
 echo "" >> $log
+echo > $stdout
+echo > $stderr
 
 exit 0
