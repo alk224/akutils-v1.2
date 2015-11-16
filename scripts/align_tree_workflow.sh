@@ -46,17 +46,11 @@ trap finish EXIT
 	date0=`date +%Y%m%d_%I%M%p`
 	res0=$(date +%s.%N)
 
-## Check if user supplied help.  If yes, display help file.
-	if [[ "$mode" == "help" ]]; then
-	less $repodir/docs/align_tree_workflow.help
-	exit 0
-	fi
-
 ## ID config file.
 	config=$(bash $scriptdir/config_id.sh)
 
 ## Check for valid mode setting.  Display usage if error.
-	if [[ "$mode" != "other" ]] && [[ $mode != 16S ]]; then
+	if [[ "$mode" != "other" ]] && [[ "$mode" != "16S" ]]; then
 	echo "
 Invalid mode entered. Valid modes are 16S or other."
 	cat $repodir/docs/align_tree_workflow.usage

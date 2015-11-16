@@ -113,13 +113,42 @@ akutils test
 		exit 0
 	fi
 
-## Check whether user supplied align_tree_workflow.  If yes, run alignment and tree workflow or display specific usage.
+## Check whether user supplied otu_picking_workflow.  If yes, run otu picking workflow or display specific usage or help if specified.
+	if [[ "$1" == "otu_picking_workflow" ]]; then
+		if [[ -z "$2" ]]; then
+		cat $repodir/docs/otu_picking_workflow.usage
+		exit 0
+		elif [[ "$2" == "help" ]]; then
+		cat $repodir/docs/otu_picking_workflow.help
+		exit 0
+		fi
+	bash $scriptdir/otu_picking_workflow.sh $stdout $stderr $randcode $2 $3
+	exit 0
+	fi
+
+## Check whether user supplied align_tree_workflow.  If yes, run alignment and tree workflow or display specific usage or help if specified.
 	if [[ "$1" == "align_tree_workflow" ]]; then
 		if [[ -z "$2" ]]; then
 		cat $repodir/docs/align_tree_workflow.usage
 		exit 0
+		elif [[ "$2" == "help" ]]; then
+		cat $repodir/docs/align_tree_workflow.help
+		exit 0
 		fi
-	bash $scriptdir/align_tree_workflow_slave.sh $stdout $stderr $randcode $2 $3
+	bash $scriptdir/align_tree_workflow.sh $stdout $stderr $randcode $2 $3
+	exit 0
+	fi
+
+## Check whether user supplied cdiv_stats_workflow.  If yes, run cdiv and stats workflow or display specific usage or help if specified.
+	if [[ "$1" == "cdiv_stats_workflow" ]]; then
+		if [[ -z "$2" ]]; then
+		cat $repodir/docs/cdiv_stats_workflow.usage
+		exit 0
+		elif [[ "$2" == "help" ]]; then
+		cat $repodir/docs/cdiv_stats_workflow.help
+		exit 0
+		fi
+	bash $scriptdir/cdiv_stats_workflow.sh $stdout $stderr $randcode $2 $3
 	exit 0
 	fi
 
