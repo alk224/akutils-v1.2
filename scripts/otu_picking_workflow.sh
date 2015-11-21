@@ -160,7 +160,7 @@ directory.
 		else
 		qual=($slqual)
 		fi
-		if [[ $slminpercent == "" ]]; then 
+		if [[ $slminpercent == "" ]]; then
 		minpercent=(0.95)
 		else
 		minpercent=($slminpercent)
