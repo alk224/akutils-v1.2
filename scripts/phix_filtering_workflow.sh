@@ -26,6 +26,7 @@ set -e
 
 ## Set up environment and read variables passed from akutils
 	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
+	repodir=`dirname $scriptdir`
 	workdir=$(pwd)
 	stdout="$1"
 	stderr="$2"
@@ -38,7 +39,6 @@ set -e
 	read2="$9"
 
 ## If different than 8 or 9 arguments supplied, display usage 
-
 	if [[  "$#" -ne 8 ]] && [[  "$#" -ne 9 ]]; then 
 		echo "
 Usage (order is important):
@@ -50,7 +50,6 @@ akutils phix_filtering_workflow.sh <output_directory> <mappingfile> <index> <rea
 	fi
 
 ## Define filter mode based on number of supplied inputs
-
 	if [[  "$#" == "8" ]]; then
 	mode="single"
 	elif [[  "$#" == "9" ]]; then
@@ -58,7 +57,6 @@ akutils phix_filtering_workflow.sh <output_directory> <mappingfile> <index> <rea
 	fi
 
 ## Check to see if requested output directory exists
-
 	if [[ -d $outdir ]]; then
 		dirtest=$([ "$(ls -A $outdir)" ] && echo "Not Empty" || echo "Empty")
 		echo "
@@ -77,38 +75,10 @@ Exiting.
 	fi
 
 ## Define log file
-
 	date0=`date +%Y%m%d_%I%M%p`
 	log=($outdir/phix_filtering_workflow_$date0.log)
 
-## Check for required dependencies:
-#echo "
-#Checking for required dependencies...
-#"
-
-#for line in `cat $scriptdir/akutils_resources/phix_filtering_workflow.dependencies.list`; do
-#	dependcount=`command -v $line 2>/dev/null | wc -w`
-#	if [[ $dependcount == 0 ]]; then
-#	echo "
-#$line is not in your path.  Dependencies not satisfied.  Exiting.
-#	"
-#	exit 1
-#	else
-#	if [[ $dependcount -ge 1 ]]; then
-#	echo "$line is in your path..."
-#	fi
-#	fi
-#done
-#echo "
-#All dependencies satisfied.  Proceeding...
-#"
-
-## Locate config file
-
-
 ## Read in variables from config file
-
-
 	refs=(`grep "Reference" $config | grep -v "#" | cut -f 2`)
 	tax=(`grep "Taxonomy" $config | grep -v "#" | cut -f 2`)
 	tree=(`grep "Tree" $config | grep -v "#" | cut -f 2`)
@@ -129,7 +99,7 @@ Exiting.
 	min_overlap=(`grep "Min_overlap" $config | grep -v "#" | cut -f 2`)
 	max_mismatch=(`grep "Max_mismatch" $config | grep -v "#" | cut -f 2`)
 	mcf_threads=($CPU_cores)
-	phix_index=($scriptdir/akutils_resources/PhiX/phix-k11-s1)
+	phix_index=($repodir/akutils_resources/PhiX/phix-k11-s1)
 	smalt_threads=($CPU_cores)
 	multx_errors=(`grep "Multx_errors" $config | grep -v "#" | cut -f 2`)
 	rdp_confidence=(`grep "RDP_confidence" $config | grep -v "#" | cut -f 2`)
@@ -140,7 +110,6 @@ Exiting.
 	smaltdir=`dirname $phix_index`
 
 ## Log workflow start
-
 	if [[ `echo $mode` == "single" ]]; then
 	echo "
 PhiX filtering workflow beginning in single read mode."
@@ -156,16 +125,13 @@ PhiX filtering workflow beginning in paired read mode."
 	res1=$(date +%s.%N)
 
 ## Make output directory for fastq-multx step
-
 	mkdir $outdir/fastq-multx_output
 
 ## Extract barcodes information from mapping file
-
 	grep -v "#" $mapfile | cut -f 1-3 > $outdir/fastq-multx_output/barcodes.fil
 	barcodes=($outdir/fastq-multx_output/barcodes.fil)
 
 ## Fastq-multx command:
-
 	echo "
 Demultiplexing sample data with fastq-multx.  Allowing $multx_errors indexing
 errors.
@@ -184,7 +150,6 @@ Demultiplexing data (fastq-multx):" >> $log
 	fi
 
 ## Remove unmatched sequences to save space (comment this out if you need to inspect them)
-
 	echo "
 Removing unmatched reads to save space."
 	echo "
@@ -195,7 +160,6 @@ Removing unmatched reads:" >> $log
 	rm $outdir/fastq-multx_output/*unmatched.fq
 
 ## Cat together multx results (in parallel)
-
 	echo "
 Remultiplexing demultiplexed data."
 	echo "
@@ -221,7 +185,6 @@ Remultiplexing demultiplexed data:" >> $log
 	wait
 
 ## Define demultiplexed/remultiplexed read files
-
 	idx=$outdir/fastq-multx_output/index.fastq
 	rd1=$outdir/fastq-multx_output/read1.fastq
 	if [[ `echo $mode` == "paired" ]]; then
@@ -229,7 +192,6 @@ Remultiplexing demultiplexed data:" >> $log
 	fi
 
 ## Remove demultiplexed components of read files (comment out if you need them, but they take up a lot of space)
-
 	echo "
 Removing redundant sequence files to save space."
 	echo "
@@ -240,7 +202,6 @@ Removing extra files:" >> $log
 	rm $outdir/fastq-multx_output/*.fq
 
 ## Smalt command to identify phix reads
-
 	echo "
 Smalt search of demultiplexed data."
 	echo "
@@ -258,8 +219,7 @@ Smalt search of demultiplexed data:" >> $log
 	fi
 	wait
 
-#use grep to identify reads that are non-phix
-	
+# Grep to identify reads that are non-phix	
 	echo "
 Screening smalt search for non-phix read pairs."
 	echo "
@@ -277,7 +237,6 @@ Grep search of smalt output:" >> $log
 	wait
 
 ## Use filter_fasta.py to filter contaminating sequences out prior to joining
-
 	echo "
 Filtering phix reads from sample data."
 	echo "
@@ -300,44 +259,6 @@ Filter phix reads with filter_fasta.py:" >> $log
 	fi
 	wait
 
-## Check for and remove empty fastq records
-
-#	echo "
-#Filtering empty fastq records from outputs." >> $log
-#date "+%a %b %d %I:%M %p %Z %Y" >> $log
-#	echo "
-#Filtering empty fastq records from outputs."
-
-#		emptycount=`grep -e "^$" $outdir/read1.phixfiltered0.fastq | wc -l`
-
-#		if [[ $emptycount != 0 ]]; then
-
-#		grep -B 1 -e "^$" $outdir/read1.phixfiltered0.fq > $outdir/empty.fastq.records
-#		sed -i '/^\s*$/d' $outdir/empty.fastq.records
-#		sed -i '/^\+/d' $outdir/empty.fastq.records
-#		sed -i '/^\--/d' $outdir/empty.fastq.records
-#		sed -i 's/^\@//' $outdir/empty.fastq.records
-#		empties=`cat $outdir/empty.fastq.records | wc -l`
-#	echo "
-#Found $empties empty fastq records." >> $log
-#	echo "
-#Found $empties empty fastq records."
-
-#	if [[ `echo $mode` == "single" ]]; then
-
-#		( filter_fasta.py -f $outdir/read1.phixfiltered0.fastq -o $outdir/read1.phixfiltered.fq -s $outdir/empty.fastq.records -n ) &
-#		( filter_fasta.py -f $outdir/index.phixfiltered0.fastq -o $outdir/index.phixfiltered.fq -s $outdir/empty.fastq.records -n ) &
-#		wait
-
-#	elif [[ `echo $mode` == "paired" ]]; then
-
-#		( filter_fasta.py -f $outdir/read1.phixfiltered0.fastq -o $outdir/read1.phixfiltered.fq -s $outdir/empty.fastq.records -n ) &
-#		( filter_fasta.py -f $outdir/read2.phixfiltered0.fastq -o $outdir/read2.phixfiltered.fq -s $outdir/empty.fastq.records -n ) &
-#		( filter_fasta.py -f $outdir/index.phixfiltered0.fastq -o $outdir/index.phixfiltered.fq -s $outdir/empty.fastq.records -n ) &
-#		wait
-#	fi
-#		fi
-
 ## Arithmetic and variable definitions to report PhiX contamintaion levels
 	if [[ `echo $mode` == "single" ]]; then
 	totalseqs=$(cat $outdir/smalt_output/phix.mapped.sam | wc -l)
@@ -357,7 +278,7 @@ Filter phix reads with filter_fasta.py:" >> $log
 	datapercent=$(($nonphix100seqs/$totalseqs))
 	contampercent=$((100-$datapercent))
 	quotient=($phixseqs/$totalseqs)
-	decimal=$(echo "scale=10; ${quotient}" | bc)
+	decimal=$(echo "scale=5; $quotient*100" | bc)
 	fi
 
 ## Log results of PhiX filtering
@@ -366,38 +287,31 @@ Filter phix reads with filter_fasta.py:" >> $log
 	echo "
 Processed $totalseqs single reads.
 $phixseqs reads contained phix sequence.
-Contamination level is approximately $contampercent percent.
-Contamination level (decimal value): $decimal"
+Contamination level is approximately $decimal percent."
 
 	echo "
 Processed $totalseqs single reads.
 $phixseqs reads contained PhiX174 sequence.
-Contamination level is approximately $contampercent percent.
-Contamination level (decimal value): $decimal" >> $log
+Contamination level is approximately $decimal percent." >> $log
 
 
 	elif [[ `echo $mode` == "paired" ]]; then
 	echo "
 Processed $totalseqs read pairs.
 $phixseqs read pairs contained phix sequence.
-Contamination level is approximately $contampercent percent.
-Contamination level (decimal value): $decimal"
+Contamination level is approximately $decimal percent."
 
 	echo "
 Processed $totalseqs read pairs.
 $phixseqs read pairs contained PhiX174 sequence.
-Contamination level is approximately $contampercent percent.
-Contamination level (decimal value): $decimal" >> $log
+Contamination level is approximately $decimal percent." >> $log
 	fi
 
 ## Remove excess files
-
 	rm -r $outdir/smalt_output
 	rm $outdir/fastq-multx_output/*.fastq
 
-
 ## Log script completion
-
 res2=$(date +%s.%N)
 dt=$(echo "$res2 - $res1" | bc)
 dd=$(echo "$dt/86400" | bc)
@@ -406,7 +320,6 @@ dh=$(echo "$dt2/3600" | bc)
 dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
-
 runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
 
 echo "
