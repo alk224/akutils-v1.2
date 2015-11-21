@@ -6,7 +6,7 @@ _akutils-dev()
   prev="${COMP_WORDS[COMP_CWORD-1]}"
 
   ## Basic options to autocomplete
-  opts="configure read check check-result help test test-result
+  opts="configure read check check-result help
 	otu_workflow align_tree_workflow cdiv_stats_workflow
         "
 
