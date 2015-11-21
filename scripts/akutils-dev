@@ -122,7 +122,7 @@ akutils test
 		cat $repodir/docs/otu_picking_workflow.help
 		exit 0
 		fi
-	bash $scriptdir/otu_picking_workflow.sh $stdout $stderr $randcode $2 $3
+	bash $scriptdir/otu_picking_workflow.sh $stdout $stderr $randcode $configfile $2 $3
 	exit 0
 	fi
 
@@ -135,7 +135,7 @@ akutils test
 		cat $repodir/docs/align_tree_workflow.help
 		exit 0
 		fi
-	bash $scriptdir/align_tree_workflow.sh $stdout $stderr $randcode $2 $3
+	bash $scriptdir/align_tree_workflow.sh $stdout $stderr $randcode $configfile $2 $3
 	exit 0
 	fi
 
@@ -148,7 +148,20 @@ akutils test
 		cat $repodir/docs/cdiv_stats_workflow.help
 		exit 0
 		fi
-	bash $scriptdir/cdiv_stats_workflow.sh $stdout $stderr $randcode $2 $3
+	bash $scriptdir/cdiv_stats_workflow.sh $stdout $stderr $randcode $configfile $2 $3
+	exit 0
+	fi
+
+## Check whether user supplied phix_filtering_workflow.  If yes, run phix filtering workflow or display specific usage or help if specified.
+	if [[ "$1" == "phix_filtering_workflow" ]]; then
+		if [[ -z "$2" ]]; then
+		cat $repodir/docs/phix_filtering_workflow.usage
+		exit 0
+		elif [[ "$2" == "help" ]]; then
+		cat $repodir/docs/phix_filtering_workflow.help
+		exit 0
+		fi
+	bash $scriptdir/phix_filtering_workflow.sh $stdout $stderr $randcode $configfile $2 $3 $4 $5 $6
 	exit 0
 	fi
 
