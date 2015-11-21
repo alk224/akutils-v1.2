@@ -95,7 +95,7 @@ akutils check
 
 ## Check whether user supplied test.  If yes, run workflow tests.
 	if [[ "$1" == "test" ]]; then
-	bash $scriptdir/workflow_test_slave.sh $stdout $stderr $randcode
+	bash $scriptdir/akutils_test.sh $stdout $stderr $randcode
 	exit 0
 	fi
 
