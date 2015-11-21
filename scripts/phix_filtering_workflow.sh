@@ -22,30 +22,27 @@
 #     misrepresented as being the original software.
 #  3. This notice may not be removed or altered from any source distribution.
 #
-
 set -e
 
-## Check whether user had supplied -h or --help. If yes display help 
-
-	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
+## Set up environment and read variables passed from akutils
 	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
-	less $scriptdir/docs/PhiX_filtering_workflow.help
-	exit 0
-	fi 
+	workdir=$(pwd)
+	stdout="$1"
+	stderr="$2"
+	randcode="$3"
+	config="$4"
+	outdir="$5"
+	mapfile="$6"
+	index="$7"
+	read1="$8"
+	read2="$9"
 
-## If config supplied, run config utility instead
+## If different than 8 or 9 arguments supplied, display usage 
 
-	if [[ "$1" == "config" ]]; then
-		akutils_config_utility.sh
-		exit 0
-	fi
-
-## If different than 4 or 5 arguments supplied, display usage 
-
-	if [[  "$#" -ne 4 ]] && [[  "$#" -ne 5 ]]; then 
+	if [[  "$#" -ne 8 ]] && [[  "$#" -ne 9 ]]; then 
 		echo "
 Usage (order is important):
-PhiX_filtering_workflow.sh <output_directory> <mappingfile> <index> <read1> <read2>
+akutils phix_filtering_workflow.sh <output_directory> <mappingfile> <index> <read1> <read2>
 
 	<read2> is optional
 		"
@@ -54,19 +51,11 @@ PhiX_filtering_workflow.sh <output_directory> <mappingfile> <index> <read1> <rea
 
 ## Define filter mode based on number of supplied inputs
 
-	if [[  "$#" == 4 ]]; then
-	mode=(single)
-	elif [[  "$#" == 5 ]]; then
-	mode=(paired)
+	if [[  "$#" == "8" ]]; then
+	mode="single"
+	elif [[  "$#" == "9" ]]; then
+	mode="paired"
 	fi
-
-## Define inputs and working directory
-	workdir=$(pwd)
-	outdir=($1)
-	mapfile=($2)
-	index=($3)
-	read1=($4)
-	read2=($5)
 
 ## Check to see if requested output directory exists
 
@@ -93,9 +82,6 @@ Exiting.
 	log=($outdir/phix_filtering_workflow_$date0.log)
 
 ## Check for required dependencies:
-
-scriptdir="$( cd "$( dirname "$0" )" && pwd )"
-
 #echo "
 #Checking for required dependencies...
 #"
@@ -117,33 +103,11 @@ scriptdir="$( cd "$( dirname "$0" )" && pwd )"
 #All dependencies satisfied.  Proceeding...
 #"
 
-##Read in variables from config file
+## Locate config file
 
-	local_config_count=(`ls $workdir/akutils*.config 2>/dev/null | wc -w`)
-	if [[ $local_config_count -ge 1 ]]; then
 
-	config=`ls $workdir/akutils*.config`
+## Read in variables from config file
 
-	echo "Using local akutils config file:
-$config"
-	echo "
-Referencing local akutils config file.
-$config
-	" >> $log
-	else
-		global_config_count=(`ls $scriptdir/akutils_resources/akutils*.config 2>/dev/null | wc -w`)
-		if [[ $global_config_count -ge 1 ]]; then
-
-		config=`ls $scriptdir/akutils_resources/akutils*.config`
-
-		echo "Using global akutils config file.
-$config"
-		echo "
-Referencing global akutils config file.
-$config
-		" >> $log
-		fi
-	fi
 
 	refs=(`grep "Reference" $config | grep -v "#" | cut -f 2`)
 	tax=(`grep "Taxonomy" $config | grep -v "#" | cut -f 2`)
