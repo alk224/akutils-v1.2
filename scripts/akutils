@@ -1,0 +1,171 @@
+#!/usr/bin/env bash
+#
+#  akutils - akutils master script
+#
+#  Version 0.0.1 (Novermber, 13, 2015)
+#
+#  Copyright (c) 2015 Andrew Krohn
+#
+#  This software is provided 'as-is', without any express or implied
+#  warranty. In no event will the authors be held liable for any damages
+#  arising from the use of this software.
+#
+#  Permission is granted to anyone to use this software for any purpose,
+#  including commercial applications, and to alter it and redistribute it
+#  freely, subject to the following restrictions:
+#
+#  1. The origin of this software must not be misrepresented; you must not
+#     claim that you wrote the original software. If you use this software
+#     in a product, an acknowledgment in the product documentation would be
+#     appreciated but is not required.
+#  2. Altered source versions must be plainly marked as such, and must not be
+#     misrepresented as being the original software.
+#  3. This notice may not be removed or altered from any source distribution.
+#
+
+## Find scripts and repository location.
+	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
+	repodir=`dirname $scriptdir`
+
+## Set working directory and other important variables
+	workdir=$(pwd)
+	randcode=`cat /dev/urandom |tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1` 2>/dev/null
+	stderr=($scriptdir/temp/$randcode\_stderr)
+	stdout=($scriptdir/temp/$randcode\_stdout)
+
+## Usage and help
+	usage="$repodir/docs/akutils.usage"
+	help="$repodir/docs/akutils.help"
+
+## Check whether user supplied help, -h or --help. If yes display help.
+	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]] || [[ "$1" == "help" ]]; then
+	less $repodir/docs/akutils.help
+		exit 0	
+	fi
+
+## Find config file and run config utility if necessary
+	globalconfigsearch=(`ls $repodir/akutils_resources/akutils.global.config 2>/dev/null`)
+	localconfigsearch=(`ls akutils*.config 2>/dev/null`)
+	if [[ -f "$localconfigsearch" ]]; then
+		configfile="$localconfigsearch"
+		globallocal="local"
+	elif [[ -f "$globalconfigsearch" ]]; then
+		configfile="$globalconfigsearch"
+		globallocal="global"
+	else
+	echo "
+No config file is present.  Running config utility to establish configurable
+options.
+	"
+	bash $scriptdir/configure_slave.sh $stdout $stderr $randcode
+	exit 0
+	fi
+
+## Check whether user supplied print_config.  If yes, list config options.
+	if [[ "$1" == "print_config" ]]; then
+	bash $scriptdir/readconfig_slave.sh $configfile $globallocal $stdout $stderr $randcode
+	exit 0
+	fi
+
+## Check whether user supplied configure.  If yes, run config utility.
+	if [[ "$1" == "configure" ]]; then
+	bash $scriptdir/configure_slave.sh $stdout $stderr $randcode
+	exit 0
+	fi
+
+## Check whether user supplied check.  If yes, run dependency check.
+	if [[ "$1" == "check" ]]; then
+	bash $scriptdir/dependency_check_slave.sh $stdout $stderr $randcode
+	exit 0
+	fi
+
+## Check whether user supplied check-result.  If yes, print results of dependency check.
+	if [[ "$1" == "check-result" ]]; then
+	resultcount=`ls $repodir/akutils_resources/akutils.dependencies.result 2>/dev/null | wc -l`
+		if [[ $resultcount == 0 ]]; then
+		echo "
+Dependency check has not been run previously.  To generate results, execute:
+akutils check
+		"
+		elif [[ $resultcount == 1 ]]; then
+		less $repodir/akutils_resources/akutils.dependencies.result
+		fi
+		exit 0
+	fi
+
+## Check whether user supplied test.  If yes, run workflow tests.
+	if [[ "$1" == "test" ]]; then
+	bash $scriptdir/akutils_test.sh $stdout $stderr $randcode
+	exit 0
+	fi
+
+## Check whether user supplied test-result.  If yes, print results of workflow tests.
+	if [[ "$1" == "test-result" ]]; then
+	resultcount=`ls $repodir/akutils_resources/akutils.workflow.test.result 2>/dev/null | wc -l`
+		if [[ $resultcount == 0 ]]; then
+		echo "
+Workflow tests have not been run previously.  To generate results, execute:
+akutils test
+		"
+		elif [[ $resultcount == 1 ]]; then
+		less $repodir/akutils_resources/akutils.workflow.test.result
+		fi
+		exit 0
+	fi
+
+## Check whether user supplied otu_picking_workflow.  If yes, run otu picking workflow or display specific usage or help if specified.
+	if [[ "$1" == "otu_picking_workflow" ]]; then
+		if [[ -z "$2" ]]; then
+		cat $repodir/docs/otu_picking_workflow.usage
+		exit 0
+		elif [[ "$2" == "help" ]]; then
+		cat $repodir/docs/otu_picking_workflow.help
+		exit 0
+		fi
+	bash $scriptdir/otu_picking_workflow.sh $stdout $stderr $randcode $configfile $2 $3
+	exit 0
+	fi
+
+## Check whether user supplied align_tree_workflow.  If yes, run alignment and tree workflow or display specific usage or help if specified.
+	if [[ "$1" == "align_tree_workflow" ]]; then
+		if [[ -z "$2" ]]; then
+		cat $repodir/docs/align_tree_workflow.usage
+		exit 0
+		elif [[ "$2" == "help" ]]; then
+		cat $repodir/docs/align_tree_workflow.help
+		exit 0
+		fi
+	bash $scriptdir/align_tree_workflow.sh $stdout $stderr $randcode $configfile $2 $3
+	exit 0
+	fi
+
+## Check whether user supplied cdiv_stats_workflow.  If yes, run cdiv and stats workflow or display specific usage or help if specified.
+	if [[ "$1" == "cdiv_stats_workflow" ]]; then
+		if [[ -z "$2" ]]; then
+		cat $repodir/docs/cdiv_stats_workflow.usage
+		exit 0
+		elif [[ "$2" == "help" ]]; then
+		cat $repodir/docs/cdiv_stats_workflow.help
+		exit 0
+		fi
+	bash $scriptdir/cdiv_stats_workflow.sh $stdout $stderr $randcode $configfile $2 $3
+	exit 0
+	fi
+
+## Check whether user supplied phix_filtering_workflow.  If yes, run phix filtering workflow or display specific usage or help if specified.
+	if [[ "$1" == "phix_filtering_workflow" ]]; then
+		if [[ -z "$2" ]]; then
+		cat $repodir/docs/phix_filtering_workflow.usage
+		exit 0
+		elif [[ "$2" == "help" ]]; then
+		cat $repodir/docs/phix_filtering_workflow.help
+		exit 0
+		fi
+	bash $scriptdir/phix_filtering_workflow.sh $stdout $stderr $randcode $configfile $2 $3 $4 $5 $6
+	exit 0
+	fi
+
+## Display usage for non-parseable command.
+	cat $usage
+
+exit 0
