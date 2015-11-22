@@ -1,4 +1,6 @@
-_akutils-dev()
+## Command autocompletion file for akutils
+
+_akutils()
 {
   local cur prev opts base
   COMPREPLY=()
@@ -6,13 +8,15 @@ _akutils-dev()
   prev="${COMP_WORDS[COMP_CWORD-1]}"
 
   ## Basic options to autocomplete
-  opts="configure read check check-result help
-	otu_workflow align_tree_workflow cdiv_stats_workflow
+  opts="configure print_config check check-result help
+	otu_workflow align_tree_workflow core_stats_workflow
+	phix_filtering strip_primers
+	join_paired_reads
         "
 
   ## Complete available akutils command arguments
   case $prev in
-	akutils-dev)
+	akutils)
 	  COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
 	  ;;
   ## Complete options to some of the commands
@@ -24,7 +28,7 @@ _akutils-dev()
 	  local align="16S other"
 	  COMPREPLY=( $(compgen -W "${align}" -- ${cur}) )
 	  ;;
-        cdiv_stats_workflow)
+        core_stats_workflow)
           local cdiv="input_otu_table.biom table_prefix_for_batch_mode"
           COMPREPLY=( $(compgen -W "${cdiv}" -- ${cur}) )
           ;;
@@ -43,8 +47,21 @@ _akutils-dev()
         $4)
           local cores="cores"
           COMPREPLY=( $(compgen -W "${cores}" -- ${cur}) )
+	  ;;
+	phix_filtering)
+	  local phix="map"
+	  COMPREPLY=( $(compgen -W "${phix}" -- ${cur}) )
+	  ;;
+	strip_primers)
+	  local strip="primers_file"
+	  COMPREPLY=( $(compgen -W "${strip}" -- ${cur}) )
+	  ;;
+	join_paired_reads)
+	  local join="single_index dual_index"
+	  COMPREPLY=( $(compgen -W "${join}" -- ${cur}) )
+	  ;;
 
   esac
   return 0
 }
-complete -F _akutils-dev akutils-dev
+complete -F _akutils akutils
