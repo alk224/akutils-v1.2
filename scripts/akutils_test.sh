@@ -16,9 +16,10 @@ workdir=$(pwd)
 
 ## Echo test start
 echo "
-Beginning tests of QIIME installation.
+Beginning tests of akutils functions.
 All tests take ~20 minutes on a system
-with 24 cores.
+with 24 cores or ~60 minutes on a
+system with 2 cores.
 "
 
 ## Check for test data
@@ -138,27 +139,27 @@ Set akutils global config file." >> $log
 Set temporary akutils global config file." >> $log
 	fi
 
-## Test of db_format.sh command
+## Test of format_database.sh command
 	res1=$(date +%s.%N)
-	echo "Test of db_format.sh command.
+	echo "Test of format_database command.
 	"
 	echo "
-***** Test of db_format.sh command.
+***** Test of format_database command.
 ***** Command:
-db_format $testdir/gg_database/97_rep_set_1000.fasta $testdir/gg_database/97_taxonomy_1000.txt $testdir/resources/primers_515F-806R.txt 150 $testdir/db_format_out" >> $log
-	if [[ -d $testdir/db_format_out ]]; then
-	rm -r $testdir/db_format_out
+akutils format_database $testdir/gg_database/97_rep_set_1000.fasta $testdir/gg_database/97_taxonomy_1000.txt $testdir/resources/primers_515F-806R.txt 150 $testdir/db_format_out" >> $log
+	if [[ -d $testdir/format_database_out ]]; then
+	rm -r $testdir/format_database_out
 	else
-	mkdir -p $testdir/db_format_out
+	mkdir -p $testdir/format_database_out
 	fi
-bash $scriptdir/db_format.sh $testdir/gg_database/97_rep_set_1000.fasta $testdir/gg_database/97_taxonomy_1000.txt $testdir/resources/primers_515F-806R.txt 250 $testdir/db_format_out 1>$testdir/std_out 2>$testdir/std_err || true
+bash $scriptdir/format_database.sh $testdir/gg_database/97_rep_set_1000.fasta $testdir/gg_database/97_taxonomy_1000.txt $testdir/resources/primers_515F-806R.txt 250 $testdir/format_database_out 1>$testdir/std_out 2>$testdir/std_err || true
 wait
 echo "
-***** dbformat.sh std_out:
+***** format_database std_out:
 " >> $log
 cat $testdir/std_out >> $log
 echo "
-***** dbformat.sh std_err:
+***** format_database std_err:
 " >> $log
 	if [[ -s $testdir/std_err ]]; then
 	echo "!!!!! ERRORS REPORTED DURING TEST !!!!!
@@ -166,12 +167,12 @@ echo "
 	fi
 cat $testdir/std_err >> $log
 	if [[ ! -s $testdir/std_err ]]; then
-	echo "db_format.sh successful (no error message).
+	echo "format_database successful (no error message).
 	"
-	echo "db_format.sh successful (no error message)." >> $log
+	echo "format_database successful (no error message)." >> $log
 echo "" >> $log
 	else
-	echo "Errors reported during db_format.sh test.
+	echo "Errors reported during format_database test.
 See log file: $log
 	"
 	fi
@@ -185,7 +186,7 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-runtime=`printf "Runtime for db_format.sh test:
+runtime=`printf "Runtime for format_database test:
 %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
 echo "
 $runtime
@@ -195,12 +196,12 @@ echo "$runtime
 
 ## Test of strip_primers.sh command
 	res1=$(date +%s.%N)
-	echo "Test of strip_primers.sh command.
+	echo "Test of strip_primers command.
 	"
 	echo "
-***** Test of strip_primers.sh command.
+***** Test of strip_primers command.
 ***** Command:
-strip_primers.sh $homedir/akutils/primers.16S.ITS.fa $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq" >> $log
+akutils strip_primers $homedir/akutils/primers.16S.ITS.fa $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq" >> $log
 	if [[ ! -f $testdir/index1.fq ]]; then
 	cp $testdir/raw_data/idx.trim.fastq $testdir/index1.fq
 	fi
@@ -219,11 +220,11 @@ wait
 	mv $testdir/strip_primers_out/index1.fastq $testdir/strip_primers_out/index1.noprimers.fastq
 	fi
 echo "
-***** strip_primers.sh std_out:
+***** strip_primers std_out:
 " >> $log
 cat $testdir/std_out >> $log
 echo "
-***** strip_primers.sh std_err:
+***** strip_primers std_err:
 " >> $log
 	if [[ -s $testdir/std_err ]]; then
 	echo "!!!!! ERRORS REPORTED DURING TEST !!!!!
@@ -231,12 +232,12 @@ echo "
 	fi
 cat $testdir/std_err >> $log
 	if [[ ! -s $testdir/std_err ]]; then
-	echo "strip_primers.sh successful (no error message).
+	echo "strip_primers successful (no error message).
 	"
-	echo "strip_primers.sh successful (no error message)." >> $log
+	echo "strip_primers successful (no error message)." >> $log
 echo "" >> $log
 	else
-	echo "Errors reported during strip_primers.sh test.
+	echo "Errors reported during strip_primers test.
 See log file: $log
 	"
 	fi
@@ -250,7 +251,7 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-runtime=`printf "Runtime for strip_primers.sh test:
+runtime=`printf "Runtime for strip_primers test:
 %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
 echo "
 $runtime
@@ -258,28 +259,28 @@ $runtime
 echo "$runtime
 "
 
-## Test of PhiX_filtering_workflow.sh command
+## Test of phiX_filtering command
 	res1=$(date +%s.%N)
-	echo "Test of PhiX_filtering_workflow.sh command.
+	echo "Test of phiX_filtering command.
 	"
 	echo "
-***** Test of PhiX_filtering_workflow.sh command.
+***** Test of phiX_filtering command.
 ***** Command:
-PhiX_filtering_workflow.sh $testdir/PhiX_filtering_out $testdir/map.test.txt $testdir/strip_primers_out/index1.noprimers.fastq $testdir/strip_primers_out/read1.noprimers.fastq $testdir/strip_primers_out/read2.noprimers.fastq" >> $log
-	if [[ -d $testdir/PhiX_filtering_out ]]; then
-	rm -r $testdir/PhiX_filtering_out
+akutils phiX_filtering $testdir/phiX_filtering_out $testdir/map.test.txt $testdir/strip_primers_out/index1.noprimers.fastq $testdir/strip_primers_out/read1.noprimers.fastq $testdir/strip_primers_out/read2.noprimers.fastq" >> $log
+	if [[ -d $testdir/phiX_filtering_out ]]; then
+	rm -r $testdir/phiX_filtering_out
 	fi
 	if [[ ! -f $testdir/map.test.txt ]]; then
 	cp $testdir/raw_data/map.mock.16S.nodils.txt $testdir/map.test.txt
 	fi
-bash $scriptdir/PhiX_filtering_workflow.sh $testdir/PhiX_filtering_out $testdir/map.test.txt $testdir/strip_primers_out/index1.noprimers.fastq $testdir/strip_primers_out/read1.noprimers.fastq $testdir/strip_primers_out/read2.noprimers.fastq 1>$testdir/std_out 2>$testdir/std_err 2>&1 || true
+bash $scriptdir/phiX_filtering.sh $testdir/phiX_filtering_out $testdir/map.test.txt $testdir/strip_primers_out/index1.noprimers.fastq $testdir/strip_primers_out/read1.noprimers.fastq $testdir/strip_primers_out/read2.noprimers.fastq 1>$testdir/std_out 2>$testdir/std_err 2>&1 || true
 wait
 echo "
-***** PhiX_filtering_workflow.sh std_out:
+***** phiX_filtering std_out:
 " >> $log
 cat $testdir/std_out >> $log
 echo "
-***** PhiX_filtering_workflow.sh std_err:
+***** phiX_filtering std_err:
 " >> $log
 	if [[ -s $testdir/std_err ]]; then
 	echo "!!!!! ERRORS REPORTED DURING TEST !!!!!
@@ -287,12 +288,12 @@ echo "
 	fi
 cat $testdir/std_err >> $log
 	if [[ ! -s $testdir/std_err ]]; then
-	echo "PhiX_filtering_workflow.sh successful (no error message).
+	echo "phiX_filtering successful (no error message).
 	"
-	echo "PhiX_filtering_workflow.sh successful (no error message)." >> $log
+	echo "phiX_filtering successful (no error message)." >> $log
 echo "" >> $log
 	else
-	echo "Errors reported during PhiX_filtering_workflow.sh test.
+	echo "Errors reported during phiX_filtering test.
 See log file: $log
 	"
 	fi
@@ -306,7 +307,7 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-runtime=`printf "Runtime for PhiX_filtering_workflow.sh test:
+runtime=`printf "Runtime for phiX_filtering test:
 %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
 echo "
 $runtime
@@ -314,26 +315,26 @@ $runtime
 echo "$runtime
 "
 
-## Test of Single_indexed_fqjoin_workflow.sh command
+## Test of join_paired_reads.sh command
 	res1=$(date +%s.%N)
-	echo "Test of Single_indexed_fqjoin_workflow.sh command.
+	echo "Test of join_paired_reads command.
 	"
 	echo "
-***** Test of Single_indexed_fqjoin_workflow.sh command.
+***** Test of join_paired_reads command.
 ***** Command:
-Single_indexed_fqjoin_workflow.sh $testdir/PhiX_filtering_out/index.phixfiltered.fastq $testdir/PhiX_filtering_out/read1.phixfiltered.fastq $testdir/PhiX_filtering_out/read2.phixfiltered.fastq 12 -m 30 -p 30" >> $log
+akutils join_paired_reads $testdir/phiX_filtering_out/index.phixfiltered.fastq $testdir/phiX_filtering_out/read1.phixfiltered.fastq $testdir/phiX_filtering_out/read2.phixfiltered.fastq 12 -m 30 -p 30" >> $log
 	if [[ -d $testdir/fastq-join_output ]]; then
 	rm -r $testdir/fastq-join_output
 	fi
-bash $scriptdir/Single_indexed_fqjoin_workflow.sh $testdir/PhiX_filtering_out/index.phixfiltered.fastq $testdir/PhiX_filtering_out/read1.phixfiltered.fastq $testdir/PhiX_filtering_out/read2.phixfiltered.fastq 12 -m 30 -p 30 1>$testdir/std_out 2>$testdir/std_err || true
+bash $scriptdir/join_paired_reads.sh $testdir/phiX_filtering_out/index.phixfiltered.fastq $testdir/phiX_filtering_out/read1.phixfiltered.fastq $testdir/phiX_filtering_out/read2.phixfiltered.fastq 12 -m 30 -p 30 1>$testdir/std_out 2>$testdir/std_err || true
 wait
 echo "
-***** Single_indexed_fqjoin_workflow.sh std_out:
+***** join_paired_reads std_out:
 " >> $log
 cat $testdir/std_out >> $log
 grep -A 5 "Fastq-join results:" $testdir/fastq-join_output/fastq-join_workflow*.log >> $log
 echo "
-***** Single_indexed_fqjoin_workflow.sh std_err:
+***** join_paired_reads std_err:
 " >> $log
 	if [[ -s $testdir/std_err ]]; then
 	echo "!!!!! ERRORS REPORTED DURING TEST !!!!!
@@ -341,12 +342,12 @@ echo "
 	fi
 cat $testdir/std_err >> $log
 	if [[ ! -s $testdir/std_err ]]; then
-	echo "Single_indexed_fqjoin_workflow.sh successful (no error message).
+	echo "join_paired_reads successful (no error message).
 	"
-	echo "Single_indexed_fqjoin_workflow.sh successful (no error message)." >> $log
+	echo "join_paired_reads successful (no error message)." >> $log
 echo "" >> $log
 	else
-	echo "Errors reported during Single_indexed_fqjoin_workflow.sh test.
+	echo "Errors reported during join_paired_reads test.
 See log file: $log
 	"
 	fi
@@ -368,33 +369,33 @@ $runtime
 echo "$runtime
 "
 
-## Test of otu_picking_workflow.sh command
+## Test of pick_otus.sh command
 	res1=$(date +%s.%N)
-	echo "Test of otu_picking_workflow.sh command.
+	echo "Test of pick_otus command.
 This test takes a while.  Please be patient
 (~13 minutes needed on a system with 24 cores).
 	"
 	echo "
-***** Test of otu_picking_workflow.sh command.
+***** Test of pick_otus command.
 ***** Command:
-otu_picking_workflow.sh $testdir/otu_picking_workflow_out 16S" >> $log
-	if [[ -d $testdir/otu_picking_workflow_out ]]; then
-	rm -r $testdir/otu_picking_workflow_out
+akutils pick_otus 16S" >> $log
+	if [[ -d $testdir/pick_otus_out ]]; then
+	rm -r $testdir/pick_otus_out
 	fi
-	mkdir $testdir/otu_picking_workflow_out
-	cp $testdir/map.test.txt $testdir/otu_picking_workflow_out
-	cp $testdir/fastq-join_output/idx.fq $testdir/otu_picking_workflow_out
-	cp $testdir/fastq-join_output/rd.fq $testdir/otu_picking_workflow_out
-cd $testdir/otu_picking_workflow_out
-bash $scriptdir/otu_picking_workflow.sh ./ 16S 1>$testdir/std_out 2>$testdir/std_err || true
+	mkdir $testdir/pick_otus_out
+	cp $testdir/map.test.txt $testdir/pick_otus_out
+	cp $testdir/fastq-join_output/idx.fq $testdir/pick_otus_out
+	cp $testdir/fastq-join_output/rd.fq $testdir/pick_otus_out
+cd $testdir/pick_otus_out
+bash $scriptdir/pick_otus.sh ./ 16S 1>$testdir/std_out 2>$testdir/std_err || true
 wait
 cd $homedir
 echo "
-***** otu_picking_workflow.sh std_out:
+***** pick_otus std_out:
 " >> $log
 cat $testdir/std_out >> $log
 echo "
-***** otu_picking_workflow.sh std_err:
+***** pick_otus std_err:
 " >> $log
 	if [[ -s $testdir/std_err ]]; then
 	echo "!!!!! ERRORS REPORTED DURING TEST !!!!!
@@ -402,12 +403,12 @@ echo "
 	fi
 cat $testdir/std_err >> $log
 	if [[ ! -s $testdir/std_err ]]; then
-	echo "otu_picking_workflow.sh successful (no error message).
+	echo "pick_otus successful (no error message).
 	"
-	echo "otu_picking_workflow.sh successful (no error message)." >> $log
+	echo "pick_otus successful (no error message)." >> $log
 echo "" >> $log
 	else
-	echo "Errors reported during otu_picking_workflow.sh test.
+	echo "Errors reported during pick_otus test.
 See log file: $log
 	"
 	fi
@@ -421,7 +422,7 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-runtime=`printf "Runtime for otu_picking_workflow.sh test:
+runtime=`printf "Runtime for pick_otus test:
 %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
 echo "
 $runtime
@@ -429,24 +430,24 @@ $runtime
 echo "$runtime
 "
 
-## Test of align_and_tree_workflow.sh command
+## Test of align_and_tree command
 	res1=$(date +%s.%N)
-	echo "Test of align_and_tree_workflow.sh command.
+	echo "Test of align_and_tree command.
 	"
 	echo "
-***** Test of align_and_tree_workflow.sh command.
+***** Test of align_and_tree command.
 ***** Command:
-align_and_tree_workflow.sh swarm_otus_d1/ 16S" >> $log
-cd $testdir/otu_picking_workflow_out
-bash $scriptdir/align_tree_workflow.sh swarm_otus_d1/ 16S 1>$testdir/std_out 2>$testdir/std_err || true
+akutils align_and_tree swarm_otus_d1/ 16S" >> $log
+cd $testdir/pick_otus_out
+bash $scriptdir/align_tree.sh swarm_otus_d1/ 16S 1>$testdir/std_out 2>$testdir/std_err || true
 wait
 cd $homedir
 echo "
-***** align_and_tree_workflow.sh std_out:
+***** align_and_tree std_out:
 " >> $log
 cat $testdir/std_out >> $log
 echo "
-***** align_and_tree_workflow.sh std_err:
+***** align_and_tree std_err:
 " >> $log
 	if [[ -s $testdir/std_err ]]; then
 	echo "!!!!! ERRORS REPORTED DURING TEST !!!!!
@@ -454,12 +455,12 @@ echo "
 	fi
 cat $testdir/std_err >> $log
 	if [[ ! -s $testdir/std_err ]]; then
-	echo "align_and_tree_workflow.sh successful (no error message).
+	echo "align_and_tree successful (no error message).
 	"
-	echo "align_and_tree_workflow.sh successful (no error message)." >> $log
+	echo "align_and_tree successful (no error message)." >> $log
 echo "" >> $log
 	else
-	echo "Errors reported during align_and_tree_workflow.sh test.
+	echo "Errors reported during align_and_tree test.
 See log file: $log
 	"
 	fi
@@ -473,7 +474,7 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-runtime=`printf "Runtime for align_and_tree_workflow.sh test:
+runtime=`printf "Runtime for align_and_tree test:
 %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
 echo "
 $runtime
@@ -481,26 +482,26 @@ $runtime
 echo "$runtime
 "
 
-## Test of cdiv_graphs_and_stats_workflow.sh command
+## Test of core_diversity command
 	res1=$(date +%s.%N)
-	echo "Test of cdiv_graphs_and_stats_workflow.sh command.
+	echo "Test of core_diversity command.
 This test takes a while.  Please be patient
 (~7 minutes needed on a system with 24 cores).
 	"
 	echo "
-***** Test of cdiv_graphs_and_stats_workflow.sh command.
+***** Test of core_diversity command.
 ***** Command:
-cdiv_graphs_and_stats_workflow.sh swarm_otus_d1/OTU_tables_blast_tax/03_table_hdf5.biom map.test.txt Community $cpus" >> $log
-cd $testdir/otu_picking_workflow_out
-bash $scriptdir/cdiv_stats_workflow.sh swarm_otus_d1/OTU_tables_blast_tax/03_table_hdf5.biom map.test.txt Community $cpus 1>$testdir/std_out 2>$testdir/std_err || true
+akutils core_diversity.sh swarm_otus_d1/OTU_tables_blast_tax/03_table_hdf5.biom map.test.txt Community $cpus" >> $log
+cd $testdir/pick_otus_out
+bash $scriptdir/core_diversity.sh swarm_otus_d1/OTU_tables_blast_tax/03_table_hdf5.biom map.test.txt Community $cpus 1>$testdir/std_out 2>$testdir/std_err || true
 wait
 cd $homedir
 echo "
-***** cdiv_graphs_and_stats_workflow.sh std_out:
+***** core_diversity std_out:
 " >> $log
 cat $testdir/std_out >> $log
 echo "
-***** cdiv_graphs_and_stats_workflow.sh std_err:
+***** core_diversity std_err:
 " >> $log
 	if [[ -s $testdir/std_err ]]; then
 	echo "!!!!! ERRORS REPORTED DURING TEST !!!!!
@@ -508,12 +509,12 @@ echo "
 	fi
 cat $testdir/std_err >> $log
 	if [[ ! -s $testdir/std_err ]]; then
-	echo "cdiv_graphs_and_stats_workflow.sh successful (no error message).
+	echo "core_diversity successful (no error message).
 	"
-	echo "cdiv_graphs_and_stats_workflow.sh successful (no error message)." >> $log
+	echo "core_diversity successful (no error message)." >> $log
 echo "" >> $log
 	else
-	echo "Errors reported during cdiv_graphs_and_stats_workflow.sh test.
+	echo "Errors reported during core_diversity test.
 See log file: $log
 	"
 	fi
@@ -527,7 +528,7 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-runtime=`printf "Runtime for cdiv_graphs_and_stats_workflow.sh test:
+runtime=`printf "Runtime for core_diversity test:
 %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
 echo "
 $runtime

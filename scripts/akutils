@@ -43,6 +43,12 @@
 		exit 0	
 	fi
 
+## Check whether user supplied tutorial. If yes display tutorial.
+	if [[ "$1" == "tutorial" ]]; then
+	less $repodir/docs/akutils.tutorial
+		exit 0	
+	fi
+
 ## Find config file and run config utility if necessary
 	globalconfigsearch=(`ls $repodir/akutils_resources/akutils.global.config 2>/dev/null`)
 	localconfigsearch=(`ls akutils*.config 2>/dev/null`)
@@ -79,8 +85,8 @@ options.
 	exit 0
 	fi
 
-## Check whether user supplied check-result.  If yes, print results of dependency check.
-	if [[ "$1" == "check-result" ]]; then
+## Check whether user supplied check_result.  If yes, print results of dependency check.
+	if [[ "$1" == "check_result" ]]; then
 	resultcount=`ls $repodir/akutils_resources/akutils.dependencies.result 2>/dev/null | wc -l`
 		if [[ $resultcount == 0 ]]; then
 		echo "
@@ -99,8 +105,8 @@ akutils check
 	exit 0
 	fi
 
-## Check whether user supplied test-result.  If yes, print results of workflow tests.
-	if [[ "$1" == "test-result" ]]; then
+## Check whether user supplied test_result.  If yes, print results of workflow tests.
+	if [[ "$1" == "test_result" ]]; then
 	resultcount=`ls $repodir/akutils_resources/akutils.workflow.test.result 2>/dev/null | wc -l`
 		if [[ $resultcount == 0 ]]; then
 		echo "
@@ -113,55 +119,68 @@ akutils test
 		exit 0
 	fi
 
-## Check whether user supplied otu_picking_workflow.  If yes, run otu picking workflow or display specific usage or help if specified.
-	if [[ "$1" == "otu_picking_workflow" ]]; then
+## Check whether user supplied pick_otus.  If yes, run otu picking workflow or display specific usage or help if specified.
+	if [[ "$1" == "pick_otus" ]]; then
 		if [[ -z "$2" ]]; then
-		cat $repodir/docs/otu_picking_workflow.usage
+		cat $repodir/docs/pick_otus.usage
 		exit 0
 		elif [[ "$2" == "help" ]]; then
-		cat $repodir/docs/otu_picking_workflow.help
+		cat $repodir/docs/pick_otus.help
 		exit 0
 		fi
-	bash $scriptdir/otu_picking_workflow.sh $stdout $stderr $randcode $configfile $2 $3
+	bash $scriptdir/pick_otus.sh $stdout $stderr $randcode $configfile $2 $3
 	exit 0
 	fi
 
-## Check whether user supplied align_tree_workflow.  If yes, run alignment and tree workflow or display specific usage or help if specified.
-	if [[ "$1" == "align_tree_workflow" ]]; then
+## Check whether user supplied align_and_tree.  If yes, run alignment and tree workflow or display specific usage or help if specified.
+	if [[ "$1" == "align_and_tree" ]]; then
 		if [[ -z "$2" ]]; then
-		cat $repodir/docs/align_tree_workflow.usage
+		cat $repodir/docs/align_and_tree.usage
 		exit 0
 		elif [[ "$2" == "help" ]]; then
-		cat $repodir/docs/align_tree_workflow.help
+		cat $repodir/docs/align_and_tree.help
 		exit 0
 		fi
-	bash $scriptdir/align_tree_workflow.sh $stdout $stderr $randcode $configfile $2 $3
+	bash $scriptdir/align_and_tree.sh $stdout $stderr $randcode $configfile $2 $3
 	exit 0
 	fi
 
-## Check whether user supplied cdiv_stats_workflow.  If yes, run cdiv and stats workflow or display specific usage or help if specified.
-	if [[ "$1" == "cdiv_stats_workflow" ]]; then
+## Check whether user supplied core_diversity.  If yes, run core_diversity or display specific usage or help if specified.
+	if [[ "$1" == "core_diversity" ]]; then
 		if [[ -z "$2" ]]; then
-		cat $repodir/docs/cdiv_stats_workflow.usage
+		cat $repodir/docs/core_diversity.usage
 		exit 0
 		elif [[ "$2" == "help" ]]; then
-		cat $repodir/docs/cdiv_stats_workflow.help
+		cat $repodir/docs/core_diversity.help
 		exit 0
 		fi
-	bash $scriptdir/cdiv_stats_workflow.sh $stdout $stderr $randcode $configfile $2 $3
+	bash $scriptdir/core_diversity.sh $stdout $stderr $randcode $configfile $2 $3
 	exit 0
 	fi
 
-## Check whether user supplied phix_filtering_workflow.  If yes, run phix filtering workflow or display specific usage or help if specified.
-	if [[ "$1" == "phix_filtering_workflow" ]]; then
+## Check whether user supplied phix_filtering.  If yes, run phix filtering workflow or display specific usage or help if specified.
+	if [[ "$1" == "phix_filtering" ]]; then
 		if [[ -z "$2" ]]; then
-		cat $repodir/docs/phix_filtering_workflow.usage
+		cat $repodir/docs/phix_filtering.usage
 		exit 0
 		elif [[ "$2" == "help" ]]; then
-		cat $repodir/docs/phix_filtering_workflow.help
+		cat $repodir/docs/phix_filtering.help
 		exit 0
 		fi
-	bash $scriptdir/phix_filtering_workflow.sh $stdout $stderr $randcode $configfile $2 $3 $4 $5 $6
+	bash $scriptdir/phix_filtering.sh $stdout $stderr $randcode $configfile $2 $3 $4 $5 $6
+	exit 0
+	fi
+
+## Check whether user supplied format_database.  If yes, run format_database or display specific usage or help if specified.
+	if [[ "$1" == "format_database" ]]; then
+		if [[ -z "$2" ]]; then
+		cat $repodir/docs/format_database.usage
+		exit 0
+		elif [[ "$2" == "help" ]]; then
+		cat $repodir/docs/format_database.help
+		exit 0
+		fi
+	bash $scriptdir/format_database.sh $stdout $stderr $randcode $configfile $2 $3 $4 $5 $6
 	exit 0
 	fi
 

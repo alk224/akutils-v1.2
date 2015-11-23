@@ -8,10 +8,10 @@ _akutils()
   prev="${COMP_WORDS[COMP_CWORD-1]}"
 
   ## Basic options to autocomplete
-  opts="configure print_config check check-result help
-	otu_workflow align_tree_workflow core_stats_workflow
-	phix_filtering strip_primers
-	join_paired_reads
+  opts="configure print_config check check_result help
+	pick_otus align_and_tree core_diversity
+	phix_filtering strip_primers format_database test
+	test_result join_paired_reads tutorial
         "
 
   ## Complete available akutils command arguments
@@ -20,15 +20,15 @@ _akutils()
 	  COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
 	  ;;
   ## Complete options to some of the commands
-	otu_workflow)
+	pick_otus)
 	  local otu="16S ITS other"
 	  COMPREPLY=( $(compgen -W "${otu}" -- ${cur}) )
 	  ;;
-	align_tree_workflow)
+	align_and_tree)
 	  local align="16S other"
 	  COMPREPLY=( $(compgen -W "${align}" -- ${cur}) )
 	  ;;
-        core_stats_workflow)
+        core_diversity)
           local cdiv="input_otu_table.biom table_prefix_for_batch_mode"
           COMPREPLY=( $(compgen -W "${cdiv}" -- ${cur}) )
           ;;
@@ -57,6 +57,10 @@ _akutils()
 	  COMPREPLY=( $(compgen -W "${strip}" -- ${cur}) )
 	  ;;
 	join_paired_reads)
+	  local join="single_index dual_index"
+	  COMPREPLY=( $(compgen -W "${join}" -- ${cur}) )
+	  ;;
+	format_database)
 	  local join="single_index dual_index"
 	  COMPREPLY=( $(compgen -W "${join}" -- ${cur}) )
 	  ;;
