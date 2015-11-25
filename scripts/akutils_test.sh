@@ -116,7 +116,6 @@ for field in `grep -v "#" $masterconfig | cut -f 1`; do
 	fi
 done
 
-
 ## If no global akutils config file, set global config
 configtest=`ls $homedir/akutils/akutils_resources/akutils.global.config 2>/dev/null | wc -l`
 	if [[ $configtest == 0 ]]; then
@@ -152,7 +151,7 @@ akutils format_database $testdir/gg_database/97_rep_set_1000.fasta $testdir/gg_d
 	else
 	mkdir -p $testdir/format_database_out
 	fi
-bash $scriptdir/format_database.sh $testdir/gg_database/97_rep_set_1000.fasta $testdir/gg_database/97_taxonomy_1000.txt $testdir/resources/primers_515F-806R.txt 250 $testdir/format_database_out 1>$testdir/std_out 2>$testdir/std_err || true
+akutils format_database $testdir/gg_database/97_rep_set_1000.fasta $testdir/gg_database/97_taxonomy_1000.txt $testdir/resources/primers_515F-806R.txt 250 $testdir/format_database_out 1>$testdir/std_out 2>$testdir/std_err || true
 wait
 echo "
 ***** format_database std_out:
@@ -214,7 +213,8 @@ akutils strip_primers $homedir/akutils/primers.16S.ITS.fa $testdir/read1.fq $tes
 	if [[ -d $testdir/strip_primers_out ]]; then
 	rm -r $testdir/strip_primers_out
 	fi
-bash $scriptdir/strip_primers.sh $homedir/akutils/primers.16S.ITS.fa $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq 1>$testdir/std_out 2>$testdir/std_err || true
+
+akutils strip_primers $homedir/akutils/primers.16S.ITS.fa $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq 1>$testdir/std_out 2>$testdir/std_err || true
 wait
 	if [[ ! -f $testdir/strip_primers_out/index1.noprimers.fastq ]] && [[ -f $testdir/strip_primers_out/index1.fastq ]]; then
 	mv $testdir/strip_primers_out/index1.fastq $testdir/strip_primers_out/index1.noprimers.fastq
@@ -258,29 +258,29 @@ $runtime
 " >> $log
 echo "$runtime
 "
-
-## Test of phiX_filtering command
+exit 0
+## Test of phix_filtering command
 	res1=$(date +%s.%N)
-	echo "Test of phiX_filtering command.
+	echo "Test of phix_filtering command.
 	"
 	echo "
-***** Test of phiX_filtering command.
+***** Test of phix_filtering command.
 ***** Command:
-akutils phiX_filtering $testdir/phiX_filtering_out $testdir/map.test.txt $testdir/strip_primers_out/index1.noprimers.fastq $testdir/strip_primers_out/read1.noprimers.fastq $testdir/strip_primers_out/read2.noprimers.fastq" >> $log
-	if [[ -d $testdir/phiX_filtering_out ]]; then
-	rm -r $testdir/phiX_filtering_out
+akutils phix_filtering $testdir/phiX_filtering_out $testdir/map.test.txt $testdir/strip_primers_out/index1.noprimers.fastq $testdir/strip_primers_out/read1.noprimers.fastq $testdir/strip_primers_out/read2.noprimers.fastq" >> $log
+	if [[ -d $testdir/phix_filtering_out ]]; then
+	rm -r $testdir/phix_filtering_out
 	fi
 	if [[ ! -f $testdir/map.test.txt ]]; then
 	cp $testdir/raw_data/map.mock.16S.nodils.txt $testdir/map.test.txt
 	fi
-bash $scriptdir/phiX_filtering.sh $testdir/phiX_filtering_out $testdir/map.test.txt $testdir/strip_primers_out/index1.noprimers.fastq $testdir/strip_primers_out/read1.noprimers.fastq $testdir/strip_primers_out/read2.noprimers.fastq 1>$testdir/std_out 2>$testdir/std_err 2>&1 || true
+bash $scriptdir/phix_filtering.sh $testdir/phix_filtering_out $testdir/map.test.txt $testdir/strip_primers_out/index1.noprimers.fastq $testdir/strip_primers_out/read1.noprimers.fastq $testdir/strip_primers_out/read2.noprimers.fastq 1>$testdir/std_out 2>$testdir/std_err 2>&1 || true
 wait
 echo "
-***** phiX_filtering std_out:
+***** phix_filtering std_out:
 " >> $log
 cat $testdir/std_out >> $log
 echo "
-***** phiX_filtering std_err:
+***** phix_filtering std_err:
 " >> $log
 	if [[ -s $testdir/std_err ]]; then
 	echo "!!!!! ERRORS REPORTED DURING TEST !!!!!
@@ -288,12 +288,12 @@ echo "
 	fi
 cat $testdir/std_err >> $log
 	if [[ ! -s $testdir/std_err ]]; then
-	echo "phiX_filtering successful (no error message).
+	echo "phix_filtering successful (no error message).
 	"
 	echo "phiX_filtering successful (no error message)." >> $log
 echo "" >> $log
 	else
-	echo "Errors reported during phiX_filtering test.
+	echo "Errors reported during phix_filtering test.
 See log file: $log
 	"
 	fi
@@ -307,7 +307,7 @@ dt3=$(echo "$dt2-3600*$dh" | bc)
 dm=$(echo "$dt3/60" | bc)
 ds=$(echo "$dt3-60*$dm" | bc)
 
-runtime=`printf "Runtime for phiX_filtering test:
+runtime=`printf "Runtime for phix_filtering test:
 %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
 echo "
 $runtime

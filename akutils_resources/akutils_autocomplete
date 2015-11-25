@@ -19,6 +19,7 @@ _akutils()
 	akutils)
 	  COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
 	  ;;
+
   ## Complete options to some of the commands
 	pick_otus)
 	  local otu="16S ITS other"
@@ -28,44 +29,7 @@ _akutils()
 	  local align="16S other"
 	  COMPREPLY=( $(compgen -W "${align}" -- ${cur}) )
 	  ;;
-        core_diversity)
-          local cdiv="input_otu_table.biom table_prefix_for_batch_mode"
-          COMPREPLY=( $(compgen -W "${cdiv}" -- ${cur}) )
-          ;;
-        input_otu_table.biom)
-          local table="map"
-          COMPREPLY=( $(compgen -W "${table}" -- ${cur}) )
-          ;;
-        table_prefix_for_batch_mode)
-          local table1="map"
-          COMPREPLY=( $(compgen -W "${table1}" -- ${cur}) )
-          ;;
-        input_otu_table.biom)
-          local table="map"
-          COMPREPLY=( $(compgen -W "${table}" -- ${cur}) )
-          ;;
-        $4)
-          local cores="cores"
-          COMPREPLY=( $(compgen -W "${cores}" -- ${cur}) )
-	  ;;
-	phix_filtering)
-	  local phix="map"
-	  COMPREPLY=( $(compgen -W "${phix}" -- ${cur}) )
-	  ;;
-	strip_primers)
-	  local strip="primers_file"
-	  COMPREPLY=( $(compgen -W "${strip}" -- ${cur}) )
-	  ;;
-	join_paired_reads)
-	  local join="single_index dual_index"
-	  COMPREPLY=( $(compgen -W "${join}" -- ${cur}) )
-	  ;;
-	format_database)
-	  local join="single_index dual_index"
-	  COMPREPLY=( $(compgen -W "${join}" -- ${cur}) )
-	  ;;
-
   esac
   return 0
 }
-complete -F _akutils akutils
+complete -o default -F _akutils akutils

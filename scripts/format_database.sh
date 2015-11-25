@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-#  db_format.sh - reformat a QIIME-formatted reference database to include only a certain locus
+#  format_database.sh - reformat a QIIME-formatted reference database to include only a certain locus
 #
 #  Version 1.1.0 (June 16, 2015)
 #
@@ -22,37 +22,23 @@
 #     misrepresented as being the original software.
 #  3. This notice may not be removed or altered from any source distribution.
 #
-
 set -e
 
-## Check whether user had supplied -h or --help. If yes display help 
-
-	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
-	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
-	less $scriptdir/docs/db_format.help
-	exit 0
-	fi 
-
-## If incorrect number of arguments supplied, display usage 
-
-	if [[ "$#" -le 4 ]] || [[ "$#" -ge 7 ]]; then 
-		echo "
-Usage (order is important!!):
-db_format.sh <input_fasta> <input_taxonomy> <input_primers> <read_length> <output_directory> <input_phylogeny>
-
-	<input_phylogeny> is optional!!
-		"
-		exit 1
-	fi
-
 ## Define variables
+	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
+	repodir=`dirname $scriptdir`
+	workdir=$(pwd)
+	stdout="$1"
+	stderr="$2"
+	randcode="$3"
+	config="$4"
+	inrefs="$5"
+	intax="$6"
+	primers="$7"
+	length="$8"
+	outdir="$9"
+	intree="${10}"
 
-inrefs=($1)
-intax=($2)
-primers=($3)
-length=($4)
-outdir=($5)
-intree=($6)
 forward=`cat $primers | grep -e "f\s"`
 forname=`cat $primers | grep -e "f\s" | cut -f 1`
 forcount=`echo $forname | wc -l`
@@ -69,6 +55,12 @@ refsname=$(basename $inrefs .$refsextension)
 refscount=`cat $intax | wc -l`
 date0=`date +%Y%m%d_%I%M%p`
 log=$outdir/log_$date0.txt
+
+## If different than 9 or 10 arguments supplied, display usage 
+	if [[  "$#" -ne 9 ]] && [[  "$#" -ne 10 ]]; then
+		cat $repodir/docs/format_database.usage
+		exit 0
+	fi
 
 ## Make output directory
 
@@ -109,7 +101,6 @@ echo "Input phylogeny: $intree" >> $log
 
 ## Parse nonstandard characters in both inputs
 ## Script from Tony Walters
-
 	echo "Parsing nonstandard characters from inputs.
 	"
 	echo "
@@ -129,7 +120,6 @@ Parsing nonstandard characters from inputs:
 	wait
 
 ## Remove square brackets and quotes from taxonomy strings, and remove any text wrapping in the fasta input
-
 	echo "Removing square brackets and quotes from taxonomy strings, and removing
 any text wrapping in input fasta.
 	"
@@ -146,7 +136,6 @@ any text wrapping in input fasta.
 	wait
 
 ## Remove any leading or trailing whitespacesheck if input DB is sorted congruently
-
 	echo "Removing any leading or trailing whitespaces from inputs.
 	"
 	echo "
@@ -165,52 +154,10 @@ Removing any leading or trailing whitespaces from inputs.
 	rm $outdir/temp/$refsname\_clean0.$refsextension
 
 ## Check if input DB is sorted congruently
-
-#	echo "	Checking if taxonomy and sequence files are sorted
-#	"
-
 	tax=$outdir/temp/$taxname\_clean.$taxextension
 	refs=$outdir/temp/$refsname\_clean.$refsextension
-#	tree=$outdir/temp/$refsname\_tree_clean.tre
-
-#	cat $cleanrefs | awk '{if (substr($0,1,1)==">"){if (p){print "\n";} print $0} else printf("%s",$0);p++;}END{print "\n"}' > $outdir/refs_nowraps.temp
-
-#	head -10000 $cleantax | cut -f 1 > $outdir/sorttest.tax.headers.temp
-#	head -20000 $cleanrefs | grep ">" | sed 's/>//' > $outdir/sorttest.refs.headers.temp
-#	diffcount=`diff -d $outdir/sorttest.tax.headers.temp $outdir/sorttest.refs.headers.temp | wc -l`
-#	rm $outdir/sorttest.tax.headers.temp $outdir/sorttest.refs.headers.temp
-
-#	if [[ $diffcount == 0 ]]; then
-#	echo "		Input DB is properly sorted.
-#	"
-#	refs=$inrefs
-#	tax=$intax
-
-#	else
-#	echo "		Reference and taxonomy files are not in
-#		the same order.  Sorting inputs before
-#		continuing.  This can take a while.
-#	"
-#	cat $cleantax | sort -k1 > $outdir/${taxname}_clean_sorted.${taxextension}
-#	cleansortedtax=$outdir/${taxname}_clean_sorted.${taxextension}
-#
-#	echo > $outdir/${refsname}_clean_sorted.${refsextension}
-#	cleansortedrefs=$outdir/${refsname}_clean_sorted.${refsextension}
-
-#	for line in `cat $cleansortedtax | cut -f 1`; do
-#	grep -m 1 -w -A 1 ">$line" $cleanrefs >> $cleansortedrefs
-#	sed -i '/^\s*$/d' $cleansortedrefs
-#	done
-#	echo "		DB sorted and leading and trailing whitespaces
-#		removed.
-#	"
-#	rm $cleantax $cleanrefs
-#	refs=$cleansortedrefs
-#	tax=$cleansortedtax
-#	fi
 
 ## Analyze primers
-
 	if [[ ! -d $outdir/analyze_primers_out ]]; then
 	mkdir -p $outdir/analyze_primers_out
 	echo "Generating primer hits files.
@@ -242,7 +189,6 @@ Primer hits files previously generated." >> $log
 	fi
 
 ## Get amplicons and reads
-
 	ampout=$outdir/get_amplicons_and_reads_out
 
 	if [[ ! -d $ampout ]]; then
@@ -296,7 +242,6 @@ Get amplicons and reads command (primer $revname):
 	fi
 
 ## Format taxonomy according to each new fasta
-
 	echo "Formatting new taxononmy files according to in silico results.
 	"
 	echo "
@@ -317,15 +262,8 @@ Database stats:" >> $log
 	for seqid_file in `ls $ampout/*_seqids.txt`; do
 	seqid_base=`basename $seqid_file _seqids.txt`
 	echo > $ampout/${seqid_base}_taxonomy.txt
-	#for line in `cat $seqid_file`; do
 		grep -Ff $seqid_file $tax >> $ampout/${seqid_base}_taxonomy.txt
-	#	( grep -e "^$line$" $tax >> $ampout/${seqid_base}_taxonomy.txt ) &
-	#	NPROC=$(($NPROC+1))
-	#	if [ "$NPROC" -ge 64 ]; then
-	#		wait
-	#	NPROC=0
-	#	fi
-	#done
+
 	sed -i '/^$/d' $ampout/${seqid_base}_taxonomy.txt
 	taxnumber=`cat $ampout/${seqid_base}_taxonomy.txt | wc -l`
 	echo "DB for $seqid_base formatted with $taxnumber/$refscount references" >> $log
@@ -335,7 +273,6 @@ Database stats:" >> $log
 
 ## Build composite fasta by combining in silico amplicons, in silico read1, in silico read2 (in this order)
 ## This improves formatted database completeness for some databases such as UNITE
-
 	amplicon_fasta=`ls $ampout/*_amplicons.fasta`
 	amp_count=`cat $ampout/${forname}_${revname}_amplicons_seqids.txt | wc -l`
 	forward_fasta=`ls $ampout/${forname}_${length}_reads.fasta`
@@ -357,9 +294,7 @@ Database stats:" >> $log
 	grep -A 1 -Ff $read1ids $forward_fasta >> $ampout/${forname}_${revname}_composite.fasta
 	cat $compids $read1ids > $ampout/amp_plus_read1_ids.txt
 
-#	if [[ -s $ampout/amp_plus_read1_ids.txt ]]; then
 	grep -v -Ff $ampout/amp_plus_read1_ids.txt $reverseids > $ampout/read2ids_minus_others.txt >/dev/null 2>&1 || true
-#	fi
 
 	read2ids=$ampout/read2ids_minus_others.txt
 	if [[ -s $read2ids ]]; then
@@ -384,12 +319,7 @@ Database stats:" >> $log
 
 	if [[ -s $compids ]]; then
 		grep -Ff $compids $tax >> $ampout/${forname}_${revname}_composite_taxonomy.txt
-#		NPROC=$(($NPROC+1))
-#		if [ "$NPROC" -ge 64 ]; then
-#			wait
-#		NPROC=0
-#		fi
-#	done
+
 	fi
 	sed -i '/^$/d' $ampout/${forname}_${revname}_composite_taxonomy.txt
 	taxnumber=`cat $ampout/${forname}_${revname}_composite_taxonomy.txt | wc -l`
@@ -413,7 +343,6 @@ Formatted database is complete.  Not generating a composite database." >> $log
 	fi
 
 ## Filter input phylogeny to produce trees for each output
-
 	if [[ ! -z $intree ]]; then
 	
 	echo "Filtering input phylogeny against formatted databases
@@ -437,7 +366,6 @@ Filtering input phylogeny against formatted databases
 	wait
 
 ## Cleanup and report output
-
 	mv $ampout/*.fasta $outdir/
 	mv $ampout/*_taxonomy.txt $outdir/
 	if [[ ! -z $intree ]]; then
@@ -447,7 +375,6 @@ Filtering input phylogeny against formatted databases
 	rm -r $outdir/temp
 
 ## Log workflow end
-
 	res1=$( date +%s.%N )
 	dt=$( echo $res1 - $res0 | bc )
 	dd=$( echo $dt/86400 | bc )

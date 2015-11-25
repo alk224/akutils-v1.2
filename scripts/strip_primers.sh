@@ -22,40 +22,41 @@
 #     misrepresented as being the original software.
 #  3. This notice may not be removed or altered from any source distribution.
 #
-
 set -e
 
-# check whether user had supplied -h or --help . If yes display help 
-	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
+## Define variables.
 	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
-	less $scriptdir/docs/strip_primers.help
-	exit 0
-	fi
-
-## If other than four or five arguments supplied, display usage
-
-	if [[ $# -le 3 ]] || [[ $# -ge 6 ]]; then 
-		echo "
-Usage (order is important!):
-strip_primers.sh <rev/comp_primers> <read1> <read2> <index1> <index2>
-
-	<index2> is optional.
-   
-Resulting files will be output to a subdirectory called strip_primers_out.
-		"
-		exit 1
-	fi 
-  
+	repodir=`dirname $scriptdir`
 	workdir=$(pwd)
-	cd $workdir
+	stdout="$1"
+	stderr="$2"
+	randcode="$3"
+	config="$4"
+	primers="$5"
+	read1="$6"
+	read2="$7"
+	index1="$8"
+	index2="$9"
+	outdir=$workdir/strip_primers_out
+
+## If other than eight or nine arguments supplied, display usage
+#	if [[ $# -le 8 ]] || [[ $# -ge 9 ]]; then 
+#		echo "
+#Usage (order is important!):
+#strip_primers.sh <rev/comp_primers> <read1> <read2> <index1> <index2>
+
+#	<index2> is optional.
+   
+#Resulting files will be output to a subdirectory called strip_primers_out.
+#		"
+#		exit 1
+#	fi 
+
 	res1=$(date +%s.%N)
 
 ## Check for output directory
-
 	if [[ ! -d $workdir/strip_primers_out ]]; then
-
 		mkdir -p $workdir/strip_primers_out
-
 	else
 		echo "		
 Directory strip_primers_out exists.  Attempting to use previously
@@ -63,13 +64,6 @@ generated files.
 		"
 	fi
 
-	outdir=$workdir/strip_primers_out
-	primers=($1)
-	read1=($2)
-	read2=($3)
-	index1=($4)
-	index2=($5)
-	date0=`date +%Y%m%d_%I%M%p`
 	log=($outdir/fastq-mcf_$date0.log)
 
 ## Extract filename bases for output naming purposes
