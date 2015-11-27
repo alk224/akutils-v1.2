@@ -1,0 +1,8 @@
+
+akutils pick_otus - take raw fastq or demultiplexed fasta data to otu tables
+
+Usage (order is important!!):
+	akutils pick_otus <mode>
+
+	Valid modes are 16S, ITS, or other
+

@@ -28,6 +28,7 @@ set -e
 	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
 	repodir=`dirname $scriptdir`
 	workdir=$(pwd)
+	outdir="$workdir/split_libraries"
 	stdout="$1"
 	stderr="$2"
 	log="$3"
@@ -35,26 +36,32 @@ set -e
 	minpercent="$5"
 	maxbad="$6"
 	barcodetype="$7"
+	map="$8"
+	bold=$(tput bold)
+	normal=$(tput sgr0)
+	underline=$(tput smul)
 
 ## Log and run command
 	echo "Performing split_libraries_fastq.py command.
-Minimum q-score: $qvalue
-Minimum read percent: $minpercent
-Maximum bad reads: $maxbad
-$barcodetype base indexes detected."
+Minimum q-score: ${bold}$qvalue${normal}
+Minimum read percent: ${bold}$minpercent${normal}
+Maximum bad reads: ${bold}$maxbad${normal}
+Autodetect index length: ${bold}$barcodetype${normal}"
 
 	echo "Split libraries command:" >> $log
 	date "+%a %b %d %I:%M %p %Z %Y" >> $log
 	echo "Minimum q-score: $qvalue
 Minimum read percent: $minpercent
 Maximum bad reads: $maxbad
-$barcodetype base indexes detected.
-	split_libraries_fastq.py -i rd.fq -b idx.fq -m $map -o $outdir/split_libraries -q $qvalue --barcode_type $barcodetype -p $minpercent -r $maxbad
+Autodetect index length: $barcodetype
+	split_libraries_fastq.py -i rd.fq -b idx.fq -m $map -o $outdir -q $qvalue --barcode_type $barcodetype -p $minpercent -r $maxbad
 	" >> $log
 	res1=$(date +%s.%N)
 
-	split_libraries_fastq.py -i rd.fq -b idx.fq -m $map -o $outdir/split_libraries -q $qvalue --barcode_type $barcodetype -p $minpercent -r $maxbad 1>$stdout 2>$stderr || true
-	bash $scriptdir/scripts/log_slave.sh $stdout $stderr $log
+	split_libraries_fastq.py -i rd.fq -b idx.fq -m $map -o $outdir -q $qvalue --barcode_type $barcodetype -p $minpercent -r $maxbad 1>$stdout 2>$stderr || true
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
+	seqs="$outdir/seqs.fna"
+	numseqs=`grep -e "^>" $seqs | wc -l`
 
 	res2=$(date +%s.%N)
 	dt=$(echo "$res2 - $res1" | bc)
@@ -68,13 +75,13 @@ $barcodetype base indexes detected.
 	echo "$sl_runtime
 	" >> $log
 
-	echo "Split libraries demultiplexed $numseqs reads from your data.
+	echo "Split libraries demultiplexed ${bold}$numseqs${normal} reads from your data.
 	"
 	echo "Split libraries demultiplexed $numseqs reads from your data.
 	" >> $log
 
 ## Check for success
-	if [[ ! -s $outdir/split_libraries/seqs.fna ]]; then
+	if [[ ! -s $outdir/seqs.fna ]]; then
 		echo "
 Split libraries step seems to not have identified any samples based on
 the indexing data you supplied.  You should check your list of indexes

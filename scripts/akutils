@@ -22,6 +22,16 @@
 #     misrepresented as being the original software.
 #  3. This notice may not be removed or altered from any source distribution.
 #
+## Trap function on exit.
+function finish {
+if [[ -f $stdout ]]; then
+	rm $stdout
+fi
+if [[ -f $stderr ]]; then
+	rm $stderr
+fi
+}
+trap finish EXIT
 
 ## Find scripts and repository location.
 	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
@@ -30,8 +40,8 @@
 ## Set working directory and other important variables
 	workdir=$(pwd)
 	randcode=`cat /dev/urandom |tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1` 2>/dev/null
-	stderr=($scriptdir/temp/$randcode\_stderr)
-	stdout=($scriptdir/temp/$randcode\_stdout)
+	stderr=($repodir/temp/$randcode\_stderr)
+	stdout=($repodir/temp/$randcode\_stdout)
 
 ## Usage and help
 	usage="$repodir/docs/akutils.usage"
@@ -128,7 +138,7 @@ akutils test
 		cat $repodir/docs/pick_otus.help
 		exit 0
 		fi
-	bash $scriptdir/pick_otus.sh $stdout $stderr $randcode $configfile $2 $3
+	bash $scriptdir/pick_otus.sh $stdout $stderr $randcode $2
 	exit 0
 	fi
 

@@ -34,6 +34,9 @@ set -e
 	mode="$4"
 	date0=`date +%Y%m%d_%I%M%p`
 	res0=$(date +%s.%N)
+	bold=$(tput bold)
+	normal=$(tput sgr0)
+	underline=$(tput smul)
 
 ## Trap function on exit.
 #function finish {
@@ -60,10 +63,13 @@ Invalid mode entered. Valid modes are 16S, ITS or other."
 ## Find log file or set new one.
 	logcount=`ls log_pick_otus_* 2>/dev/null | head -1 | wc -l`
 	if [[ "$logcount" == "1" ]]; then
-		log=`ls log_pick_otus_workflow_* | head -1`
+		log=`ls log_pick_otus*.txt | head -1`
 	elif [[ "$logcount" == "0" ]]; then
 		log=($workdir/log_pick_otus_$date0.txt)
 	fi
+	echo "
+${bold}akutils pick_otus workflow beginning.${normal}
+	"
 
 ## Read in variables from config file
 	refs=(`grep "Reference" $config | grep -v "#" | cut -f 2`)
@@ -101,28 +107,45 @@ Invalid mode entered. Valid modes are 16S, ITS or other."
 ## Check for valid OTU picking and tax assignment modes
 	if [[ "$otupicker" != "blast" && "$otupicker" != "cdhit" && "$otupicker" != "swarm" && "$otupicker" != "openref" && "$otupicker" != "custom_openref" && "$otupicker" != "ALL" ]]; then
 	echo "Invalid OTU picking method chosen.
-Your current setting: $otupicker
+Your current setting: ${bold}$otupicker${normal}
 
 Valid choices are blast, cdhit, swarm, openref, custom_openref, or ALL.
 Rerun akutils configure and change the current OTU picker setting.
 Exiting.
 	"
 		exit 1
-	else echo "OTU picking method(s): $otupicker
+	else echo "OTU picking method(s): ${bold}$otupicker${normal}
 	"
 	fi
 
 	if [[ "$taxassigner" != "blast" && "$taxassigner" != "rdp" && "$taxassigner" != "uclust" && "$taxassigner" != "ALL" ]]; then
 	echo "Invalid taxonomy assignment method chosen.
-Your current setting: $taxassigner
+Your current setting: ${bold}$taxassigner${normal}
 
 Valid choices are blast, rdp, uclust, or ALL. Rerun akutils configure
 and change the current taxonomy assigner setting.
 Exiting.
 	"
 		exit 1
-	else echo "Taxonomy assignment method(s): $taxassigner
+	else echo "Taxonomy assignment method(s): ${bold}$taxassigner${normal}
 	"
+	fi
+
+## Check that no more than one mapping file is present
+	map_count=(`ls $workdir/map* | wc -w`)
+	if [[ $map_count -ge 2 || $map_count == 0 ]]; then
+	echo "
+This workflow requires a mapping file.  No more than one mapping file 
+can reside in your working directory.  Presently, there are $map_count such
+files.  Move or rename all but one of these files and restart the 
+workflow.  A mapping file is any file in your working directory that starts
+with \"map\".  It should be properly formatted for QIIME processing.
+
+Exiting.
+	"	
+		exit 1
+	else
+		map=(`ls $workdir/map*`)	
 	fi
 
 ## Check for split_libraries outputs and inputs
@@ -155,27 +178,24 @@ directory.
 ## Call split libraries function and set variables as necessary
 	if [[ ! -f $outdir/split_libraries/seqs.fna ]]; then
 		if [[ $slqual == "" ]]; then 
-		qual=(19)
+		qual="19"
 		else
-		qual=($slqual)
+		qual="$slqual"
 		fi
 		if [[ $slminpercent == "" ]]; then
-		minpercent=(0.95)
+		minpercent="0.95"
 		else
-		minpercent=($slminpercent)
+		minpercent="$slminpercent"
 		fi
 		if [[ $slmaxbad == "" ]]; then 
-		maxbad=(0)
+		maxbad="0"
 		else
-		maxbad=($slmaxbad)
+		maxbad="$slmaxbad"
 		fi
 		barcodetype=$((`sed '2q;d' idx.fq | egrep "\w+" | wc -m`-1))
 		qvalue=$((qual+1))
 
-	echo "${bold}Split libraries command:${normal}
-bash $scriptdir/split_libraries_slave.sh $stdout $stderr $log $qvalue $minpercent $maxbad $barcodetype" >> $log
-	bash $scriptdir/split_libraries_slave.sh $stdout $stderr $log $qvalue $minpercent $maxbad $barcodetype 1>$stdout 2>$stderr
-	bash $scriptdir/log_slave.sh $stdout $stderr $log
+	bash $scriptdir/split_libraries_slave.sh $stdout $stderr $log $qvalue $minpercent $maxbad $barcodetype $map #1>$stdout 2>$stderr
 	fi
 	seqs=$outdir/split_libraries/seqs.fna
 
