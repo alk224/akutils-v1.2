@@ -1,0 +1,10 @@
+
+akutils join_paired_reads - join PE data with fastq-join from ea-utils
+
+Usage (order is important!!):
+	akutils join_paired_reads <index1> <index2> <read1> <read2> <IndexLength> <fastq-join options>
+
+	<index2> is optional
+	<IndexLength> must be an integer which equals the total number of index bases
+	<fastq-join options> are supplied as described in fastq-join documentation
+

@@ -22,19 +22,16 @@
 #     misrepresented as being the original software.
 #  3. This notice may not be removed or altered from any source distribution.
 #
-
 set -e
 
-## Check whether user had supplied -h or --help. If yes display help 
-
+## Check whether user had supplied -h or --help. If yes display help
 	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
 	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
 	less $scriptdir/docs/akutils_dependency_check.help
 	exit 0
 	fi 
 
-## Check whether user had supplied result. If yes display result 
-
+## Check whether user had supplied result. If yes display result
 	if [[ "$1" == "--result" ]]; then
 	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
 	resultcount=`ls $scriptdir/akutils_resources/akutils.dependencies.result 2>/dev/null | wc -l`
@@ -50,7 +47,6 @@ akutils_dependency_check.sh to generate results.
 	fi 
 
 ## Find scripts location
-
 scriptdir="$( cd "$( dirname "$0" )" && pwd )"
 
 ## Loop through full dependency list
@@ -94,8 +90,6 @@ fi
 
 sed -i "1i Dependency check results for akutils:\n\nTested $dependencycount dependencies\nPassed: $passcount/$dependencycount\nFailed: $failcount/$dependencycount" $scriptdir/akutils_resources/akutils.dependencies.result
 
-
-
 echo "Test complete.
 
 For results, execute:
@@ -103,4 +97,3 @@ akutils_dependency_check.sh --result
 "
 
 exit 0
-

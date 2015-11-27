@@ -1,0 +1,8 @@
+
+akutils phix_filtering - remove phix contamination from raw fastq data
+
+Usage (order is important):
+	akutils phix_filtering <output_directory> <mappingfile> <index> <read1> <read2>
+
+	<read2> is optional
+

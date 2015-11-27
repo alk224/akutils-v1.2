@@ -38,20 +38,6 @@ set -e
 	index1="$8"
 	index2="$9"
 	outdir=$workdir/strip_primers_out
-
-## If other than eight or nine arguments supplied, display usage
-#	if [[ $# -le 8 ]] || [[ $# -ge 9 ]]; then 
-#		echo "
-#Usage (order is important!):
-#strip_primers.sh <rev/comp_primers> <read1> <read2> <index1> <index2>
-
-#	<index2> is optional.
-   
-#Resulting files will be output to a subdirectory called strip_primers_out.
-#		"
-#		exit 1
-#	fi 
-
 	res1=$(date +%s.%N)
 
 ## Check for output directory

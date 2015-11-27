@@ -22,7 +22,6 @@
 #     misrepresented as being the original software.
 #  3. This notice may not be removed or altered from any source distribution.
 #
-
 set -e
 
 ## check whether user had supplied -h or --help. If yes display help 

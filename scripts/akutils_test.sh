@@ -13,6 +13,11 @@ homedir=`echo $HOME`
 scriptdir="$( cd "$( dirname "$0" )" && pwd )"
 repodir=`dirname $scriptdir`
 workdir=$(pwd)
+cpus=`grep -c ^processor /proc/cpuinfo`
+ram=`grep MemTotal /proc/meminfo | cut -d":" -f2 | sed 's/\s//g'`
+bold=$(tput bold)
+normal=$(tput sgr0)
+underline=$(tput smul)
 
 ## Echo test start
 echo "
@@ -20,16 +25,19 @@ Beginning tests of akutils functions.
 All tests take ~20 minutes on a system
 with 24 cores or ~60 minutes on a
 system with 2 cores.
+
+Your system has ${bold}$cpus${normal} cores
+and ${bold}$ram${normal} available RAM.
 "
 
 ## Check for test data
 testtest=`ls $homedir/QIIME_test_data_16S 2>/dev/null | wc -l`
 	if [[ $testtest == 0 ]]; then
 	cd $homedir
+	echo "Retrieving test data from github."
 	git clone https://github.com/alk224/QIIME_test_data_16S.git
 	else
-	echo "Test data in place.
-	"
+	echo "Test data is in place."
 	fi
 testdir=($homedir/QIIME_test_data_16S)
 cd $testdir
@@ -39,13 +47,13 @@ logcount=`ls $testdir/log_workflow_testing* 2>/dev/null | wc -l`
 if [[ $logcount > 0 ]]; then
 	rm $testdir/log_workflow_testing*
 fi
-	echo "Workflow tests beginning."
+	echo "${bold}Workflow tests beginning.${normal}"
 	date1=`date "+%a %b %d %I:%M %p %Z %Y"`
 	echo "$date1"
 	date0=`date +%Y%m%d_%I%M%p`
 	log=($testdir/log_workflow_testing_$date0.txt)
 	echo "
-Workflow tests beginning." > $log
+${bold}Workflow tests beginning.${normal}" > $log
 	date "+%a %b %d %I:%M %p %Z %Y" >> $log
 	res0=$(date +%s.%N)
 	echo "
@@ -66,7 +74,6 @@ rm $testdir/resources/akutils.global.config.master
 fi
 cp $testdir/resources/config.template $testdir/resources/akutils.global.config.master
 masterconfig=($testdir/resources/akutils.global.config.master)
-cpus=`grep -c ^processor /proc/cpuinfo`
 
 for field in `grep -v "#" $masterconfig | cut -f 1`; do
 	if [[ $field == "Reference" ]]; then
@@ -140,10 +147,10 @@ Set temporary akutils global config file." >> $log
 
 ## Test of format_database.sh command
 	res1=$(date +%s.%N)
-	echo "Test of format_database command.
+	echo "${bold}Test of format_database command.${normal}
 	"
 	echo "
-***** Test of format_database command.
+${bold}***** Test of format_database command.${normal}
 ***** Command:
 akutils format_database $testdir/gg_database/97_rep_set_1000.fasta $testdir/gg_database/97_taxonomy_1000.txt $testdir/resources/primers_515F-806R.txt 150 $testdir/db_format_out" >> $log
 	if [[ -d $testdir/format_database_out ]]; then
@@ -195,10 +202,10 @@ echo "$runtime
 
 ## Test of strip_primers.sh command
 	res1=$(date +%s.%N)
-	echo "Test of strip_primers command.
+	echo "${bold}Test of strip_primers command.${normal}
 	"
 	echo "
-***** Test of strip_primers command.
+${bold}***** Test of strip_primers command.${normal}
 ***** Command:
 akutils strip_primers $homedir/akutils/primers.16S.ITS.fa $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq" >> $log
 	if [[ ! -f $testdir/index1.fq ]]; then
@@ -258,22 +265,22 @@ $runtime
 " >> $log
 echo "$runtime
 "
-exit 0
+
 ## Test of phix_filtering command
 	res1=$(date +%s.%N)
-	echo "Test of phix_filtering command.
+	echo "${bold}Test of phix_filtering command.${normal}
 	"
 	echo "
-***** Test of phix_filtering command.
+${bold}***** Test of phix_filtering command.${normal}
 ***** Command:
-akutils phix_filtering $testdir/phiX_filtering_out $testdir/map.test.txt $testdir/strip_primers_out/index1.noprimers.fastq $testdir/strip_primers_out/read1.noprimers.fastq $testdir/strip_primers_out/read2.noprimers.fastq" >> $log
+akutils phix_filtering $testdir/phix_filtering_out $testdir/map.test.txt $testdir/strip_primers_out/index1.noprimers.fastq $testdir/strip_primers_out/read1.noprimers.fastq $testdir/strip_primers_out/read2.noprimers.fastq" >> $log
 	if [[ -d $testdir/phix_filtering_out ]]; then
 	rm -r $testdir/phix_filtering_out
 	fi
 	if [[ ! -f $testdir/map.test.txt ]]; then
 	cp $testdir/raw_data/map.mock.16S.nodils.txt $testdir/map.test.txt
 	fi
-bash $scriptdir/phix_filtering.sh $testdir/phix_filtering_out $testdir/map.test.txt $testdir/strip_primers_out/index1.noprimers.fastq $testdir/strip_primers_out/read1.noprimers.fastq $testdir/strip_primers_out/read2.noprimers.fastq 1>$testdir/std_out 2>$testdir/std_err 2>&1 || true
+akutils phix_filtering $testdir/phix_filtering_out $testdir/map.test.txt $testdir/strip_primers_out/index1.noprimers.fastq $testdir/strip_primers_out/read1.noprimers.fastq $testdir/strip_primers_out/read2.noprimers.fastq 1>$testdir/std_out 2>$testdir/std_err 2>&1 || true
 wait
 echo "
 ***** phix_filtering std_out:
@@ -317,22 +324,24 @@ echo "$runtime
 
 ## Test of join_paired_reads.sh command
 	res1=$(date +%s.%N)
-	echo "Test of join_paired_reads command.
+	echo "${bold}Test of join_paired_reads command.${normal}
 	"
 	echo "
-***** Test of join_paired_reads command.
+${bold}***** Test of join_paired_reads command.${normal}
 ***** Command:
-akutils join_paired_reads $testdir/phiX_filtering_out/index.phixfiltered.fastq $testdir/phiX_filtering_out/read1.phixfiltered.fastq $testdir/phiX_filtering_out/read2.phixfiltered.fastq 12 -m 30 -p 30" >> $log
-	if [[ -d $testdir/fastq-join_output ]]; then
-	rm -r $testdir/fastq-join_output
+akutils join_paired_reads $testdir/phix_filtering_out/index.phixfiltered.fastq $testdir/phix_filtering_out/read1.phixfiltered.fastq $testdir/phix_filtering_out/read2.phixfiltered.fastq 12 -m 30 -p 30" >> $log
+	if [[ -d $testdir/join_paired_reads_out ]]; then
+	rm -r $testdir/join_paired_reads_out
 	fi
-bash $scriptdir/join_paired_reads.sh $testdir/phiX_filtering_out/index.phixfiltered.fastq $testdir/phiX_filtering_out/read1.phixfiltered.fastq $testdir/phiX_filtering_out/read2.phixfiltered.fastq 12 -m 30 -p 30 1>$testdir/std_out 2>$testdir/std_err || true
+cd $testdir
+akutils join_paired_reads $testdir/phix_filtering_out/index.phixfiltered.fastq $testdir/phix_filtering_out/read1.phixfiltered.fastq $testdir/phix_filtering_out/read2.phixfiltered.fastq 12 -m 30 -p 30 1>$testdir/std_out 2>$testdir/std_err || true
 wait
+cd $workdir
 echo "
 ***** join_paired_reads std_out:
 " >> $log
 cat $testdir/std_out >> $log
-grep -A 5 "Fastq-join results:" $testdir/fastq-join_output/fastq-join_workflow*.log >> $log
+grep -A 5 "Fastq-join results:" $testdir/join_paired_reads_out/log_join_paired_reads*.txt >> $log
 echo "
 ***** join_paired_reads std_err:
 " >> $log
@@ -371,12 +380,12 @@ echo "$runtime
 
 ## Test of pick_otus.sh command
 	res1=$(date +%s.%N)
-	echo "Test of pick_otus command.
+	echo "${bold}Test of pick_otus command.${normal}
 This test takes a while.  Please be patient
 (~13 minutes needed on a system with 24 cores).
 	"
 	echo "
-***** Test of pick_otus command.
+${bold}***** Test of pick_otus command.${normal}
 ***** Command:
 akutils pick_otus 16S" >> $log
 	if [[ -d $testdir/pick_otus_out ]]; then
@@ -384,12 +393,12 @@ akutils pick_otus 16S" >> $log
 	fi
 	mkdir $testdir/pick_otus_out
 	cp $testdir/map.test.txt $testdir/pick_otus_out
-	cp $testdir/fastq-join_output/idx.fq $testdir/pick_otus_out
-	cp $testdir/fastq-join_output/rd.fq $testdir/pick_otus_out
+	cp $testdir/join_paired_reads_out/idx.fq $testdir/pick_otus_out
+	cp $testdir/join_paired_reads_out/rd.fq $testdir/pick_otus_out
 cd $testdir/pick_otus_out
 bash $scriptdir/pick_otus.sh ./ 16S 1>$testdir/std_out 2>$testdir/std_err || true
 wait
-cd $homedir
+cd $workdir
 echo "
 ***** pick_otus std_out:
 " >> $log
@@ -429,7 +438,7 @@ $runtime
 " >> $log
 echo "$runtime
 "
-
+exit 0
 ## Test of align_and_tree command
 	res1=$(date +%s.%N)
 	echo "Test of align_and_tree command.
@@ -441,7 +450,7 @@ akutils align_and_tree swarm_otus_d1/ 16S" >> $log
 cd $testdir/pick_otus_out
 bash $scriptdir/align_tree.sh swarm_otus_d1/ 16S 1>$testdir/std_out 2>$testdir/std_err || true
 wait
-cd $homedir
+cd $workdir
 echo "
 ***** align_and_tree std_out:
 " >> $log
@@ -495,7 +504,7 @@ akutils core_diversity.sh swarm_otus_d1/OTU_tables_blast_tax/03_table_hdf5.biom 
 cd $testdir/pick_otus_out
 bash $scriptdir/core_diversity.sh swarm_otus_d1/OTU_tables_blast_tax/03_table_hdf5.biom map.test.txt Community $cpus 1>$testdir/std_out 2>$testdir/std_err || true
 wait
-cd $homedir
+cd $workdir
 echo "
 ***** core_diversity std_out:
 " >> $log
@@ -547,7 +556,7 @@ echo "Ran $testcount tests.
 	echo "All tests successful ($testcount/$testcount).
 	"
 	echo "All tests successful ($testcount/$testcount).
-	" >> $ log
+	" >> $log
 	else
 	echo "Errors observed in $errorcount/$testcount tests.
 See log file for details:

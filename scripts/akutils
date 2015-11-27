@@ -190,10 +190,23 @@ akutils test
 		cat $repodir/docs/strip_primers.usage
 		exit 0
 		elif [[ "$2" == "help" ]]; then
-		cat $repodir/docs/format_database.help
+		cat $repodir/docs/strip_primers.help
 		exit 0
 		fi
 	bash $scriptdir/strip_primers.sh $stdout $stderr $randcode $configfile $2 $3 $4 $5 $6
+	exit 0
+	fi
+
+## Check whether user supplied join_paired_reads.  If yes, run join_paired_reads or display specific usage or help if specified.
+	if [[ "$1" == "join_paired_reads" ]]; then
+		if [[ -z "$2" ]]; then
+		cat $repodir/docs/join_paired_reads.usage
+		exit 0
+		elif [[ "$2" == "help" ]]; then
+		cat $repodir/docs/join_paired_reads.help
+		exit 0
+		fi
+	bash $scriptdir/join_paired_reads.sh $stdout $stderr $randcode $configfile $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} ${12} ${13} ${14} ${15}
 	exit 0
 	fi
 

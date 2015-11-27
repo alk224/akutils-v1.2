@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-#  otu_picking_workflow.sh - take raw fastq data to an otu table
+#  pick_otus.sh - take raw fastq data to an otu table
 #
 #  Version 1.0.0 (November, 15, 2015)
 #
@@ -24,18 +24,7 @@
 #
 set -e
 
-## Trap function on exit.
-function finish {
-if [[ -f $stdout ]]; then
-	rm $stdout
-fi
-if [[ -f $stderr ]]; then
-	rm $stderr
-fi
-}
-trap finish EXIT
-
-## Find scripts location and set variables.
+## Define variables.
 	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
 	repodir=`dirname $scriptdir`
 	workdir=$(pwd)
@@ -46,6 +35,17 @@ trap finish EXIT
 	date0=`date +%Y%m%d_%I%M%p`
 	res0=$(date +%s.%N)
 
+## Trap function on exit.
+#function finish {
+#if [[ -f $stdout ]]; then
+#	rm $stdout
+#fi
+#if [[ -f $stderr ]]; then
+#	rm $stderr
+#fi
+#}
+#trap finish EXIT
+
 ## ID config file.
 	config=$(bash $scriptdir/config_id.sh)
 
@@ -53,16 +53,16 @@ trap finish EXIT
 	if [[ "$mode" != "other" ]] && [[ "$mode" != "16S" ]] && [[ "$mode" != "ITS" ]]; then
 	echo "
 Invalid mode entered. Valid modes are 16S, ITS or other."
-	cat $repodir/docs/otu_picking_workflow.usage
+	cat $repodir/docs/pick_otus.usage
 	exit 1
 	fi
 
 ## Find log file or set new one.
-	logcount=`ls log_otu_picking_workflow_* 2>/dev/null | head -1 | wc -l`
+	logcount=`ls log_pick_otus_* 2>/dev/null | head -1 | wc -l`
 	if [[ "$logcount" == "1" ]]; then
-		log=`ls log_otu_picking_workflow_* | head -1`
+		log=`ls log_pick_otus_workflow_* | head -1`
 	elif [[ "$logcount" == "0" ]]; then
-		log=($workdir/log_otu_picking_workflow_$date0.txt)
+		log=($workdir/log_pick_otus_$date0.txt)
 	fi
 
 ## Read in variables from config file
@@ -135,7 +135,6 @@ Exiting.
 	echo "Split libraries needs to be completed.
 Checking for fastq files.
 	"
-
 		if [[ ! -f idx.fq ]]; then
 		echo "Index file not present (./idx.fq). Correct this error by renaming your
 index file as idx.fq and ensuring it resides within this directory.
@@ -173,7 +172,10 @@ directory.
 		barcodetype=$((`sed '2q;d' idx.fq | egrep "\w+" | wc -m`-1))
 		qvalue=$((qual+1))
 
-	bash $scriptdir/split_libraries_slave.sh $stdout $stderr $log $qvalue $minpercent $maxbad $barcodetype
+	echo "${bold}Split libraries command:${normal}
+bash $scriptdir/split_libraries_slave.sh $stdout $stderr $log $qvalue $minpercent $maxbad $barcodetype" >> $log
+	bash $scriptdir/split_libraries_slave.sh $stdout $stderr $log $qvalue $minpercent $maxbad $barcodetype 1>$stdout 2>$stderr
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	fi
 	seqs=$outdir/split_libraries/seqs.fna
 

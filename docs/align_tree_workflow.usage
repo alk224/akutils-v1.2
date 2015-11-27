@@ -1,7 +1,7 @@
 
-akutils align_tree_workflow - run the akutils align/tree workflow
+akutils align_and_tree - run the akutils align/tree workflow
 
-Usage:
+Usage (order is important):
 	akutils align_tree_workflow [mode] [target]
 
 Run the alignment and tree building workflow in akutils. Command should be
