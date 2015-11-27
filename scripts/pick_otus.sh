@@ -38,17 +38,6 @@ set -e
 	normal=$(tput sgr0)
 	underline=$(tput smul)
 
-## Trap function on exit.
-#function finish {
-#if [[ -f $stdout ]]; then
-#	rm $stdout
-#fi
-#if [[ -f $stderr ]]; then
-#	rm $stderr
-#fi
-#}
-#trap finish EXIT
-
 ## ID config file.
 	config=$(bash $scriptdir/config_id.sh)
 
