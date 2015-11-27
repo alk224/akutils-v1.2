@@ -40,6 +40,7 @@ set -e
 	bold=$(tput bold)
 	normal=$(tput sgr0)
 	underline=$(tput smul)
+	res1=$(date +%s.%N)
 
 ## Log and run command
 	echo "Performing split_libraries_fastq.py command.
@@ -56,7 +57,6 @@ Maximum bad reads: $maxbad
 Autodetect index length: $barcodetype
 	split_libraries_fastq.py -i rd.fq -b idx.fq -m $map -o $outdir -q $qvalue --barcode_type $barcodetype -p $minpercent -r $maxbad
 	" >> $log
-	res1=$(date +%s.%N)
 
 	split_libraries_fastq.py -i rd.fq -b idx.fq -m $map -o $outdir -q $qvalue --barcode_type $barcodetype -p $minpercent -r $maxbad 1>$stdout 2>$stderr || true
 	bash $scriptdir/log_slave.sh $stdout $stderr $log

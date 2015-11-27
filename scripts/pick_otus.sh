@@ -59,13 +59,16 @@ Invalid mode entered. Valid modes are 16S, ITS or other."
 	echo "
 ${bold}akutils pick_otus workflow beginning.${normal}
 	"
+	echo "
+akutils pick_otus workflow beginning." >> $log
+	date >> $log
 
 ## Read in variables from config file
 	refs=(`grep "Reference" $config | grep -v "#" | cut -f 2`)
 	tax=(`grep "Taxonomy" $config | grep -v "#" | cut -f 2`)
 	tree=(`grep "Tree" $config | grep -v "#" | cut -f 2`)
 	chimera_refs=(`grep "Chimeras" $config | grep -v "#" | cut -f 2`)
-	seqs=($outdir/split_libraries/seqs_chimera_filtered.fna)
+#	seqs=($outdir/split_libraries/seqs_chimera_filtered.fna)
 	alignment_template=(`grep "Alignment_template" $config | grep -v "#" | cut -f 2`)
 	alignment_lanemask=(`grep "Alignment_lanemask" $config | grep -v "#" | cut -f 2`)
 	revcomp=(`grep "RC_seqs" $config | grep -v "#" | cut -f 2`)
@@ -76,10 +79,6 @@ ${bold}akutils pick_otus workflow beginning.${normal}
 	slqual=(`grep "Split_libraries_qvalue" $config | grep -v "#" | cut -f 2`)
 	slminpercent=(`grep "Split_libraries_minpercent" $config | grep -v "#" | cut -f 2`)
 	slmaxbad=(`grep "Split_libraries_maxbad" $config | grep -v "#" | cut -f 2`)
-	chimera_threads=($CPU_cores)
-	otupicking_threads=($CPU_cores)
-	taxassignment_threads=($CPU_cores)
-	alignseqs_threads=($CPU_cores)
 	min_overlap=(`grep "Min_overlap" $config | grep -v "#" | cut -f 2`)
 	max_mismatch=(`grep "Max_mismatch" $config | grep -v "#" | cut -f 2`)
 	mcf_threads=($CPU_cores)
@@ -105,6 +104,7 @@ Exiting.
 		exit 1
 	else echo "OTU picking method(s): ${bold}$otupicker${normal}
 	"
+	echo "OTU picking method(s): $otupicker" >> $log
 	fi
 
 	if [[ "$taxassigner" != "blast" && "$taxassigner" != "rdp" && "$taxassigner" != "uclust" && "$taxassigner" != "ALL" ]]; then
@@ -118,6 +118,7 @@ Exiting.
 		exit 1
 	else echo "Taxonomy assignment method(s): ${bold}$taxassigner${normal}
 	"
+	echo "Taxonomy assignment method(s): $taxassigner" >> $log
 	fi
 
 ## Check that no more than one mapping file is present
@@ -134,15 +135,19 @@ Exiting.
 	"	
 		exit 1
 	else
-		map=(`ls $workdir/map*`)	
+		map=(`ls $workdir/map*`)
+		echo "Mapping file: $map" >> $log	
 	fi
+	echo "" >> $log
 
 ## Check for split_libraries outputs and inputs
-	if [[ -f $outdir/split_libraries/seqs.fna ]]; then
-	echo "Split libraries output detected.
-	"
-	seqs=$outdir/split_libraries/seqs.fna
+	if [[ -f split_libraries/seqs.fna ]]; then
+	seqs="split_libraries/seqs.fna"
 	numseqs=`grep -e "^>" $seqs | wc -l`
+	echo "Split libraries output detected ($numseqs sequences).
+	"
+	echo "Split libraries output detected ($numseqs sequences).
+	" >> $log
 	else
 	echo "Split libraries needs to be completed.
 Checking for fastq files.
@@ -165,7 +170,7 @@ directory.
 	fi
 
 ## Call split libraries function and set variables as necessary
-	if [[ ! -f $outdir/split_libraries/seqs.fna ]]; then
+	if [[ ! -f split_libraries/seqs.fna ]]; then
 		if [[ $slqual == "" ]]; then 
 		qual="19"
 		else
@@ -184,14 +189,28 @@ directory.
 		barcodetype=$((`sed '2q;d' idx.fq | egrep "\w+" | wc -m`-1))
 		qvalue=$((qual+1))
 
-	bash $scriptdir/split_libraries_slave.sh $stdout $stderr $log $qvalue $minpercent $maxbad $barcodetype $map #1>$stdout 2>$stderr
+	bash $scriptdir/split_libraries_slave.sh $stdout $stderr $log $qvalue $minpercent $maxbad $barcodetype $map
 	fi
-	seqs=$outdir/split_libraries/seqs.fna
+	seqs="split_libraries/seqs.fna"
+	numseqs=`grep -e "^>" $seqs | wc -l`
 
 ## Call chimera filtering function and set variables as necessary
 
-
-
+	if [[ $chimera_refs != "undefined" ]] || [[ -z $chimera_refs ]]; then
+	if [[ ! -f split_libraries/seqs_chimera_filtered.fna ]]; then
+	bash $scriptdir/filter_chimeras_slave.sh $stdout $stderr $log $CPU_cores $chimera_refs $numseqs
+		else
+		if [[ -s split_libraries/seqs_chimera_filtered.fna ]]; then
+		seqs="split_libraries/seqs_chimera_filtered.fna"
+		numseqs=`grep -e "^>" $seqs | wc -l`
+		fi
+		echo "Chimera-filtered sequences detected ($numseqs sequences).
+	"
+	fi
+		else echo "No chimera reference collection supplied.
+Skipping chimera checking step.
+	"
+	fi
 
 
 
