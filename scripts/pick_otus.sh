@@ -69,6 +69,8 @@ trap finish EXIT
 	percenttemp="$tempdir/${randcode}_percent_identities.temp"
 	otupickdirs="$tempdir/${randcode}_otupicking_directories.temp"
 	taxfiles="$tempdir/${randcode}_taxassign_directories.temp"
+	touch $stdout
+	touch $stderr
 
 ## ID config file.
 	config=$(bash $scriptdir/config_id.sh)
@@ -141,15 +143,46 @@ akutils pick_otus workflow beginning." >> $log
 	
 ## Set OTU picker and tax assigner variables
 	swarmpick=`grep "swarm" $otupicklist`
+	if [[ -z $swarmpick ]]; then
+	swarmpick="0"
+	fi
 	blastpick=`grep "blast" $otupicklist`
+	if [[ -z $blastpick ]]; then
+	blastpick="0"
+	fi
 	cdhitpick=`grep "cdhit" $otupicklist`
+	if [[ -z $cdhitpick ]]; then
+	cdhitpick="0"
+	fi
 	openrefpick=`grep "openref" $otupicklist`
+	if [[ -z $openrefpick ]]; then
+	openrefpick="0"
+	fi
 	custopenrefpick=`grep "custom_openref" $otupicklist`
+	if [[ -z $custopenrefpick ]]; then
+	custopenrefpick="0"
+	fi
 	allpick=`grep "ALL" $otupicklist`
+	if [[ -z $allpick ]]; then
+	allpick="0"
+	fi
+
 	blasttax=`grep "blast" $taxassignlist`
+	if [[ -z $blasttax ]]; then
+	blasttax="0"
+	fi
 	rdptax=`grep "rdp" $taxassignlist`
+	if [[ -z $rdptax ]]; then
+	rdptax="0"
+	fi
 	uclusttax=`grep "uclust" $taxassignlist`
+	if [[ -z $uclusttax ]]; then
+	uclusttax="0"
+	fi
 	alltax=`grep "ALL" $taxassignlist`
+	if [[ -z $alltax ]]; then
+	alltax="0"
+	fi
 
 ## Check that no more than one parameter file is present
 	parameter_count=(`ls $outdir/parameter* 2>/dev/null | wc -w`)
@@ -335,7 +368,7 @@ Skipping chimera checking step.
 
 ## Define otu picking parameters ahead of outdir naming
 
-if [[ ! -z $swarmpick || ! -z $allpick ]]; then
+if [[ $swarmpick == "swarm" || $allpick == "ALL" ]]; then
 	otumethod="Swarm"
 
 	if [[ $parameter_count == 1 ]]; then
@@ -358,7 +391,7 @@ fi
 
 ## Define otu picking parameters ahead of outdir naming
 
-if [[ ! -z $blastpick || ! -z $allpick ]]; then
+if [[ $blastpick == "blast" || $allpick == "ALL" ]]; then
 	otumethod="BLAST"
 
 	if [[ $parameter_count == 1 ]]; then
@@ -375,7 +408,74 @@ if [[ ! -z $blastpick || ! -z $allpick ]]; then
 	bash $scriptdir/blast_slave.sh $stdout $stderr $log $config $percenttemp $derepseqs $seqs $numseqs $presufdir $seqname $blasttax $rdptax $uclusttax $alltax
 fi
 
+################################
+## CDHIT OTU Steps BEGIN HERE ##
+################################
 
+## Define otu picking parameters ahead of outdir naming
+
+if [[ $cdhitpick == "cdhit" || $allpick == "ALL" ]]; then
+	otumethod="CD-HIT"
+
+	if [[ $parameter_count == 1 ]]; then
+		grep "similarity" $param_file | cut -d " " -f2 | sed '/^$/d' > $percenttemp
+	else
+		echo "0.97" > $percenttemp
+	fi
+
+	similaritycount=`cat $percenttemp | wc -l`
+	if [[ $similaritycount == 0 ]]; then
+		echo "0.97" > $percenttemp
+	fi
+
+	bash $scriptdir/cdhit_slave.sh $stdout $stderr $log $config $percenttemp $derepseqs $seqs $numseqs $presufdir $seqname $blasttax $rdptax $uclusttax $alltax
+fi
+
+##################################
+## Openref OTU Steps BEGIN HERE ##
+##################################
+
+## Define otu picking parameters ahead of outdir naming
+
+if [[ $openrefpick == "openref" || $allpick == "ALL" ]]; then
+	otumethod="OpenRef"
+echo yes
+	if [[ $parameter_count == 1 ]]; then
+		grep "similarity" $param_file | cut -d " " -f2 | sed '/^$/d' > $percenttemp
+	else
+		echo "0.97" > $percenttemp
+	fi
+
+	similaritycount=`cat $percenttemp | wc -l`
+	if [[ $similaritycount == 0 ]]; then
+		echo "0.97" > $percenttemp
+	fi
+
+	bash $scriptdir/openref_slave.sh $stdout $stderr $log $config $percenttemp $derepseqs $seqs $numseqs $presufdir $seqname $blasttax $rdptax $uclusttax $alltax $parameter_count $param_file $randcode
+fi
+
+#########################################
+## Custom openref OTU Steps BEGIN HERE ##
+#########################################
+
+## Define otu picking parameters ahead of outdir naming
+
+if [[ $openrefpick == "custom_openref" || $allpick == "ALL" ]]; then
+	otumethod=CustomOpenRef
+
+	if [[ $parameter_count == 1 ]]; then
+		grep "similarity" $param_file | cut -d " " -f2 | sed '/^$/d' > $percenttemp
+	else
+		echo "0.97" > $percenttemp
+	fi
+
+	similaritycount=`cat $percenttemp | wc -l`
+	if [[ $similaritycount == 0 ]]; then
+		echo "0.97" > $percenttemp
+	fi
+
+	bash $scriptdir/custom_openref_slave.sh $stdout $stderr $log $config $percenttemp $derepseqs $seqs $numseqs $presufdir $seqname $blasttax $rdptax $uclusttax $alltax $parameter_count $param_file $randcode
+fi
 
 ## Build OTU tables in parallel
 
@@ -386,7 +486,28 @@ fi
 
 
 
+## Log end of script
 
+	res1=$(date +%s.%N)
+	dt=$(echo "$res1 - $res0" | bc)
+	dd=$(echo "$dt/86400" | bc)
+	dt2=$(echo "$dt-86400*$dd" | bc)
+	dh=$(echo "$dt2/3600" | bc)
+	dt3=$(echo "$dt2-3600*$dh" | bc)
+	dm=$(echo "$dt3/60" | bc)
+	ds=$(echo "$dt3-60*$dm" | bc)
+	runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
 
+echo "${bold}OTU picking workflow steps complete.${normal}
+
+$runtime
+"
+echo "---
+
+OTU picking workflow steps complete." >> $log
+date "+%a %b %d %I:%M %p %Z %Y" >> $log
+echo "
+$runtime 
+" >> $log
 
 exit 0

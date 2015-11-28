@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-#  blast_slave.sh - pick otus with BLAST in QIIME
+#  cdhit_slave.sh - pick otus with CD-HIT in QIIME
 #
 #  Version 1.0.0 (November, 27, 2015)
 #
@@ -22,7 +22,7 @@
 #     misrepresented as being the original software.
 #  3. This notice may not be removed or altered from any source distribution.
 #
-set -e
+#set -e
 
 ## Set variables
 	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
@@ -55,13 +55,13 @@ set -e
 
 ## Log and run commands
 
-	echo "Beginning OTU picking (BLAST) at ${bold}$similaritycount${normal} similarity values.
+	echo "Beginning OTU picking (CD-HIT) at ${bold}$similaritycount${normal} similarity values.
 	"
-	echo "Beginning OTU picking (BLAST) at $similaritycount similarity values." >> $log
+	echo "Beginning OTU picking (CD-HIT) at $similaritycount similarity values." >> $log
 	date "+%a %b %d %I:%M %p %Z %Y" >> $log
 
 for similarity in `cat $resfile`; do
-	otupickdir="blast_otus_${similarity}"
+	otupickdir="cdhit_otus_${similarity}"
 
 	if [[ ! -f $otupickdir/derep_rep_set_otus.txt ]]; then
 		res2=$(date +%s.%N)
@@ -69,19 +69,22 @@ for similarity in `cat $resfile`; do
 		## Pick OTUs
 		echo "Picking OTUs against collapsed rep set.
 Input sequences: ${bold}$numseqs${normal}
-Method: ${bold}BLAST (closed reference)${normal}"
+Method: ${bold}CD-HIT (de novo)${normal}"
 		echo "Picking OTUs against collapsed rep set." >> $log
 		date "+%a %b %d %I:%M %p %Z %Y" >> $log
 		echo "Input sequences: $numseqs" >> $log
-		echo "Method: BLAST (closed reference)" >> $log
+		echo "Method: CD-HIT (de novo)" >> $log
 		echo "Percent similarity: $similarity" >> $log
 		echo "Percent similarity: ${bold}$similarity${normal}
 		"
 		echo "
-	parallel_pick_otus_blast.py -i $derepseqs -o $otupickdir -s $similarity -O $cores -r $refs -e 0.001
+	pick_otus.py -m cdhit -M 6000 -i $derepseqs -o $otupickdir -s $similarity
 		" >> $log
-		parallel_pick_otus_blast.py -i $derepseqs -o $otupickdir -s $similarity -O $cores -r $refs -e 0.001 1>$stdout 2>$stderr
+		pick_otus.py -m cdhit -M 6000 -i $derepseqs -o $otupickdir -s $similarity 1>$stdout 2>$stderr
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
+
+	#add "denovo" prefix to all OTU ids
+	sed -i "s/^/denovo/" $otupickdir/derep_rep_set_otus.txt
 
 		res3=$(date +%s.%N)
 		dt=$(echo "$res3 - $res2" | bc)
@@ -91,12 +94,12 @@ Method: ${bold}BLAST (closed reference)${normal}"
 		dt3=$(echo "$dt2-3600*$dh" | bc)
 		dm=$(echo "$dt3/60" | bc)
 		ds=$(echo "$dt3-60*$dm" | bc)
-		otu_runtime=`printf "BLAST OTU picking runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+		otu_runtime=`printf "CD-HIT OTU picking runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
 		echo "$otu_runtime
 
 		" >> $log
 		else
-		echo "BLAST OTU picking already completed ($similarity).
+		echo "CD-HIT OTU picking already completed ($similarity).
 		"
 	fi
 
@@ -154,7 +157,6 @@ Method: ${bold}BLAST (closed reference)${normal}"
 		taxdir="$otupickdir/rdp_taxonomy_assignment"
 		if [[ ! -f $taxdir/merged_rep_set_tax_assignments.txt ]]; then
 			bash $scriptdir/rdp_tax_slave.sh $stdout $stderr $log $cores $taxmethod $taxdir $otupickdir $refs $tax $repsetcount
-echo 1
 		fi
 	fi
 
@@ -178,13 +180,13 @@ done
 	ds=$(echo "$dt3-60*$dm" | bc)
 	runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
 
-echo "Sequential OTU picking steps completed (BLAST).
+echo "Sequential OTU picking steps completed (CD-HIT).
 
 $runtime
 "
 echo "---
 
-Sequential OTU picking completed (BLAST)." >> $log
+Sequential OTU picking completed (CD-HIT)." >> $log
 date "+%a %b %d %I:%M %p %Z %Y" >> $log
 echo "
 $runtime 

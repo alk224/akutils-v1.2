@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-#  blast_slave.sh - pick otus with BLAST in QIIME
+#  openref_slave.sh - pick otus with Open Reference Workflow in QIIME
 #
 #  Version 1.0.0 (November, 27, 2015)
 #
@@ -22,11 +22,19 @@
 #     misrepresented as being the original software.
 #  3. This notice may not be removed or altered from any source distribution.
 #
-set -e
+#set -e
+## Trap function on exit.
+function finish {
+if [[ -f $paramtemp ]]; then
+	rm $paramtemp
+fi
+}
+trap finish EXIT
 
 ## Set variables
 	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
 	repodir=`dirname $scriptdir`
+	tempdir="$repodir/temp"
 	workdir=$(pwd)
 	stdout="$1"
 	stderr="$2"
@@ -42,6 +50,9 @@ set -e
 	rdptax="${12}"
 	uclusttax="${13}"
 	alltax="${14}"
+	parameter_count="${15}"
+	params="${16}"
+	randcode="${17}"
 
 	similaritycount=`cat $resfile | wc -l`
 	cores=(`grep "CPU_cores" $config | grep -v "#" | cut -f 2`)
@@ -55,33 +66,59 @@ set -e
 
 ## Log and run commands
 
-	echo "Beginning OTU picking (BLAST) at ${bold}$similaritycount${normal} similarity values.
+	echo "Beginning OTU picking (Open Reference UCLUST) at ${bold}$similaritycount${normal} similarity values.
 	"
-	echo "Beginning OTU picking (BLAST) at $similaritycount similarity values." >> $log
+	echo "Beginning OTU picking (Open Reference UCLUST) at $similaritycount similarity values." >> $log
 	date "+%a %b %d %I:%M %p %Z %Y" >> $log
 
 for similarity in `cat $resfile`; do
-	otupickdir="blast_otus_${similarity}"
+	otupickdir="openref_otus_${similarity}"
 
 	if [[ ! -f $otupickdir/derep_rep_set_otus.txt ]]; then
 		res2=$(date +%s.%N)
+		rm $otupickdir/* >/dev/null 2>&1 || true
+
+		if [[ $parameter_count == 1 ]]; then
+		maxaccepts=`grep max_accepts $param_file | cut -d " " -f 2`
+		maxrejects=`grep max_rejects $param_file | cut -d " " -f 2`
+		fi
+		if [[ -z $maxaccepts ]]; then
+		maxaccepts=20
+		fi
+		if [[ -z $maxrejects ]]; then
+		maxrejects=500
+		fi
+
+		## build temporary parameter file
+		paramtemp="$tempdir/${randcode}_params.temp"
+		echo "pick_otus:similarity $similarity" > $paramtemp
+		echo "pick_otus:max_accepts $maxaccepts" >> $paramtemp
+		echo "pick_otus:max_rejects $maxrejects" >> $paramtemp
 
 		## Pick OTUs
 		echo "Picking OTUs against collapsed rep set.
 Input sequences: ${bold}$numseqs${normal}
-Method: ${bold}BLAST (closed reference)${normal}"
+Method: ${bold}Open Reference (UCLUST)${normal}
+Similarity: ${bold}$similarity${normal}
+Max accepts: ${bold}$maxaccepts${normal}
+Max rejects: ${bold}$maxrejects${normal}
+		"
 		echo "Picking OTUs against collapsed rep set." >> $log
 		date "+%a %b %d %I:%M %p %Z %Y" >> $log
 		echo "Input sequences: $numseqs" >> $log
-		echo "Method: BLAST (closed reference)" >> $log
+		echo "Method: Open Reference (UCLUST)" >> $log
 		echo "Percent similarity: $similarity" >> $log
-		echo "Percent similarity: ${bold}$similarity${normal}
-		"
+		echo "Max accepts: $maxaccepts" >> $log
+		echo "Max rejects: $maxrejects" >> $log
+
 		echo "
-	parallel_pick_otus_blast.py -i $derepseqs -o $otupickdir -s $similarity -O $cores -r $refs -e 0.001
+	pick_open_reference_otus.py -i $derepseqs -o $otupickdir -p $paramtemp -aO $cores -r $refs --prefilter_percent_id 0.0 --suppress_taxonomy_assignment --suppress_align_and_tree
 		" >> $log
-		parallel_pick_otus_blast.py -i $derepseqs -o $otupickdir -s $similarity -O $cores -r $refs -e 0.001 1>$stdout 2>$stderr
+		pick_open_reference_otus.py -i $derepseqs -o $otupickdir -p $paramtemp -aO $cores -r $refs --prefilter_percent_id 0.0 --suppress_taxonomy_assignment --suppress_align_and_tree 1>$stdout 2>$stderr
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
+
+	#add "openref" prefix to all OTU ids
+	sed -i "s/^/openref/" $otupickdir/final_otu_map.txt
 
 		res3=$(date +%s.%N)
 		dt=$(echo "$res3 - $res2" | bc)
@@ -91,12 +128,12 @@ Method: ${bold}BLAST (closed reference)${normal}"
 		dt3=$(echo "$dt2-3600*$dh" | bc)
 		dm=$(echo "$dt3/60" | bc)
 		ds=$(echo "$dt3-60*$dm" | bc)
-		otu_runtime=`printf "BLAST OTU picking runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+		otu_runtime=`printf "Open Reference OTU picking runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
 		echo "$otu_runtime
 
 		" >> $log
 		else
-		echo "BLAST OTU picking already completed ($similarity).
+		echo "Open Reference OTU picking already completed ($similarity).
 		"
 	fi
 
@@ -107,14 +144,23 @@ Method: ${bold}BLAST (closed reference)${normal}"
 		echo "Merging OTU maps:" >> $log
 		date "+%a %b %d %I:%M %p %Z %Y" >> $log
 		echo "
-	merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/derep_rep_set_otus.txt -o ${otupickdir}/merged_otu_map.txt
+	merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/final_otu_map.txt -o ${otupickdir}/merged_otu_map.txt
 		" >> $log
-		merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/derep_rep_set_otus.txt -o ${otupickdir}/merged_otu_map.txt 1>$stdout 2>$stderr
+		merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/final_otu_map.txt -o ${otupickdir}/merged_otu_map.txt 1>$stdout 2>$stderr
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 		else
 		echo "OTU maps already merged.
 		"
 	fi
+
+	## Stash files from open reference command into separate directory to prevent later conflict
+	OR_filedir=$otupickdir/pick_open_reference_otus_files
+	mkdir -p $OR_filedir
+	mv $otupickdir/final_otu_map.txt $OR_filedir
+	mv $otupickdir/final_otu_map_mc2.txt $OR_filedir
+	mv $otupickdir/new_refseqs.fna $OR_filedir
+	mv $otupickdir/otu_table_mc2.biom $OR_filedir
+	mv $otupickdir/rep_set.fna $OR_filedir
 
 	## Pick rep set
 	if [[ ! -f $otupickdir/merged_rep_set.fna ]]; then
@@ -154,7 +200,6 @@ Method: ${bold}BLAST (closed reference)${normal}"
 		taxdir="$otupickdir/rdp_taxonomy_assignment"
 		if [[ ! -f $taxdir/merged_rep_set_tax_assignments.txt ]]; then
 			bash $scriptdir/rdp_tax_slave.sh $stdout $stderr $log $cores $taxmethod $taxdir $otupickdir $refs $tax $repsetcount
-echo 1
 		fi
 	fi
 
@@ -178,13 +223,13 @@ done
 	ds=$(echo "$dt3-60*$dm" | bc)
 	runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
 
-echo "Sequential OTU picking steps completed (BLAST).
+echo "Sequential OTU picking steps completed (Open Reference).
 
 $runtime
 "
 echo "---
 
-Sequential OTU picking completed (BLAST)." >> $log
+Sequential OTU picking completed (Open Reference)." >> $log
 date "+%a %b %d %I:%M %p %Z %Y" >> $log
 echo "
 $runtime 

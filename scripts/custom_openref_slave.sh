@@ -42,6 +42,9 @@ set -e
 	rdptax="${12}"
 	uclusttax="${13}"
 	alltax="${14}"
+	parameter_count="${15}"
+	params="${16}"
+	randcode="${17}"
 
 	similaritycount=`cat $resfile | wc -l`
 	cores=(`grep "CPU_cores" $config | grep -v "#" | cut -f 2`)
@@ -55,50 +58,132 @@ set -e
 
 ## Log and run commands
 
-	echo "Beginning OTU picking (BLAST) at ${bold}$similaritycount${normal} similarity values.
+	echo "Beginning OTU picking (Custom Open Reference) at ${bold}$similaritycount${normal} similarity values.
 	"
-	echo "Beginning OTU picking (BLAST) at $similaritycount similarity values." >> $log
+	echo "Beginning OTU picking (Custom Open Reference) at $similaritycount similarity values." >> $log
 	date "+%a %b %d %I:%M %p %Z %Y" >> $log
 
 for similarity in `cat $resfile`; do
-	otupickdir="blast_otus_${similarity}"
+	otupickdir="custom_openref_otus_${similarity}"
 
 	if [[ ! -f $otupickdir/derep_rep_set_otus.txt ]]; then
 		res2=$(date +%s.%N)
 
+	if [[ ! -f $otupickdir/blast_step1_reference/step1_rep_set.fasta ]]; then
+
+	if [[ -d $otupickdir/blast_step1_reference ]]; then 
+	rm -r $otupickdir/blast_step1_reference/*
+	fi
+	if [[ -d $otupickdir/cdhit_step2_denovo ]]; then
+	rm -r $otupickdir/cdhit_step2_denovo
+	fi
+
 		## Pick OTUs
 		echo "Picking OTUs against collapsed rep set.
 Input sequences: ${bold}$numseqs${normal}
-Method: ${bold}BLAST (closed reference)${normal}"
+Method: ${bold}Open Reference (BLAST/CD-HIT)${normal}"
 		echo "Picking OTUs against collapsed rep set." >> $log
 		date "+%a %b %d %I:%M %p %Z %Y" >> $log
 		echo "Input sequences: $numseqs" >> $log
-		echo "Method: BLAST (closed reference)" >> $log
+		echo "Method: Open Reference (BLAST/CD-HIT)" >> $log
 		echo "Percent similarity: $similarity" >> $log
 		echo "Percent similarity: ${bold}$similarity${normal}
 		"
 		echo "
-	parallel_pick_otus_blast.py -i $derepseqs -o $otupickdir -s $similarity -O $cores -r $refs -e 0.001
+	parallel_pick_otus_blast.py -i $derepseqs -o $otupickdir/blast_step1_reference -s $similarity -O $cores -r $refs -e 0.001
 		" >> $log
-		parallel_pick_otus_blast.py -i $derepseqs -o $otupickdir -s $similarity -O $cores -r $refs -e 0.001 1>$stdout 2>$stderr
+		parallel_pick_otus_blast.py -i $derepseqs -o $otupickdir/blast_step1_reference -s $similarity -O $cores -r $refs -e 0.001 1>$stdout 2>$stderr
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 
-		res3=$(date +%s.%N)
-		dt=$(echo "$res3 - $res2" | bc)
-		dd=$(echo "$dt/86400" | bc)
-		dt2=$(echo "$dt-86400*$dd" | bc)
-		dh=$(echo "$dt2/3600" | bc)
-		dt3=$(echo "$dt2-3600*$dh" | bc)
-		dm=$(echo "$dt3/60" | bc)
-		ds=$(echo "$dt3-60*$dm" | bc)
-		otu_runtime=`printf "BLAST OTU picking runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
-		echo "$otu_runtime
+		#add "BLAST" prefix to all OTU ids
+		sed -i "s/^/BLAST/" $otupickdir/blast_step1_reference/prefix_rep_set_otus.txt
 
-		" >> $log
 		else
-		echo "BLAST OTU picking already completed ($similarity).
+		echo "Step 1 OTU picking already completed ($similarity).
 		"
 	fi
+
+## Merge OTU maps and pick rep set for reference-based successes
+	## Merge OTU maps
+	if [[ ! -f ${otupickdir}/blast_step1_reference/merged_step1_otus.txt ]]; then
+		echo "Merging step 1 OTU maps.
+		"
+		echo "Merging step 1 OTU maps:" >> $log
+		date "+%a %b %d %I:%M %p %Z %Y" >> $log
+		echo "
+	merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/blast_step1_reference/derep_rep_set_otus.txt -o ${otupickdir}/blast_step1_reference/merged_step1_otus.txt
+		" >> $log
+		merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/blast_step1_reference/derep_rep_set_otus.txt -o ${otupickdir}/blast_step1_reference/merged_step1_otus.txt 1>$stdout 2>$stderr
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+		else
+		echo "Step 1 OTU maps already merged.
+		"
+	fi
+
+	## Pick rep set
+	if [[ ! -f $otupickdir/merged_rep_set.fna ]]; then
+		echo "Picking rep set against step 1 OTU map.
+		"
+		echo "Picking rep set against step 1 OTU map:" >> $log
+		date "+%a %b %d %I:%M %p %Z %Y" >> $log
+		echo "
+	pick_rep_set.py -i ${otupickdir}/blast_step1_reference/merged_step1_otus.txt -f $seqs -o $otupickdir/merged_rep_set.fna
+		" >> $log
+		pick_rep_set.py -i ${otupickdir}/blast_step1_reference/merged_step1_otus.txt -f $seqs -o $otupickdir/merged_rep_set.fna 1>$stdout 2>$stderr
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+		else
+		echo "Step 1 rep set already completed.
+		"
+	fi
+
+## Make failures file for clustering against de novo
+	cat $otupickdir/blast_step1_reference/derep_rep_set_otus.txt | cut -f 2- > $otupickdir/blast_step1_reference/derep_rep_set_otuids_all.txt
+	paste -sd ' ' - < $otupickdir/blast_step1_reference/derep_rep_set_otuids_all.txt > $otupickdir/blast_step1_reference/derep_rep_set_otuids_1row.txt
+	tr -s "[:space:]" "\n" <$otupickdir/blast_step1_reference/derep_rep_set_otuids_1row.txt | sed "/^$/d" > $otupickdir/blast_step1_reference/derep_rep_set_otuids.txt
+	rm $otupickdir/blast_step1_reference/derep_rep_set_otuids_1row.txt
+	rm $otupickdir/blast_step1_reference/derep_rep_set_otuids_all.txt
+	filter_fasta.py -f $presufdir/derep_rep_set.fasta -o $otupickdir/blast_step1_reference/step1_failures.fasta -s $otupickdir/blast_step1_reference/derep_rep_set_otuids.txt -n
+	rm $otupickdir/blast_step1_reference/derep_rep_set_otuids.txt
+
+## Count successes and failures from step 1 for reporting purposes
+	successseqs=`grep -e "^>" $otupickdir/blast_step1_reference/step1_rep_set.fasta | wc -l`
+	failureseqs=`grep -e "^>" $otupickdir/blast_step1_reference/step1_failures.fasta | wc -l`
+
+	echo "${bold}$successseqs${normal} OTUs picked against reference collection.
+${bold}$failureseqs${normal} sequences passed to de novo step.
+	"
+
+	res3=$(date +%s.%N)
+	dt=$(echo "$res3 - $res2" | bc)
+	dd=$(echo "$dt/86400" | bc)
+	dt2=$(echo "$dt-86400*$dd" | bc)
+	dh=$(echo "$dt2/3600" | bc)
+	dt3=$(echo "$dt2-3600*$dh" | bc)
+	dm=$(echo "$dt3/60" | bc)
+	ds=$(echo "$dt3-60*$dm" | bc)
+
+otu_runtime=`printf "BLAST OTU picking runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
+echo "$otu_runtime
+"
+echo "$otu_runtime
+
+	" >> $log
+
+	else
+	echo "BLAST OTU picking already completed (step 1 OTUs, $similarity).
+	"
+	fi
+
+## Start step 2 (de novo) OTU picking with CDHIT, skip if no failures
+	if [[ -s $otupickdir/blast_step1_reference/step1_failures.fasta ]]; then
+	if [[ ! -f $otupickdir/cdhit_step2_denovo/step1_failures_otus.txt ]] || [[ ! -f $otupickdir/cdhit_step2_denovo/step2_rep_set.fasta ]]; then
+	res2=$(date +%s.%N)
+	failureseqs=`grep -e "^>" $otupickdir/blast_step1_reference/step1_failures.fasta | wc -l`
+
+
+
+
+
 
 	## Merge OTU maps
 	if [[ ! -f $otupickdir/merged_otu_map.txt ]]; then
@@ -107,9 +192,9 @@ Method: ${bold}BLAST (closed reference)${normal}"
 		echo "Merging OTU maps:" >> $log
 		date "+%a %b %d %I:%M %p %Z %Y" >> $log
 		echo "
-	merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/derep_rep_set_otus.txt -o ${otupickdir}/merged_otu_map.txt
+	merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/blast_step1_reference/derep_rep_set_otus.txt -o ${otupickdir}/merged_otu_map.txt
 		" >> $log
-		merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/derep_rep_set_otus.txt -o ${otupickdir}/merged_otu_map.txt 1>$stdout 2>$stderr
+		merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/blast_step1_reference/derep_rep_set_otus.txt -o ${otupickdir}/merged_otu_map.txt 1>$stdout 2>$stderr
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 		else
 		echo "OTU maps already merged.

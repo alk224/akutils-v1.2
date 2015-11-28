@@ -140,7 +140,7 @@ Method: ${bold}SWARM (de novo)${normal}"
 ## Assign taxonomy
 
 	## BLAST
-	if [[ ! -z $blasttax || ! -z $alltax ]]; then
+	if [[ $blasttax == "blast" ]] || [[ $alltax == "ALL" ]]; then
 		taxmethod="BLAST"
 		taxdir="$otupickdir/blast_taxonomy_assignment"
 		if [[ ! -f $taxdir/merged_rep_set_tax_assignments.txt ]]; then
@@ -149,17 +149,16 @@ Method: ${bold}SWARM (de novo)${normal}"
 	fi
 
 	## RDP
-	if [[ ! -z $blasttax || ! -z $alltax ]]; then
+	if [[ $rdptax == "rdp" ]] || [[ $alltax == "ALL" ]]; then
 		taxmethod="RDP"
 		taxdir="$otupickdir/rdp_taxonomy_assignment"
 		if [[ ! -f $taxdir/merged_rep_set_tax_assignments.txt ]]; then
 			bash $scriptdir/rdp_tax_slave.sh $stdout $stderr $log $cores $taxmethod $taxdir $otupickdir $refs $tax $repsetcount
-echo 1
 		fi
 	fi
 
 	## UCLUST
-	if [[ ! -z $blasttax || ! -z $alltax ]]; then
+	if [[ $uclusttax == "uclust" ]] || [[ $alltax == "ALL" ]]; then
 		taxmethod="UCLUST"
 		taxdir="$otupickdir/uclust_taxonomy_assignment"
 		if [[ ! -f $taxdir/merged_rep_set_tax_assignments.txt ]]; then
