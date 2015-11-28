@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-#  blast_tax_slave.sh - assign taxonomy with BLAST in QIIME
+#  uclust_tax_slave.sh - assign taxonomy with UCLUST in QIIME
 #
 #  Version 1.0.0 (November, 27, 2015)
 #
@@ -37,7 +37,6 @@ set -e
 	otupickdir="$7"
 	refs="$8"
 	tax="$9"
-	repsetcount="${10}"
 
 	bold=$(tput bold)
 	normal=$(tput sgr0)
@@ -53,9 +52,9 @@ Method: ${bold}$taxmethod${normal} on ${bold}$cores${normal} cores.
 Input sequences: $repsetcount" >> $log
 	date "+%a %b %d %I:%M %p %Z %Y" >> $log
 	echo "
-	parallel_assign_taxonomy_blast.py -i $otupickdir/merged_rep_set.fna -o $taxdir -r $refs -t $tax -O $cores
+	parallel_assign_taxonomy_uclust.py -i $otupickdir/merged_rep_set.fna -o $taxdir -r $refs -t $tax -O $cores
 	" >> $log
-	parallel_assign_taxonomy_blast.py -i $otupickdir/merged_rep_set.fna -o $taxdir -r $refs -t $tax -O $cores 1>$stdout 2>$stderr
+	parallel_assign_taxonomy_uclust.py -i $otupickdir/merged_rep_set.fna -o $taxdir -r $refs -t $tax -O $cores 1>$stdout 2>$stderr
 	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	wait
 

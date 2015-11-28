@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-#  blast_tax_slave.sh - assign taxonomy with BLAST in QIIME
+#  rdp_tax_slave.sh - assign taxonomy with RDP in QIIME
 #
 #  Version 1.0.0 (November, 27, 2015)
 #
@@ -37,12 +37,18 @@ set -e
 	otupickdir="$7"
 	refs="$8"
 	tax="$9"
-	repsetcount="${10}"
 
 	bold=$(tput bold)
 	normal=$(tput sgr0)
 	underline=$(tput smul)
 	res1=$(date +%s.%N)
+
+## Adjust threads since RDP seems to choke with too many threads (> 12)
+	if [[ $cores -gt 12 ]]; then
+		threads=12
+	else
+		threads=$cores
+	fi
 
 ## Log and run command
 	echo "Assigning taxonomy.
@@ -53,9 +59,9 @@ Method: ${bold}$taxmethod${normal} on ${bold}$cores${normal} cores.
 Input sequences: $repsetcount" >> $log
 	date "+%a %b %d %I:%M %p %Z %Y" >> $log
 	echo "
-	parallel_assign_taxonomy_blast.py -i $otupickdir/merged_rep_set.fna -o $taxdir -r $refs -t $tax -O $cores
+	parallel_assign_taxonomy_rdp.py -i $otupickdir/merged_rep_set.fna -o $taxdir -r $refs -t $tax -O $threads -c 0.5 --rdp_max_memory 6000
 	" >> $log
-	parallel_assign_taxonomy_blast.py -i $otupickdir/merged_rep_set.fna -o $taxdir -r $refs -t $tax -O $cores 1>$stdout 2>$stderr
+	parallel_assign_taxonomy_rdp.py -i $otupickdir/merged_rep_set.fna -o $taxdir -r $refs -t $tax -O $threads -c 0.5 --rdp_max_memory 6000 1>$stdout 2>$stderr
 	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	wait
 

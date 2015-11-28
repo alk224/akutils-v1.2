@@ -140,19 +140,54 @@ Method: ${bold}SWARM (de novo)${normal}"
 ## Assign taxonomy
 
 	## BLAST
-	if [[ ! -z $blasttax || ! -z alltax ]]; then
+	if [[ ! -z $blasttax || ! -z $alltax ]]; then
 		taxmethod="BLAST"
 		taxdir="$otupickdir/blast_taxonomy_assignment"
 		if [[ ! -f $taxdir/merged_rep_set_tax_assignments.txt ]]; then
-			bash $scriptdir/blast_tax_slave.sh $stdout $stderr $log $cores $taxmethod $taxdir $otupickdir $refs $tax
+			bash $scriptdir/blast_tax_slave.sh $stdout $stderr $log $cores $taxmethod $taxdir $otupickdir $refs $tax $repsetcount
+		fi
+	fi
+
+	## RDP
+	if [[ ! -z $blasttax || ! -z $alltax ]]; then
+		taxmethod="RDP"
+		taxdir="$otupickdir/rdp_taxonomy_assignment"
+		if [[ ! -f $taxdir/merged_rep_set_tax_assignments.txt ]]; then
+			bash $scriptdir/rdp_tax_slave.sh $stdout $stderr $log $cores $taxmethod $taxdir $otupickdir $refs $tax $repsetcount
+echo 1
+		fi
+	fi
+
+	## UCLUST
+	if [[ ! -z $blasttax || ! -z $alltax ]]; then
+		taxmethod="UCLUST"
+		taxdir="$otupickdir/uclust_taxonomy_assignment"
+		if [[ ! -f $taxdir/merged_rep_set_tax_assignments.txt ]]; then
+			bash $scriptdir/uclust_tax_slave.sh $stdout $stderr $log $cores $taxmethod $taxdir $otupickdir $refs $tax $repsetcount
 		fi
 	fi
 done
 
+	res4=$(date +%s.%N)
+	dt=$(echo "$res4 - $res1" | bc)
+	dd=$(echo "$dt/86400" | bc)
+	dt2=$(echo "$dt-86400*$dd" | bc)
+	dh=$(echo "$dt2/3600" | bc)
+	dt3=$(echo "$dt2-3600*$dh" | bc)
+	dm=$(echo "$dt3/60" | bc)
+	ds=$(echo "$dt3-60*$dm" | bc)
+	runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
 
+echo "Sequential OTU picking steps completed (Swarm).
 
+$runtime
+"
+echo "---
 
-
-
+Sequential OTU picking completed (Swarm)." >> $log
+date "+%a %b %d %I:%M %p %Z %Y" >> $log
+echo "
+$runtime 
+" >> $log
 
 exit 0
