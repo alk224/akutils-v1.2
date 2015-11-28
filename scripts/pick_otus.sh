@@ -276,6 +276,7 @@ Skipping chimera checking step.
 	presufdir="prefix${prefix_len}_suffix${suffix_len}"
 	seqpath="${seqs%.*}"
 	seqname=`basename $seqpath`
+
 	if [[ ! -f ${presufdir}/${seqname}_otus.txt ]]; then
 	bash $scriptdir/prefix_suffix_slave.sh $stdout $stderr $log $prefix_len $suffix_len $presufdir $seqs $numseqs
 	otus="${presufdir}/${seqname}_otus.txt"
@@ -288,9 +289,9 @@ Skipping chimera checking step.
 	fi
 
 ## Pick rep set against dereplicated OTU file
-	outseqs="$presufdir/derep_rep_set.fasta"
-	if [[ ! -f $outseqs ]]; then
-	bash $scriptdir/pick_rep_set_slave.sh $stdout $stderr $log $otus $seqs $outseqs $numseqs
+	derepseqs="$presufdir/derep_rep_set.fasta"
+	if [[ ! -f $derepseqs ]]; then
+	bash $scriptdir/pick_rep_set_slave.sh $stdout $stderr $log $otus $seqs $derepseqs $numseqs
 
 	else
 	echo "Dereplicated rep set already present.
@@ -298,8 +299,7 @@ Skipping chimera checking step.
 	echo "Dereplicated rep set already present.
 	" >> $log
 	fi
-	seqs="$outseqs"
-	numseqs=`grep -e "^>" $seqs | wc -l`
+	numseqs=`grep -e "^>" $derepseqs | wc -l`
 
 ################################
 ## SWARM OTU Steps BEGIN HERE ##
@@ -309,21 +309,21 @@ Skipping chimera checking step.
 
 if [[ $otupicker == "swarm" || $otupicker == "ALL" ]]; then
 	otumethod="Swarm"
-
-if [[ $parameter_count == 1 ]]; then
 	resfile="$tempdir/swarm_resolutions_${randcode}.temp"
-	grep "swarm_resolution" $param_file | cut -d " " -f2 | sed '/^$/d' > $resfile
+
+	if [[ $parameter_count == 1 ]]; then
+		grep "swarm_resolution" $param_file | cut -d " " -f2 | sed '/^$/d' > $resfile
 	else
-	echo 1 > $resfile
-fi
+		echo 1 > $resfile
+	fi
+
 	resolutioncount=`cat $resfile | wc -l`
 	if [[ $resolutioncount == 0 ]]; then
-	echo 1 > $resfile
+		echo 1 > $resfile
 	fi
-	resolutioncount=`cat $resfile | wc -l`
 
-	bash $scriptdir/swarm_slave.sh $stdout $stderr $log $resfile $seqs $numseqs $CPU_cores $presufdir $seqname $refs
-
+	bash $scriptdir/swarm_slave.sh $stdout $stderr $log $config $resfile $derepseqs $seqs $numseqs $presufdir $seqname
+fi
 
 
 

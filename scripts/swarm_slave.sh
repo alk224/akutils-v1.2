@@ -31,13 +31,18 @@ set -e
 	stdout="$1"
 	stderr="$2"
 	log="$3"
-	resfile="$4"
-	seqs="$5"
-	numseqs="$6"
-	cores="$7"
-	presufdir="$8"
-	seqname="$9"
-	refs="${10}"
+	config="$4"
+	resfile="$5"
+	derepseqs="$6"
+	seqs="$7"
+	numseqs="$8"
+	presufdir="$9"
+	seqname="${10}"
+	resolutioncount=`cat $resfile | wc -l`
+	cores=(`grep "CPU_cores" $config | grep -v "#" | cut -f 2`)
+	refs=(`grep "Reference" $config | grep -v "#" | cut -f 2`)
+	tax=(`grep "Taxonomy" $config | grep -v "#" | cut -f 2`)
+	taxassigner=(`grep "Tax_assigner" $config | grep -v "#" | cut -f 2`)
 	bold=$(tput bold)
 	normal=$(tput sgr0)
 	underline=$(tput smul)
@@ -62,15 +67,15 @@ Input sequences: ${bold}$numseqs${normal}
 Method: ${bold}SWARM (de novo)${normal}"
 		echo "Picking OTUs against collapsed rep set." >> $log
 		date "+%a %b %d %I:%M %p %Z %Y" >> $log
-		echo "Input sequences: $numseqs2" >> $log
+		echo "Input sequences: $numseqs" >> $log
 		echo "Method: SWARM (de novo)" >> $log
 		echo "Swarm resolution: $resolution" >> $log
 		echo "Swarm resolution: ${bold}$resolution${normal}
 		"
 		echo "
-		pick_otus.py -m swarm -i $seqs -o $otupickdir --threads $cores --swarm_resolution $resolution
+	pick_otus.py -m swarm -i $derepseqs -o $otupickdir --threads $cores --swarm_resolution $resolution
 		" >> $log
-		pick_otus.py -m swarm -i $seqs -o $otupickdir --threads $cores --swarm_resolution $resolution 1>$stdout 2>$stderr
+		pick_otus.py -m swarm -i $derepseqs -o $otupickdir --threads $cores --swarm_resolution $resolution 1>$stdout 2>$stderr
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 
 		res3=$(date +%s.%N)
@@ -97,9 +102,9 @@ Method: ${bold}SWARM (de novo)${normal}"
 		echo "Merging OTU maps:" >> $log
 		date "+%a %b %d %I:%M %p %Z %Y" >> $log
 		echo "
-		merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/prefix_rep_set_otus.txt -o ${otupickdir}/merged_otu_map.txt
+	merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/derep_rep_set_otus.txt -o ${otupickdir}/merged_otu_map.txt
 		" >> $log
-		merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/prefix_rep_set_otus.txt -o ${otupickdir}/merged_otu_map.txt 1>$stdout 2>$stderr
+		merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/derep_rep_set_otus.txt -o ${otupickdir}/merged_otu_map.txt 1>$stdout 2>$stderr
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 		else
 		echo "OTU maps already merged.
@@ -113,7 +118,7 @@ Method: ${bold}SWARM (de novo)${normal}"
 		echo "Picking rep set against merged OTU map:" >> $log
 		date "+%a %b %d %I:%M %p %Z %Y" >> $log
 		echo "
-		pick_rep_set.py -i $otupickdir/merged_otu_map.txt -f $seqs -o $otupickdir/merged_rep_set.fna
+	pick_rep_set.py -i $otupickdir/merged_otu_map.txt -f $seqs -o $otupickdir/merged_rep_set.fna
 		" >> $log
 		pick_rep_set.py -i $otupickdir/merged_otu_map.txt -f $seqs -o $otupickdir/merged_rep_set.fna 1>$stdout 2>$stderr
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
@@ -121,18 +126,23 @@ Method: ${bold}SWARM (de novo)${normal}"
 		echo "Merged rep set already completed.
 		"
 	fi
-	repsetcount=`grep -e "^>" $outdir/$otupickdir/merged_rep_set.fna | wc -l`
+	repsetcount=`grep -e "^>" $otupickdir/merged_rep_set.fna | wc -l`
+	echo "Identified ${bold}$repsetcount${normal} OTUs from ${bold}$numseqs${normal} input sequences.
+	"
+	echo "Identified $repsetcount OTUs from $numseqs input sequences.
+	" >> $log
 
 ## Assign taxonomy
 
 	## BLAST
 	if [[ $taxassigner == "blast" || $taxassigner == "ALL" ]]; then
-	taxmethod=BLAST
-	taxdir=$otupickdir/blast_taxonomy_assignment
-	if [[ ! -f $taxdir/merged_rep_set_tax_assignments.txt ]]; then
-	bash $scriptdir/blast_tax_slave.sh $stdout $stderr $log $cores $taxmethod $taxdir $otupickdir $refs
-
-
+		taxmethod="BLAST"
+		taxdir="$otupickdir/blast_taxonomy_assignment"
+		if [[ ! -f $taxdir/merged_rep_set_tax_assignments.txt ]]; then
+			bash $scriptdir/blast_tax_slave.sh $stdout $stderr $log $cores $taxmethod $taxdir $otupickdir $refs $tax
+		fi
+	fi
+done
 
 
 

@@ -28,8 +28,9 @@ All tests take ~20 minutes on a system
 with 24 cores or ~60 minutes on a
 system with 2 cores.
 
-Your system has ${bold}$cpus${normal} cores
-and ${bold}$ram${normal} available RAM.
+Your system has: 
+CPU cores: ${bold}$cpus${normal}
+Available RAM: ${bold}$ram${normal}
 "
 
 ## Check for test data

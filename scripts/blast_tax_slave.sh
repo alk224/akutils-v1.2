@@ -36,6 +36,7 @@ set -e
 	taxdir="$6"
 	otupickdir="$7"
 	refs="$8"
+	tax="$9"
 
 	bold=$(tput bold)
 	normal=$(tput sgr0)
