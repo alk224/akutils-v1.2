@@ -30,6 +30,9 @@ fi
 if [[ -f $stderr ]]; then
 	rm $stderr
 fi
+if [[ -f $tempdir/swarm_resolutions_${randcode}.temp ]]; then
+	rm $tempdir/swarm_resolutions_${randcode}.temp
+fi
 }
 trap finish EXIT
 

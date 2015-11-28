@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-#  ITSx_slave.sh - ITSx searches amid QIIME workflow
+#  pick_rep_set_slave.sh - pick representative sequences in QIIME
 #
 #  Version 1.0.0 (November, 27, 2015)
 #
@@ -28,50 +28,31 @@ set -e
 	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
 	repodir=`dirname $scriptdir`
 	workdir=$(pwd)
-	outdir="$workdir/split_libraries"
 	stdout="$1"
 	stderr="$2"
 	log="$3"
-	cores="$4"
+	otus="$4"
 	seqs="$5"
-	numseqs="$6"
-	config="$7"
+	outseqs="$6"
+	numseqs="$7"
 	bold=$(tput bold)
 	normal=$(tput sgr0)
 	underline=$(tput smul)
 	res1=$(date +%s.%N)
-	itsx_options=`grep "ITSx_options" $config | grep -v "#" | cut -f 2-`
 
 ## Log and run command
-	echo "Screening sequences for ITS HMMer profiles with ITSx on ${bold}$cores${normal} cores.
-Input sequences: ${bold}$numseqs${normal}
+	echo "Picking rep set with prefix/suffix-collapsed OTU map.
 	"
-	echo "
-ITSx command:" >> $log
+	echo "Picking rep set with prefix/suffix-collapsed OTU map:" >> $log
 	date "+%a %b %d %I:%M %p %Z %Y" >> $log
 	echo "
-	ITSx_parallel.sh $seqs $cores $itsx_options
+	pick_rep_set.py -i $otus -f $seqs -o $outseqs
 	" >> $log
-	ITSx_parallel.sh $seqs $cores $itsx_options 1>$stdout 2>$outdir/ITSx_log.txt
+	pick_rep_set.py -i $otus -f $seqs -o $outseqs 1>$stdout 2>$stderr
 	bash $scriptdir/log_slave.sh $stdout $stderr $log
-
-	seqs="split_libraries/seqs_chimera_filtered_ITSx_filtered.fna"
-	ITSseqs=`grep -e "^>" $seqs | wc -l`
-
-	if [[ ! -s $seqs ]]; then
-	echo "ITSx step failed to identify any ITS profiles.  Check your data and try
-again.  Exiting.
+	numseqs1=`grep -e "^>" $outseqs | wc -l`
+	echo "Dereplicated from ${bold}$numseqs${normal} to ${bold}$numseqs1${normal} sequences.
 	"
-	echo "ITSx step failed to identify any ITS profiles.  Check your data and try
-again.  Exiting.
-	" >> $log
-	exit 1	
-	fi
-
-	echo "Identified ${bold}$ITSseqs${normal} ITS-containing sequences from ${bold}$numseqs${normal} input reads.
-	"
-	echo "Identified $ITSseqs ITS-containing sequences from $numseqs input reads.
-	" >> $log
 
 	res2=$(date +%s.%N)
 	dt=$(echo "$res2 - $res1" | bc)
@@ -81,9 +62,8 @@ again.  Exiting.
 	dt3=$(echo "$dt2-3600*$dh" | bc)
 	dm=$(echo "$dt3/60" | bc)
 	ds=$(echo "$dt3-60*$dm" | bc)
-
-	itsx_runtime=`printf "ITSx runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
-	echo "$itsx_runtime
+	repset_runtime=`printf "Pick rep set runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`	
+	echo "$repset_runtime
 
 	" >> $log
 

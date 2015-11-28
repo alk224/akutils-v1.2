@@ -73,10 +73,10 @@ Input sequences: $numseqs
 	seqcount=$(echo "$seqcount1 / 2" | bc)
 	chimeracount=$(echo "$seqcount - $chimeracount2" | bc)
 
-	echo "Identified ${bold}$chimeracount${normal} chimeric sequences from ${bold}$seqcount${normal} total reads in your data.
-"
-	echo "	Identified $chimeracount chimeric sequences from $seqcount
-		total reads in your data.
+	echo "Identified ${bold}$chimeracount${normal} chimeric sequences from ${bold}$seqcount${normal} input reads.
+	"
+	echo "Identified $chimeracount chimeric sequences from $seqcount
+input reads.
 	" >> $log
 
 	wait

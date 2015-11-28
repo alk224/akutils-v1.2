@@ -22,17 +22,18 @@
 #     misrepresented as being the original software.
 #  3. This notice may not be removed or altered from any source distribution.
 #
-set -e
+#set -e
 
 ## Define variables.
 	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
-	repodir=`dirname $scriptdir`
+	repodir=$(dirname $scriptdir)
 	workdir=$(pwd)
+	tempdir="$repodir/temp"
 	stdout="$1"
 	stderr="$2"
 	randcode="$3"
 	mode="$4"
-	date0=`date +%Y%m%d_%I%M%p`
+	date0=$(date +%Y%m%d_%I%M%p)
 	res0=$(date +%s.%N)
 	bold=$(tput bold)
 	normal=$(tput sgr0)
@@ -50,11 +51,12 @@ Invalid mode entered. Valid modes are 16S, ITS or other."
 	fi
 
 ## Find log file or set new one.
-	logcount=`ls log_pick_otus_* 2>/dev/null | head -1 | wc -l`
-	if [[ "$logcount" == "1" ]]; then
+	rm log_pick_otus*~ 2>/dev/null
+	logcount=$(ls log_pick_otus* 2>/dev/null | head -1 | wc -l)
+	if [[ "$logcount" -eq 1 ]]; then
 		log=`ls log_pick_otus*.txt | head -1`
-	elif [[ "$logcount" == "0" ]]; then
-		log=($workdir/log_pick_otus_$date0.txt)
+	elif [[ "$logcount" -eq 0 ]]; then
+		log="$workdir/log_pick_otus_$date0.txt"
 	fi
 	echo "
 ${bold}akutils pick_otus workflow beginning.${normal}
@@ -119,6 +121,39 @@ Exiting.
 	else echo "Taxonomy assignment method(s): ${bold}$taxassigner${normal}
 	"
 	echo "Taxonomy assignment method(s): $taxassigner" >> $log
+	fi
+
+## Check that no more than one parameter file is present
+	parameter_count=(`ls $outdir/parameter* 2>/dev/null | wc -w`)
+	if [[ $parameter_count -ge 2 ]]; then
+	echo "
+No more than one parameter file can reside in your working
+directory.  Presently, there are $parameter_count such files.  
+Move or rename all but one of these files and restart the
+workflow.  A parameter file is any file in your working
+directory that starts with \"parameter\".  See --help for
+more details.
+
+Exiting.
+	"
+		exit 1
+	elif [[ $parameter_count == 1 ]]; then
+		param_file=(`ls $outdir/parameter*`)
+	echo "
+Found parameters file.
+$param_file
+	"
+	echo "Using custom parameters file.
+$outdir/$param_file
+
+Parameters file contents:" >> $log
+	cat $param_file >> $log
+	elif [[ $parameter_count == 0 ]]; then
+	echo "
+No parameters file found.  Running with default settings.
+	"
+	echo "No parameter file found.  Using default settings.
+	" >> $log
 	fi
 
 ## Check that no more than one mapping file is present
@@ -195,7 +230,6 @@ directory.
 	numseqs=`grep -e "^>" $seqs | wc -l`
 
 ## Call chimera filtering function and set variables as necessary
-
 	if [[ $chimera_refs != "undefined" ]] || [[ -z $chimera_refs ]]; then
 	if [[ ! -f split_libraries/seqs_chimera_filtered.fna ]]; then
 	bash $scriptdir/filter_chimeras_slave.sh $stdout $stderr $log $CPU_cores $chimera_refs $numseqs
@@ -206,11 +240,95 @@ directory.
 		fi
 		echo "Chimera-filtered sequences detected ($numseqs sequences).
 	"
+		echo "Chimera-filtered sequences detected ($numseqs sequences).
+	" >> $log
 	fi
 		else echo "No chimera reference collection supplied.
 Skipping chimera checking step.
 	"
 	fi
+
+## ITSx filtering (mode ITS only)
+	if [[ $mode == "ITS" ]]; then
+	seqbase=`basename $seqs .fna`
+	if [[ -f split_libraries/${seqbase}_ITSx_filtered.fna ]]; then
+		if [[ -s split_libraries/seqs_chimera_filtered_ITSx_filtered.fna ]]; then
+		seqs="split_libraries/seqs_chimera_filtered_ITSx_filtered.fna"
+		numseqs=`grep -e "^>" $seqs | wc -l`
+		echo "ITSx filtered sequences detected. ($numseqs sequences).
+		"
+		echo "ITSx filtered sequences detected. ($numseqs sequences).
+		" >> $log
+		fi
+	else
+	bash $scriptdir/ITSx_slave.sh $stdout $stderr $log $CPU_cores $seqs $numseqs $config
+
+	seqs="split_libraries/seqs_chimera_filtered_ITSx_filtered.fna"
+	ITSseqs=`grep -e "^>" $seqs | wc -l`
+	fi
+	seqs="split_libraries/seqs_chimera_filtered_ITSx_filtered.fna"
+	if [[ ! -s $seqs ]]; then
+	exit 1
+	fi
+	fi
+
+## Dereplicate sequences with prefix/suffix collapser
+	presufdir="prefix${prefix_len}_suffix${suffix_len}"
+	seqpath="${seqs%.*}"
+	seqname=`basename $seqpath`
+	if [[ ! -f ${presufdir}/${seqname}_otus.txt ]]; then
+	bash $scriptdir/prefix_suffix_slave.sh $stdout $stderr $log $prefix_len $suffix_len $presufdir $seqs $numseqs
+	otus="${presufdir}/${seqname}_otus.txt"
+	else
+	echo "Dereplication with prefix/suffix picker previously completed.
+	"
+	echo "Dereplication with prefix/suffix picker previously completed.
+	" >> $log
+	otus="${presufdir}/${seqname}_otus.txt"
+	fi
+
+## Pick rep set against dereplicated OTU file
+	outseqs="$presufdir/derep_rep_set.fasta"
+	if [[ ! -f $outseqs ]]; then
+	bash $scriptdir/pick_rep_set_slave.sh $stdout $stderr $log $otus $seqs $outseqs $numseqs
+
+	else
+	echo "Dereplicated rep set already present.
+	"
+	echo "Dereplicated rep set already present.
+	" >> $log
+	fi
+	seqs="$outseqs"
+	numseqs=`grep -e "^>" $seqs | wc -l`
+
+################################
+## SWARM OTU Steps BEGIN HERE ##
+################################
+
+## Define otu picking parameters ahead of outdir naming
+
+if [[ $otupicker == "swarm" || $otupicker == "ALL" ]]; then
+	otumethod="Swarm"
+
+if [[ $parameter_count == 1 ]]; then
+	resfile="$tempdir/swarm_resolutions_${randcode}.temp"
+	grep "swarm_resolution" $param_file | cut -d " " -f2 | sed '/^$/d' > $resfile
+	else
+	echo 1 > $resfile
+fi
+	resolutioncount=`cat $resfile | wc -l`
+	if [[ $resolutioncount == 0 ]]; then
+	echo 1 > $resfile
+	fi
+	resolutioncount=`cat $resfile | wc -l`
+
+	bash $scriptdir/swarm_slave.sh $stdout $stderr $log $resfile $seqs $numseqs $CPU_cores $presufdir $seqname $refs
+
+
+
+
+
+
 
 
 
