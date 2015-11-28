@@ -30,15 +30,13 @@ fi
 if [[ -f $stderr ]]; then
 	rm $stderr
 fi
-if [[ -f $tempdir/swarm_resolutions_${randcode}.temp ]]; then
-	rm $tempdir/swarm_resolutions_${randcode}.temp
-fi
 }
 trap finish EXIT
 
 ## Find scripts and repository location.
 	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
 	repodir=`dirname $scriptdir`
+	tempdir="$repodir/temp/"
 
 ## Set working directory and other important variables
 	workdir=$(pwd)

@@ -38,6 +38,11 @@ set -e
 	numseqs="$8"
 	presufdir="$9"
 	seqname="${10}"
+	blasttax="${11}"
+	rdptax="${12}"
+	uclusttax="${13}"
+	alltax="${14}"
+
 	resolutioncount=`cat $resfile | wc -l`
 	cores=(`grep "CPU_cores" $config | grep -v "#" | cut -f 2`)
 	refs=(`grep "Reference" $config | grep -v "#" | cut -f 2`)
@@ -135,7 +140,7 @@ Method: ${bold}SWARM (de novo)${normal}"
 ## Assign taxonomy
 
 	## BLAST
-	if [[ $taxassigner == "blast" || $taxassigner == "ALL" ]]; then
+	if [[ ! -z $blasttax || ! -z alltax ]]; then
 		taxmethod="BLAST"
 		taxdir="$otupickdir/blast_taxonomy_assignment"
 		if [[ ! -f $taxdir/merged_rep_set_tax_assignments.txt ]]; then

@@ -23,6 +23,28 @@
 #  3. This notice may not be removed or altered from any source distribution.
 #
 #set -e
+## Trap function on exit.
+function finish {
+if [[ -f $otupicklist ]]; then
+	rm $otupicklist
+fi
+if [[ -f $taxassignlist ]]; then
+	rm $taxassignlist
+fi
+if [[ -f $swarmtemp ]]; then
+	rm $swarmtemp
+fi
+if [[ -f $percenttemp ]]; then
+	rm $percenttemp
+fi
+if [[ -f $otupickdirs ]]; then
+	rm $otupickdirs
+fi
+if [[ -f $taxfiles ]]; then
+	rm $taxfiles
+fi
+}
+trap finish EXIT
 
 ## Define variables.
 	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
@@ -35,9 +57,18 @@
 	mode="$4"
 	date0=$(date +%Y%m%d_%I%M%p)
 	res0=$(date +%s.%N)
+
 	bold=$(tput bold)
 	normal=$(tput sgr0)
 	underline=$(tput smul)
+
+## Define temp files
+	otupicklist="$tempdir/${randcode}_otupickers.temp"
+	taxassignlist="$tempdir/${randcode}_taxassigners.temp"
+	swarmtemp="$tempdir/${randcode}_swarm_resolutions.temp"
+	percenttemp="$tempdir/${randcode}_percent_identities.temp"
+	otupickdirs="$tempdir/${randcode}_otupicking_directories.temp"
+	taxfiles="$tempdir/${randcode}_taxassign_directories.temp"
 
 ## ID config file.
 	config=$(bash $scriptdir/config_id.sh)
@@ -93,35 +124,32 @@ akutils pick_otus workflow beginning." >> $log
 	suffix_len=(`grep "Suffix_length" $config | grep -v "#" | cut -f 2`)
 	otupicker=(`grep "OTU_picker" $config | grep -v "#" | cut -f 2`)
 	taxassigner=(`grep "Tax_assigner" $config | grep -v "#" | cut -f 2`)
+	cores="$CPU_cores"
+	threads=$(($cores-1))
 
-## Check for valid OTU picking and tax assignment modes
-	if [[ "$otupicker" != "blast" && "$otupicker" != "cdhit" && "$otupicker" != "swarm" && "$otupicker" != "openref" && "$otupicker" != "custom_openref" && "$otupicker" != "ALL" ]]; then
-	echo "Invalid OTU picking method chosen.
-Your current setting: ${bold}$otupicker${normal}
+## Make OTU picker and taxonomy assigner temp files
+	OIFS=$IFS
+	IFS=','
+		for x in $otupicker; do
+		echo $x >> $otupicklist
+		done
 
-Valid choices are blast, cdhit, swarm, openref, custom_openref, or ALL.
-Rerun akutils configure and change the current OTU picker setting.
-Exiting.
-	"
-		exit 1
-	else echo "OTU picking method(s): ${bold}$otupicker${normal}
-	"
-	echo "OTU picking method(s): $otupicker" >> $log
-	fi
-
-	if [[ "$taxassigner" != "blast" && "$taxassigner" != "rdp" && "$taxassigner" != "uclust" && "$taxassigner" != "ALL" ]]; then
-	echo "Invalid taxonomy assignment method chosen.
-Your current setting: ${bold}$taxassigner${normal}
-
-Valid choices are blast, rdp, uclust, or ALL. Rerun akutils configure
-and change the current taxonomy assigner setting.
-Exiting.
-	"
-		exit 1
-	else echo "Taxonomy assignment method(s): ${bold}$taxassigner${normal}
-	"
-	echo "Taxonomy assignment method(s): $taxassigner" >> $log
-	fi
+		for x in $taxassigner; do
+		echo $x >> $taxassignlist
+		done
+	IFS=$OIFS
+	
+## Set OTU picker and tax assigner variables
+	swarmpick=`grep "swarm" $otupicklist`
+	blastpick=`grep "blast" $otupicklist`
+	cdhitpick=`grep "cdhit" $otupicklist`
+	openrefpick=`grep "openref" $otupicklist`
+	custopenrefpick=`grep "custom_openref" $otupicklist`
+	allpick=`grep "ALL" $otupicklist`
+	blasttax=`grep "blast" $taxassignlist`
+	rdptax=`grep "rdp" $taxassignlist`
+	uclusttax=`grep "uclust" $taxassignlist`
+	alltax=`grep "ALL" $taxassignlist`
 
 ## Check that no more than one parameter file is present
 	parameter_count=(`ls $outdir/parameter* 2>/dev/null | wc -w`)
@@ -307,30 +335,28 @@ Skipping chimera checking step.
 
 ## Define otu picking parameters ahead of outdir naming
 
-if [[ $otupicker == "swarm" || $otupicker == "ALL" ]]; then
+if [[ ! -z $swarmpick || ! -z $allpick ]]; then
 	otumethod="Swarm"
-	resfile="$tempdir/swarm_resolutions_${randcode}.temp"
 
 	if [[ $parameter_count == 1 ]]; then
-		grep "swarm_resolution" $param_file | cut -d " " -f2 | sed '/^$/d' > $resfile
+		grep "swarm_resolution" $param_file | cut -d " " -f2 | sed '/^$/d' > $swarmtemp
 	else
-		echo 1 > $resfile
+		echo 1 > $swarmtemp
 	fi
 
-	resolutioncount=`cat $resfile | wc -l`
+	resolutioncount=`cat $swarmtemp | wc -l`
 	if [[ $resolutioncount == 0 ]]; then
-		echo 1 > $resfile
+		echo 1 > $swarmtemp
 	fi
 
-	bash $scriptdir/swarm_slave.sh $stdout $stderr $log $config $resfile $derepseqs $seqs $numseqs $presufdir $seqname
+	bash $scriptdir/swarm_slave.sh $stdout $stderr $log $config $swarmtemp $derepseqs $seqs $numseqs $presufdir $seqname $blasttax $rdptax $uclusttax $alltax
 fi
 
+## Build OTU tables in parallel
 
+	ls -d *_otus_*/*taxonomy_assignment/merged_rep_set_tax_assignments.txt > $taxfiles
 
-
-
-
-
+	bash $scriptdir/OTU_table_slave.sh $stdout $stderr $log $randcode $taxfiles $threads $mode
 
 
 
