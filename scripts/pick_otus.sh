@@ -352,6 +352,31 @@ if [[ ! -z $swarmpick || ! -z $allpick ]]; then
 	bash $scriptdir/swarm_slave.sh $stdout $stderr $log $config $swarmtemp $derepseqs $seqs $numseqs $presufdir $seqname $blasttax $rdptax $uclusttax $alltax
 fi
 
+################################
+## BLAST OTU Steps BEGIN HERE ##
+################################
+
+## Define otu picking parameters ahead of outdir naming
+
+if [[ ! -z $blastpick || ! -z $allpick ]]; then
+	otumethod="BLAST"
+
+	if [[ $parameter_count == 1 ]]; then
+		grep "similarity" $param_file | cut -d " " -f2 | sed '/^$/d' > $percenttemp
+	else
+		echo "0.97" > $percenttemp
+	fi
+
+	similaritycount=`cat $percenttemp | wc -l`
+	if [[ $similaritycount == 0 ]]; then
+		echo "0.97" > $percenttemp
+	fi
+
+	bash $scriptdir/blast_slave.sh $stdout $stderr $log $config $percenttemp $derepseqs $seqs $numseqs $presufdir $seqname $blasttax $rdptax $uclusttax $alltax
+fi
+
+
+
 ## Build OTU tables in parallel
 
 	ls -d *_otus_*/*taxonomy_assignment/merged_rep_set_tax_assignments.txt > $taxfiles
