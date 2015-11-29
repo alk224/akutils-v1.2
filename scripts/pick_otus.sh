@@ -189,7 +189,7 @@ akutils pick_otus workflow beginning." >> $log
 	if [[ $parameter_count -ge 2 ]]; then
 	echo "
 No more than one parameter file can reside in your working
-directory.  Presently, there are $parameter_count such files.  
+directory.  Presently, there are ${bold}$parameter_count${normal} such files.  
 Move or rename all but one of these files and restart the
 workflow.  A parameter file is any file in your working
 directory that starts with \"parameter\".  See --help for
