@@ -69,23 +69,16 @@ for similarity in `cat $resfile`; do
 	if [[ ! -f $otupickdir/derep_rep_set_otus.txt ]]; then
 		res2=$(date +%s.%N)
 
-	if [[ ! -f $otupickdir/blast_step1_reference/step1_rep_set.fasta ]]; then
-
-	if [[ -d $otupickdir/blast_step1_reference ]]; then 
-	rm -r $otupickdir/blast_step1_reference/*
-	fi
-	if [[ -d $otupickdir/cdhit_step2_denovo ]]; then
-	rm -r $otupickdir/cdhit_step2_denovo
-	fi
+	if [[ ! -f $otupickdir/blast_step1_reference/step1_rep_set.fna ]]; then
 
 		## Pick OTUs
 		echo "Picking OTUs against collapsed rep set.
 Input sequences: ${bold}$numseqs${normal}
-Method: ${bold}Open Reference (BLAST/CD-HIT)${normal}"
+Method: ${bold}BLAST (step 1, reference-based OTU picking)${normal}"
 		echo "Picking OTUs against collapsed rep set." >> $log
 		date "+%a %b %d %I:%M %p %Z %Y" >> $log
 		echo "Input sequences: $numseqs" >> $log
-		echo "Method: Open Reference (BLAST/CD-HIT)" >> $log
+		echo "Method: BLAST (step 1, reference-based OTU picking)" >> $log
 		echo "Percent similarity: $similarity" >> $log
 		echo "Percent similarity: ${bold}$similarity${normal}
 		"
@@ -96,7 +89,7 @@ Method: ${bold}Open Reference (BLAST/CD-HIT)${normal}"
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 
 		#add "BLAST" prefix to all OTU ids
-		sed -i "s/^/BLAST/" $otupickdir/blast_step1_reference/prefix_rep_set_otus.txt
+		sed -i "s/^/BLAST/" $otupickdir/blast_step1_reference/derep_rep_set_otus.txt
 
 		else
 		echo "Step 1 OTU picking already completed ($similarity).
@@ -105,15 +98,15 @@ Method: ${bold}Open Reference (BLAST/CD-HIT)${normal}"
 
 ## Merge OTU maps and pick rep set for reference-based successes
 	## Merge OTU maps
-	if [[ ! -f ${otupickdir}/blast_step1_reference/merged_step1_otus.txt ]]; then
-		echo "Merging step 1 OTU maps.
+	if [[ ! -f ${otupickdir}/blast_step1_reference/step1_otus.txt ]]; then
+		echo "Merging step 1 OTU maps (reference).
 		"
-		echo "Merging step 1 OTU maps:" >> $log
+		echo "Merging step 1 OTU maps (reference):" >> $log
 		date "+%a %b %d %I:%M %p %Z %Y" >> $log
 		echo "
-	merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/blast_step1_reference/derep_rep_set_otus.txt -o ${otupickdir}/blast_step1_reference/merged_step1_otus.txt
+	merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/blast_step1_reference/derep_rep_set_otus.txt -o ${otupickdir}/blast_step1_reference/step1_otus.txt
 		" >> $log
-		merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/blast_step1_reference/derep_rep_set_otus.txt -o ${otupickdir}/blast_step1_reference/merged_step1_otus.txt 1>$stdout 2>$stderr
+		merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/blast_step1_reference/derep_rep_set_otus.txt -o ${otupickdir}/blast_step1_reference/step1_otus.txt 1>$stdout 2>$stderr
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 		else
 		echo "Step 1 OTU maps already merged.
@@ -121,15 +114,15 @@ Method: ${bold}Open Reference (BLAST/CD-HIT)${normal}"
 	fi
 
 	## Pick rep set
-	if [[ ! -f $otupickdir/merged_rep_set.fna ]]; then
-		echo "Picking rep set against step 1 OTU map.
+	if [[ ! -f $otupickdir/blast_step1_reference/step1_rep_set.fna ]]; then
+		echo "Picking rep set against step 1 OTU map (reference).
 		"
-		echo "Picking rep set against step 1 OTU map:" >> $log
+		echo "Picking rep set against step 1 OTU map (reference):" >> $log
 		date "+%a %b %d %I:%M %p %Z %Y" >> $log
 		echo "
-	pick_rep_set.py -i ${otupickdir}/blast_step1_reference/merged_step1_otus.txt -f $seqs -o $otupickdir/merged_rep_set.fna
+	pick_rep_set.py -i ${otupickdir}/blast_step1_reference/step1_otus.txt -f $seqs -o $otupickdir/step1_rep_set.fna
 		" >> $log
-		pick_rep_set.py -i ${otupickdir}/blast_step1_reference/merged_step1_otus.txt -f $seqs -o $otupickdir/merged_rep_set.fna 1>$stdout 2>$stderr
+		pick_rep_set.py -i ${otupickdir}/blast_step1_reference/step1_otus.txt -f $seqs -o $otupickdir/blast_step1_reference/step1_rep_set.fna 1>$stdout 2>$stderr
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 		else
 		echo "Step 1 rep set already completed.
@@ -142,12 +135,12 @@ Method: ${bold}Open Reference (BLAST/CD-HIT)${normal}"
 	tr -s "[:space:]" "\n" <$otupickdir/blast_step1_reference/derep_rep_set_otuids_1row.txt | sed "/^$/d" > $otupickdir/blast_step1_reference/derep_rep_set_otuids.txt
 	rm $otupickdir/blast_step1_reference/derep_rep_set_otuids_1row.txt
 	rm $otupickdir/blast_step1_reference/derep_rep_set_otuids_all.txt
-	filter_fasta.py -f $presufdir/derep_rep_set.fasta -o $otupickdir/blast_step1_reference/step1_failures.fasta -s $otupickdir/blast_step1_reference/derep_rep_set_otuids.txt -n
+	filter_fasta.py -f $presufdir/derep_rep_set.fasta -o $otupickdir/blast_step1_reference/step1_failures.fna -s $otupickdir/blast_step1_reference/derep_rep_set_otuids.txt -n
 	rm $otupickdir/blast_step1_reference/derep_rep_set_otuids.txt
 
 ## Count successes and failures from step 1 for reporting purposes
-	successseqs=`grep -e "^>" $otupickdir/blast_step1_reference/step1_rep_set.fasta | wc -l`
-	failureseqs=`grep -e "^>" $otupickdir/blast_step1_reference/step1_failures.fasta | wc -l`
+	successseqs=`grep -e "^>" $otupickdir/blast_step1_reference/step1_rep_set.fna | wc -l`
+	failureseqs=`grep -e "^>" $otupickdir/blast_step1_reference/step1_failures.fna | wc -l`
 
 	echo "${bold}$successseqs${normal} OTUs picked against reference collection.
 ${bold}$failureseqs${normal} sequences passed to de novo step.
@@ -175,52 +168,118 @@ echo "$otu_runtime
 	fi
 
 ## Start step 2 (de novo) OTU picking with CDHIT, skip if no failures
-	if [[ -s $otupickdir/blast_step1_reference/step1_failures.fasta ]]; then
+	if [[ -s $otupickdir/blast_step1_reference/step1_failures.fna ]]; then
 	if [[ ! -f $otupickdir/cdhit_step2_denovo/step1_failures_otus.txt ]] || [[ ! -f $otupickdir/cdhit_step2_denovo/step2_rep_set.fasta ]]; then
 	res2=$(date +%s.%N)
-	failureseqs=`grep -e "^>" $otupickdir/blast_step1_reference/step1_failures.fasta | wc -l`
+	failureseqs=`grep -e "^>" $otupickdir/blast_step1_reference/step1_failures.fna | wc -l`
 
+	echo "Picking OTUs against step 1 failures.
+Input sequences: ${bold}$failureseqs${normal}
+Method: ${bold}CDHIT (step 2, de novo OTU picking)${normal}"
+	echo "Picking OTUs against step 1 failures." >> $log
+	date "+%a %b %d %I:%M %p %Z %Y" >> $log
+	echo "Input sequences: $failureseqs" >> $log
+	echo "Method: CDHIT (step 2, de novo OTU picking)" >> $log
+	echo "Percent similarity: $similarity" >> $log
+	echo "Percent similarity: ${bold}$similarity${normal}
+	"
+	echo "
+pick_otus.py -i $otupickdir/blast_step1_reference/step1_failures.fna -o $otupickdir/cdhit_step2_denovo -m cdhit -M 8000 -s $similarity
+	" >> $log
+	pick_otus.py -i $otupickdir/blast_step1_reference/step1_failures.fna -o $otupickdir/cdhit_step2_denovo -m cdhit -M 8000 -s $similarity 1>$stdout 2>$stderr
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
 
-
-
+	#add "denovo" prefix to all OTU ids
+	sed -i "s/^/denovo/" $otupickdir/cdhit_step2_denovo/step1_failures_otus.txt
 
 
 	## Merge OTU maps
-	if [[ ! -f $otupickdir/merged_otu_map.txt ]]; then
-		echo "Merging OTU maps.
+	if [[ ! -f ${otupickdir}/cdhit_step2_denovo/step2_otus.txt ]]; then
+		echo "Merging step 2 OTU maps (de novo).
 		"
-		echo "Merging OTU maps:" >> $log
+		echo "Merging step 2 OTU maps (de novo):" >> $log
 		date "+%a %b %d %I:%M %p %Z %Y" >> $log
 		echo "
-	merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/blast_step1_reference/derep_rep_set_otus.txt -o ${otupickdir}/merged_otu_map.txt
+	merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/cdhit_step2_denovo/step1_failures_otus.txt -o ${otupickdir}/cdhit_step2_denovo/step2_otus.txt
 		" >> $log
-		merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/blast_step1_reference/derep_rep_set_otus.txt -o ${otupickdir}/merged_otu_map.txt 1>$stdout 2>$stderr
+		merge_otu_maps.py -i ${presufdir}/${seqname}_otus.txt,${otupickdir}/cdhit_step2_denovo/step1_failures_otus.txt -o ${otupickdir}/cdhit_step2_denovo/step2_otus.txt 1>$stdout 2>$stderr
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 		else
-		echo "OTU maps already merged.
+		echo "Step 2 OTU maps already merged.
 		"
 	fi
 
 	## Pick rep set
-	if [[ ! -f $otupickdir/merged_rep_set.fna ]]; then
-		echo "Picking rep set against merged OTU map.
+	if [[ ! -f $otupickdir/cdhit_step2_denovo/step2_rep_set.fasta ]]; then
+		echo "Picking rep set against step 2 OTU map (de novo).
 		"
-		echo "Picking rep set against merged OTU map:" >> $log
+		echo "Picking rep set against step 2 OTU map (de novo):" >> $log
 		date "+%a %b %d %I:%M %p %Z %Y" >> $log
 		echo "
-	pick_rep_set.py -i $otupickdir/merged_otu_map.txt -f $seqs -o $otupickdir/merged_rep_set.fna
+	pick_rep_set.py -i $otupickdir/merged_otu_map.txt -f $seqs -o $otupickdir/cdhit_step2_denovo/step2_rep_set.fasta
 		" >> $log
-		pick_rep_set.py -i $otupickdir/merged_otu_map.txt -f $seqs -o $otupickdir/merged_rep_set.fna 1>$stdout 2>$stderr
+		pick_rep_set.py -i $otupickdir/cdhit_step2_denovo/step2_otus.txt -f $seqs -o $otupickdir/cdhit_step2_denovo/step2_rep_set.fasta 1>$stdout 2>$stderr
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
+
+		denovoseqs=`grep -e "^>" $otupickdir/cdhit_step2_denovo/step2_rep_set.fasta | wc -l`
+		echo "${bold}$denovoseqs${normal} additional OTUs clustered de novo.
+		"
 		else
-		echo "Merged rep set already completed.
+		echo "Step 2 rep set already completed.
 		"
 	fi
+
+		if [[ ! -f $otupickdir/merged_otu_map.txt ]]; then
+		cat $otupickdir/blast_step1_reference/step1_otus.txt $otupickdir/cdhit_step2_denovo/step2_otus.txt > $otupickdir/merged_otu_map.txt
+		fi
+
+		if [[ ! -f $otupickdir/merged_rep_set.fna ]]; then
+		cat $otupickdir/blast_step1_reference/step1_rep_set.fna $otupickdir/cdhit_step2_denovo/step2_rep_set.fasta > $otupickdir/merged_rep_set.fna
+ 		fi
+
 	repsetcount=`grep -e "^>" $otupickdir/merged_rep_set.fna | wc -l`
 	echo "Identified ${bold}$repsetcount${normal} OTUs from ${bold}$numseqs${normal} input sequences.
 	"
 	echo "Identified $repsetcount OTUs from $numseqs input sequences.
 	" >> $log
+	res3=$(date +%s.%N)
+	dt=$(echo "$res3 - $res2" | bc)
+	dd=$(echo "$dt/86400" | bc)
+	dt2=$(echo "$dt-86400*$dd" | bc)
+	dh=$(echo "$dt2/3600" | bc)
+	dt3=$(echo "$dt2-3600*$dh" | bc)
+	dm=$(echo "$dt3/60" | bc)
+	ds=$(echo "$dt3-60*$dm" | bc)
+
+	denovo_runtime=`printf "CDHIT OTU picking runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
+	echo "$denovo_runtime
+	"
+	echo "$denovo_runtime
+
+	" >> $log
+
+	else
+	echo "CDHIT OTU picking already completed (step 2 OTUs, $similarity).
+	"
+	fi
+
+	else
+	echo "No sequences to pass to de novo step.
+	"
+	if [[ ! -f $otupickdir/merged_otu_map.txt ]]; then
+	cat $otupickdir/blast_step1_reference/step1_otus.txt > $otupickdir/merged_otu_map.txt
+	fi
+
+	if [[ ! -f $otupickdir/merged_rep_set.fna ]]; then
+	cat $otupickdir/blast_step1_reference/step1_rep_set.fna > $otupickdir/merged_rep_set.fna
+	fi
+
+	repsetcount=`grep -e "^>" $otupickdir/merged_rep_set.fna | wc -l`
+	echo "Identified ${bold}$repsetcount${normal} OTUs from ${bold}$numseqs${normal} input sequences.
+	"
+	echo "Identified $repsetcount OTUs from $numseqs input sequences.
+	" >> $log
+fi
 
 ## Assign taxonomy
 
