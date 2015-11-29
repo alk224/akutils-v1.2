@@ -1,14 +1,14 @@
 
-***************************************
-***                                 ***
-***   akutils   align_tree_workflow ***
-***                                 ***
-***************************************
+**********************************
+***                            ***
+***   akutils align_and_tree   ***
+***                            ***
+**********************************
 
-akutils align_tree_workflow - run the akutils align/tree workflow
+akutils align_and_tree - run the akutils align/tree workflow
 
 Usage:
-	akutils align_tree_workflow [mode] [target]
+	akutils align_and_tree [mode] [target]
 
 Run the alignment and tree building workflow in akutils. Command should be
 executed from the same top-level directory as the otu_picking_workflow option.

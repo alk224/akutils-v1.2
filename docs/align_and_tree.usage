@@ -1,0 +1,8 @@
+
+akutils align_and_tree - run the akutils align/tree workflow
+
+Usage (order is important):
+	akutils align_and_tree [mode] [target]
+
+	Valid modes are 16S or other
+

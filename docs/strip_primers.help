@@ -1,14 +1,14 @@
 
-****************************
-***                      ***
-***   strip_primers.sh   ***
-***                      ***
-****************************
+*********************************
+***                           ***
+***   akutils strip_primers   ***
+***                           ***
+*********************************
 
 Remove primer sequences from your amplicon reads
 
 Usage (order is important!):
-strip_primers.sh <rev/comp_primers> <read1> <read2> <index1> <index2>
+akutils strip_primers <rev/comp_primers> <read1> <read2> <index1> <index2>
 
 	<index2> is optional.
 

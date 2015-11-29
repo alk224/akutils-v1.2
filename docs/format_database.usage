@@ -1,0 +1,8 @@
+
+akutils format_database - format a database against a primer set
+
+Usage (order is important!!):
+	akutils format_database  <input_fasta> <input_taxonomy> <input_primers> <read_length> <output_directory> <input_phylogeny>
+
+	<input_phylogeny> is optional!!
+

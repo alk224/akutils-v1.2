@@ -14,30 +14,40 @@ This is the control command for akutils. This command calls akutils workflows
 as well as configuration options.  Bash auto-completion is enabled for
 commands and most options.
 
-Configuration commands:
-	help			-- detailed help page
-	configure		-- configure akutils settings
-	read			-- list current configuration settings
-	check			-- check that commands are in your PATH
-	check-result		-- detailed results of depencency check
-	test			-- test workflow steps with test data
-	test-result		-- detailed results of workflow tests
-
-Workflow commands (run without arguments for usage):
-	otu_picking_workflow	-- run the akutils otu picking workflow
-	align_tree_workflow	-- run the akutils align/tree workflow
-	cdiv_stats_workflow	-- run the akutils cdiv/stats workflow
+Workflow commands:
+	pick_otus		-- run the akutils otu picking workflow
+	align_and_tree		-- run the akutils align/tree workflow
+	core_diversity		-- run the akutils cdiv/stats workflow
 
 Command-specific arguments:
-	otu_picking_workflow	16S -- pick OTUs in "16S" mode
-				ITS -- pick otus in "ITS" mode
-				other -- pick otus in "other" mode
+	pick_otus	16S	-- pick OTUs in "16S" mode
+			ITS	-- pick otus in "ITS" mode
+			other	-- pick otus in "other" mode
 
-	align_tree_workflow	16S -- alignment and tree in "16S" mode
-	align_tree_workflow	other -- alignment and tree in "other" mode
+	align_and_tree	16S	-- alignment and tree in "16S" mode
+			other	-- alignment and tree in "other" mode
 
-Additional help for command-specific settings:
-	akutils otu_picking_workflow help	-- workflow details
-	akutils align_tree_workflow help	-- workflow details
-	akutils cdiv_stats_workflow help	-- workflow details
-	
+Utility commands:
+	format_database		-- format a database against a primer set
+	strip_primers		-- remove primer sequences from raw data
+	phix_filtering		-- remove PhiX contamination from raw data
+	join_paired_reads	-- join raw paired end data
+
+Configuration commands:
+	configure		-- configure akutils settings
+	print_config		-- list current configuration settings
+	check			-- check that commands are in your PATH
+	check-result		-- detailed results of depencency check
+	test			-- test workflow steps against test data
+	test-result		-- detailed results of workflow tests
+
+More help:
+	help			-- more detailed help page
+	tutorial		-- text-based tutorial
+	akutils [command] help	-- command-specific help
+
+To run the akutils workflow commands, you need Illumina fastq data, a QIIME-
+formatted mapping file, and an akutils configure file (global or local).  If a
+local config file results in the execution directory, its settings will override
+any global settings in place.
+

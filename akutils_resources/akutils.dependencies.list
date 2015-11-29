@@ -66,6 +66,7 @@ smalt	(PhiX_filtering_workflow.sh)
 vsearch	(otu_picking_workflow.sh)
 
 ##akutils_commands:
+akutils
 biom-summarize_folder.sh	(otu_picking_workflow.sh)
 concatenate_fastqs.sh	(Dual_indexed_fqjoin_workflow.sh,Single_indexed_fqjoin_workflow.sh)
 filter_observations_by_sample.py	(otu_picking_workflow.sh)
@@ -85,6 +86,7 @@ cp
 cut
 dirname
 echo
+find
 grep
 head
 less

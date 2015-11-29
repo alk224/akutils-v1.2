@@ -50,7 +50,7 @@ trap finish EXIT
 
 ## Check whether user supplied help, -h or --help. If yes display help.
 	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]] || [[ "$1" == "help" ]]; then
-	less $repodir/docs/akutils.help
+	less $help
 		exit 0	
 	fi
 
@@ -136,7 +136,7 @@ akutils test
 		cat $repodir/docs/pick_otus.usage
 		exit 0
 		elif [[ "$2" == "help" ]]; then
-		cat $repodir/docs/pick_otus.help
+		less $repodir/docs/pick_otus.help
 		exit 0
 		fi
 	bash $scriptdir/pick_otus.sh $stdout $stderr $randcode $2
@@ -149,7 +149,7 @@ akutils test
 		cat $repodir/docs/align_and_tree.usage
 		exit 0
 		elif [[ "$2" == "help" ]]; then
-		cat $repodir/docs/align_and_tree.help
+		less $repodir/docs/align_and_tree.help
 		exit 0
 		fi
 	bash $scriptdir/align_and_tree.sh $stdout $stderr $randcode $configfile $2 $3
@@ -175,7 +175,7 @@ akutils test
 		cat $repodir/docs/phix_filtering.usage
 		exit 0
 		elif [[ "$2" == "help" ]]; then
-		cat $repodir/docs/phix_filtering.help
+		less $repodir/docs/phix_filtering.help
 		exit 0
 		fi
 	bash $scriptdir/phix_filtering.sh $stdout $stderr $randcode $configfile $2 $3 $4 $5 $6
@@ -188,7 +188,7 @@ akutils test
 		cat $repodir/docs/format_database.usage
 		exit 0
 		elif [[ "$2" == "help" ]]; then
-		cat $repodir/docs/format_database.help
+		less $repodir/docs/format_database.help
 		exit 0
 		fi
 	bash $scriptdir/format_database.sh $stdout $stderr $randcode $configfile $2 $3 $4 $5 $6
@@ -201,7 +201,7 @@ akutils test
 		cat $repodir/docs/strip_primers.usage
 		exit 0
 		elif [[ "$2" == "help" ]]; then
-		cat $repodir/docs/strip_primers.help
+		less $repodir/docs/strip_primers.help
 		exit 0
 		fi
 	bash $scriptdir/strip_primers.sh $stdout $stderr $randcode $configfile $2 $3 $4 $5 $6
@@ -214,7 +214,7 @@ akutils test
 		cat $repodir/docs/join_paired_reads.usage
 		exit 0
 		elif [[ "$2" == "help" ]]; then
-		cat $repodir/docs/join_paired_reads.help
+		less $repodir/docs/join_paired_reads.help
 		exit 0
 		fi
 	bash $scriptdir/join_paired_reads.sh $stdout $stderr $randcode $configfile $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} ${12} ${13} ${14} ${15}
