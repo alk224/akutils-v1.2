@@ -25,15 +25,6 @@
 set -e
 
 ## Trap function on exit.
-function finish {
-if [[ -f $stdout ]]; then
-	rm $stdout
-fi
-if [[ -f $stderr ]]; then
-	rm $stderr
-fi
-}
-trap finish EXIT
 
 ## Find scripts location and set variables.
 	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
@@ -43,6 +34,7 @@ trap finish EXIT
 	stderr="$2"
 	randcode="$3"
 	mode="$4"
+	target="$5"
 	date0=`date +%Y%m%d_%I%M%p`
 	res0=$(date +%s.%N)
 
@@ -53,7 +45,7 @@ trap finish EXIT
 	if [[ "$mode" != "other" ]] && [[ "$mode" != "16S" ]]; then
 	echo "
 Invalid mode entered. Valid modes are 16S or other."
-	cat $repodir/docs/align_tree_workflow.usage
+	cat $repodir/docs/align_and_tree.usage
 	exit 1
 	fi
 
@@ -65,16 +57,16 @@ Invalid mode entered. Valid modes are 16S or other."
 	else
 	echo "
 Invalid target supplied. Must be otu picking directory or \"ALL.\""
-	cat $repodir/docs/align_tree_workflow.usage
+	cat $repodir/docs/align_and_tree.usage
 	exit 1
 	fi
 
 ## Find log file or set new one.
-	logcount=`ls log_align_tree_workflow_* 2>/dev/null | head -1 | wc -l`
+	logcount=`ls log_align_and_tree_*.txt 2>/dev/null | head -1 | wc -l`
 	if [[ "$logcount" == "1" ]]; then
-		log=`ls log_align_tree_workflow_* | head -1`
+		log=`ls log_align_and_tree_*.txt | head -1`
 	elif [[ "$logcount" == "0" ]]; then
-		log=($workdir/log_align_tree_workflow_$date0.txt)
+		log=($workdir/log_align_and_tree_$date0.txt)
 	fi
 
 ## Import variables from config file or send useful feedback if there is a problem.
@@ -173,7 +165,8 @@ Align sequences command:
 	parallel_align_seqs_pynast.py -i $repsetfile -o $target/pynast_alignment -t $template -O $threads
 " >> $log
 	parallel_align_seqs_pynast.py -i $repsetfile -o $target/pynast_alignment -t $template -O $threads 1>$stdout 2>$stderr || true
-	bash $scriptdir/scripts/log_slave.sh $stdout $stderr $log
+	wait
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	else
 	echo "Previous alignment output detected.
 File: $target/pynast_alignment/${repsetbase}_aligned.fasta
@@ -208,7 +201,7 @@ File: $target/pynast_alignment/${repsetbase}_aligned.fasta
 	filter_alignment.py -i $target/pynast_alignment/${repsetbase}_aligned.fasta -m $lanemask -o $target/pynast_alignment/
 " >> $log
 	filter_alignment.py -i $target/pynast_alignment/${repsetbase}_aligned.fasta -m $lanemask -o $target/pynast_alignment/ 1>$stdout 2>$stderr || true
-	bash $scriptdir/scripts/log_slave.sh $stdout $stderr $log
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	else
 	echo "Alignment previously filtered.
 	"
@@ -236,7 +229,7 @@ File: $target/pynast_alignment/${repsetbase}_aligned.fasta
 	make_phylogeny.py -i $target/pynast_alignment/${repsetbase}_aligned_pfiltered.fasta -t fasttree -o $target/pynast_alignment/fasttree_phylogeny.tre
 " >> $log
 	make_phylogeny.py -i $target/pynast_alignment/${repsetbase}_aligned_pfiltered.fasta -t fasttree -o $target/pynast_alignment/fasttree_phylogeny.tre 1>$stdout 2>$stderr || true
-	bash $scriptdir/scripts/log_slave.sh $stdout $stderr $log
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	else
 	echo "Phylogeny previously completed.
 file: $target/pynast_alignment/fasttree_phylogeny.tre
@@ -276,7 +269,7 @@ Align sequences command (MAFFT command):
 	mkdir -p $target/mafft_alignment
 	echo "See $target/mafft_alignment/alignment_log_${repsetbase}.txt for any errors.">$stderr
 	mafft --thread $threads --parttree --retree 2 --partsize 1000 --alga $repsetfile > $target/mafft_alignment/${repsetbase}_aligned.fasta 1>$stdout 2>$target/mafft_alignment/alignment_log_${repsetbase}.txt || true
-	bash $scriptdir/scripts/log_slave.sh $stdout $stderr $log
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	else
 	echo "Previous alignment output detected.
 File: $target/mafft_alignment/${repsetbase}_aligned.fasta
@@ -312,7 +305,7 @@ File: $target/mafft_alignment/${repsetbase}_aligned.fasta
 	filter_alignment.py -i $target/mafft_alignment/${repsetbase}_aligned.fasta -e 0.1 -o $target/mafft_alignment/
 " >> $log
 	filter_alignment.py -i $target/mafft_alignment/${repsetbase}_aligned.fasta -e 0.1 -o $target/mafft_alignment/ 1>$stdout 2>$stderr || true
-	bash $scriptdir/scripts/log_slave.sh $stdout $stderr $log
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	else
 	echo "Alignment previously filtered.
 	"
@@ -340,7 +333,7 @@ File: $target/mafft_alignment/${repsetbase}_aligned.fasta
 	make_phylogeny.py -i $target/mafft_alignment/${repsetbase}_aligned_pfiltered.fasta -t fasttree -o $target/mafft_alignment/fasttree_phylogeny.tre
 " >> $log
 	make_phylogeny.py -i $target/mafft_alignment/${repsetbase}_aligned_pfiltered.fasta -t fasttree -o $target/mafft_alignment/fasttree_phylogeny.tre 1>$stdout 2>$stderr || true
-	bash $scriptdir/scripts/log_slave.sh $stdout $stderr $log
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	else
 	echo "Phylogeny previously completed.
 file: $target/mafft_alignment/fasttree_phylogeny.tre
@@ -402,7 +395,8 @@ Align sequences command:
 	parallel_align_seqs_pynast.py -i $repsetfile -o $otudir/pynast_alignment -t $template -O $threads
 " >> $log
 	parallel_align_seqs_pynast.py -i $repsetfile -o $otudir/pynast_alignment -t $template -O $threads 1>$stdout 2>$stderr || true
-	bash $scriptdir/scripts/log_slave.sh $stdout $stderr $log
+	wait
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	else
 	echo "Previous alignment output detected.
 File: $otudir/pynast_alignment/${repsetbase}_aligned.fasta
@@ -437,7 +431,7 @@ File: $otudir/pynast_alignment/${repsetbase}_aligned.fasta
 	filter_alignment.py -i $otudir/pynast_alignment/${repsetbase}_aligned.fasta -m $lanemask -o $otudir/pynast_alignment/
 " >> $log
 	filter_alignment.py -i $otudir/pynast_alignment/${repsetbase}_aligned.fasta -m $lanemask -o $otudir/pynast_alignment/ 1>$stdout 2>$stderr || true
-	bash $scriptdir/scripts/log_slave.sh $stdout $stderr $log
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	else
 	echo "Alignment previously filtered.
 	"
@@ -465,7 +459,7 @@ File: $otudir/pynast_alignment/${repsetbase}_aligned.fasta
 	make_phylogeny.py -i $otudir/pynast_alignment/${repsetbase}_aligned_pfiltered.fasta -t fasttree -o $otudir/pynast_alignment/fasttree_phylogeny.tre
 " >> $log
 	make_phylogeny.py -i $otudir/pynast_alignment/${repsetbase}_aligned_pfiltered.fasta -t fasttree -o $otudir/pynast_alignment/fasttree_phylogeny.tre 1>$stdout 2>$stderr || true
-	bash $scriptdir/scripts/log_slave.sh $stdout $stderr $log
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	else
 	echo "Phylogeny previously completed.
 file: $otudir/pynast_alignment/fasttree_phylogeny.tre
@@ -504,7 +498,7 @@ Align sequences command (MAFFT command):
 " >> $log
 	mkdir -p $otudir/mafft_alignment
 	mafft --thread $threads --parttree --retree 2 --partsize 1000 --alga $repsetfile > $otudir/mafft_alignment/${repsetbase}_aligned.fasta 1>$stdout 2>$otudir/mafft_alignment/alignment_log_${repsetbase}.txt || true
-	bash $scriptdir/scripts/log_slave.sh $stdout $stderr $log
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	else
 	echo "Previous alignment output detected.
 File: $otudir/mafft_alignment/${repsetbase}_aligned.fasta
@@ -539,7 +533,7 @@ File: $otudir/mafft_alignment/${repsetbase}_aligned.fasta
 	filter_alignment.py -i $otudir/mafft_alignment/${repsetbase}_aligned.fasta -e 0.1 -o $otudir/mafft_alignment/
 " >> $log
 	filter_alignment.py -i $otudir/mafft_alignment/${repsetbase}_aligned.fasta -e 0.1 -o $otudir/mafft_alignment/ 1>$stdout 2>$stderr || true
-	bash $scriptdir/scripts/log_slave.sh $stdout $stderr $log
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	else
 	echo "Alignment previously filtered.
 	"
@@ -567,7 +561,7 @@ File: $otudir/mafft_alignment/${repsetbase}_aligned.fasta
 	make_phylogeny.py -i $otudir/mafft_alignment/${repsetbase}_aligned_pfiltered.fasta -t fasttree -o $otudir/mafft_alignment/fasttree_phylogeny.tre
 " >> $log
 	make_phylogeny.py -i $otudir/mafft_alignment/${repsetbase}_aligned_pfiltered.fasta -t fasttree -o $otudir/mafft_alignment/fasttree_phylogeny.tre 1>$stdout 2>$stderr || true
-	bash $scriptdir/scripts/log_slave.sh $stdout $stderr $log
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	else
 	echo "Phylogeny previously completed.
 file: $otudir/mafft_alignment/fasttree_phylogeny.tre

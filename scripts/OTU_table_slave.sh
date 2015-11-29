@@ -260,7 +260,7 @@ trap finish EXIT
 		sleep 1
 		done
 		tabledir=$(dirname $line)
-		if [[ ! -f $tabledir/mc2_table_hdf5.biom ]]; then
+		if [[ ! -f $tabledir/005_table_hdf5.biom ]]; then
 		## filter tables by 0.005 percent
 		( filter_otus_from_otu_table.py -i $tabledir/min100_table.biom -o $tabledir/005_table_hdf5.biom --min_count_fraction 0.00005 -s 2 >/dev/null 2>&1 || true ) &
 		fi
@@ -272,7 +272,7 @@ trap finish EXIT
 		sleep 1
 		done
 		tabledir=$(dirname $line)
-		if [[ ! -f $tabledir/mc2_table_CSS.biom ]]; then
+		if [[ ! -f $tabledir/005_table_CSS.biom ]]; then
 		## normalize 0.005 percent-filtered tables
 		( normalize_table.py -i $tabledir/005_table_hdf5.biom -o $tabledir/005_table_CSS.biom -a CSS >/dev/null 2>&1 || true ) &
 		fi
@@ -284,7 +284,7 @@ trap finish EXIT
 		sleep 1
 		done
 		tabledir=$(dirname $line)
-		if [[ ! -f $tabledir/n2_table_hdf5.biom ]]; then
+		if [[ ! -f $tabledir/03_table_hdf5.biom ]]; then
 		## filter at 0.3 percent by sample
 		( filter_observations_by_sample.py -i $tabledir/min100_table.biom -o $tabledir/03_table0.biom -f -n 0.003 ;
 		filter_otus_from_otu_table.py -i $tabledir/03_table0.biom -o $tabledir/03_table.biom -n 1 -s 2 ;
@@ -298,7 +298,7 @@ trap finish EXIT
 		sleep 1
 		done
 		tabledir=$(dirname $line)
-		if [[ ! -f $tabledir/n2_table_CSS.biom ]]; then
+		if [[ ! -f $tabledir/03_table_CSS.biom ]]; then
 		## normalize 0.3 percent by sample-filtered tables
 		( normalize_table.py -i $tabledir/03_table_hdf5.biom -o $tabledir/03_table_CSS.biom -a CSS >/dev/null 2>&1 || true ) &
 		fi

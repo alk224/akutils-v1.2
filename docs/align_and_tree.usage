@@ -5,4 +5,6 @@ Usage (order is important):
 	akutils align_and_tree [mode] [target]
 
 	Valid modes are 16S or other
+	Target is an OTU picking directory or ALL
+	ALL will process all OTU picking subdirectories
 

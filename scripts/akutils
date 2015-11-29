@@ -152,7 +152,7 @@ akutils test
 		less $repodir/docs/align_and_tree.help
 		exit 0
 		fi
-	bash $scriptdir/align_and_tree.sh $stdout $stderr $randcode $configfile $2 $3
+	bash $scriptdir/align_and_tree.sh $stdout $stderr $randcode $2 $3
 	exit 0
 	fi
 

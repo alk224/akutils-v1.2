@@ -10,6 +10,11 @@ akutils align_and_tree - run the akutils align/tree workflow
 Usage:
 	akutils align_and_tree [mode] [target]
 
+	Valid modes are 16S or other
+	Target is an OTU picking directory or "ALL"
+	ALL will process all OTU picking subdirectories
+
+
 Run the alignment and tree building workflow in akutils. Command should be
 executed from the same top-level directory as the otu_picking_workflow option.
 
