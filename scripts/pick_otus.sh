@@ -185,7 +185,7 @@ akutils pick_otus workflow beginning." >> $log
 	fi
 
 ## Check that no more than one parameter file is present
-	parameter_count=(`ls $outdir/parameter* 2>/dev/null | wc -w`)
+	parameter_count=(`ls parameter* 2>/dev/null | wc -w`)
 	if [[ $parameter_count -ge 2 ]]; then
 	echo "
 No more than one parameter file can reside in your working
@@ -199,13 +199,13 @@ Exiting.
 	"
 		exit 1
 	elif [[ $parameter_count == 1 ]]; then
-		param_file=(`ls $outdir/parameter*`)
+		param_file=(`ls parameter*`)
 	echo "
 Found parameters file.
 $param_file
 	"
 	echo "Using custom parameters file.
-$outdir/$param_file
+$param_file
 
 Parameters file contents:" >> $log
 	cat $param_file >> $log
@@ -480,11 +480,7 @@ fi
 ## Build OTU tables in parallel
 
 	ls -d *_otus_*/*taxonomy_assignment/merged_rep_set_tax_assignments.txt > $taxfiles
-
 	bash $scriptdir/OTU_table_slave.sh $stdout $stderr $log $randcode $taxfiles $threads $mode
-
-
-
 
 ## Log end of script
 
