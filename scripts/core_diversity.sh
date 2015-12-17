@@ -261,8 +261,22 @@ normalize_table.py -i $filtertable -o $CSStable -a CSS" >> $log
 		wait
 		fi
 	
-		## Summarize tables one last time
+		## Summarize tables one last time and initiate html output
 		biom-summarize_folder.sh $tabledir &>/dev/null
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+
+		## Sort OTU tables
+		CSSsort="$outdir/OTU_tables/CSS_table_sorted.biom"
+		if [[ ! -f $CSSsort ]]; then
+		sort_otu_table.py -i $CSStable -o $CSSsort
+		fi
+		raresort="$outdir/OTU_tables/table_even${depth}_sorted.biom"
+		if [[ ! -f $raresort ]]; then
+		sort_otu_table.py -i $raretable -o $raresort
+		fi
+
+		## Find phylogenetic tree or set mode nonphylogenetic
+
 exit 0
 done
 ## If function to control mode and for loop for batch processing start here

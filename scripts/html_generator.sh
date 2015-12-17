@@ -2,6 +2,11 @@
 #
 ## html_generator.sh - HTML generator for akutils core diversity workflow
 
+inputbase="$1"
+outdir="$2"
+depth="$3"
+catlist="$4"
+
 ## Make html files
 	##sequences and alignments html
 
@@ -10,7 +15,7 @@ echo "<html>
 <head><title>QIIME results - sequences</title></head>
 <body>
 <p><h2> akutils core diversity workflow for normalized and non-normalized OTU tables </h2><p>
-<a href=\"https://github.com/alk224/akutils\" target=\_blank\"><h3> https://github.com/alk224/akutils </h3></a><p>
+<a href=\"https://github.com/alk224/akutils\" target=\_blank\"><h2> https://github.com/alk224/akutils </h2></a><p>
 <table border=1>
 <p><h3> Sequences by taxonomy </h3><p>
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Unaligned sequences </td></tr>" > $outdir/Representative_sequences/sequences_by_taxonomy.html
@@ -35,31 +40,38 @@ echo "<tr><td><font size="1"><a href=\"./L7_sequences_by_taxon_alignments/${taxo
 
 	fi
 
-	##master html
-	if [[ ! -f $outdir/index.html ]]; then
+################################################################################
+## Master HTML output below here
 
-	echo "Building html output file.
-$outdir/index.html
-	"
-	else
-	echo "Rebuilding html output file.
-$outdir/index.html
-	"
-	fi
-
-logfile=`basename $log`
+## Page header and log file
+log=`ls $outdir/log_core_diversity*`
+logfile=$(basename $log)
 
 echo "<html>
 <head><title>QIIME results</title></head>
 <body>
 <a href=\"http://www.qiime.org\" target=\"_blank\"><img src=\"http://qiime.org/_static/wordpressheader.png\" alt=\"www.qiime.org\"\"/></a><p>
-<h2> akutils core diversity workflow for non-normalized OTU tables </h2><p>
-<a href=\"https://github.com/alk224/akutils\" target=\_blank\"><h3> https://github.com/alk224/akutils </h3></a><p>
+<h1> akutils core diversity workflow </h1><p>
+<a href=\"https://github.com/alk224/akutils\" target=\_blank\"><h2> https://github.com/alk224/akutils </h2></a><p>
 <table border=1>
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Run Summary Data </td></tr>
-<tr><td> Master run log </td><td> <a href=\" $logfile \" target=\"_blank\"> $logfile </a></td></tr>
-<tr><td> BIOM table statistics </td><td> <a href=\"./OTU_tables/table_even${depth}.summary\" target=\"_blank\"> biom_table_even${depth}_summary.txt </a></td></tr>" > $outdir/index.html
+<tr><td> Master run log </td><td> <a href=\" ./$logfile \" target=\"_blank\"> $logfile </a></td></tr>" > $outdir/index.html
 
+## Biom summary files
+if [[ -f $outdir/OTU_tables/${inputbase}.summary ]]; then
+echo "<tr><td> Input BIOM table statistics </td><td> <a href=\"./OTU_tables/${inputbase}.summary\" target=\"_blank\"> ${inputbase}.summary </a></td></tr>" >> $outdir/index.html
+fi
+if [[ -f $outdir/OTU_tables/table_even${depth}.summary ]]; then
+echo "<tr><td> Rarefied BIOM table statistics </td><td> <a href=\"./OTU_tables/table_even${depth}.summary\" target=\"_blank\"> table_even${depth}.summary </a></td></tr>" >> $outdir/index.html
+fi
+if [[ -f $outdir/OTU_tables/sample_filtered_table.summary ]]; then
+echo "<tr><td> Sample-filtered BIOM table statistics </td><td> <a href=\"./OTU_tables/sample_filtered_table.summary\" target=\"_blank\"> sample_filtered_table.summary </a></td></tr>" >> $outdir/index.html
+fi
+if [[ -f $outdir/OTU_tables/CSS_table.summary ]]; then
+echo "<tr><td> CSS-normalized BIOM table statistics </td><td> <a href=\"./OTU_tables/CSS_table.summary\" target=\"_blank\"> CSS_table.summary </a></td></tr>" >> $outdir/index.html
+fi
+
+## Representative sequences summary and link
 	if [[ -f $outdir/Representative_sequences/L7_taxa_list.txt ]] && [[ -f $outdir/Representative_sequences/otus_per_taxon_summary.txt ]]; then
 	tablename=`basename $table .biom`
 	Total_OTUs=`cat $outdir/OTU_tables/$tablename.txt | grep -v "#" | wc -l`
@@ -79,107 +91,121 @@ echo "
 <tr><td> Aligned and unaligned sequences </td><td> <a href=\"./Representative_sequences/sequences_by_taxonomy.html\" target=\"_blank\"> sequences_by_taxonomy.html </a></td></tr>" >> $outdir/index.html
 	fi
 
+## Taxa plots by sample
+	if [[ -d $outdir/taxa_plots ]]; then
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Taxonomic Summary Results (by sample) </td></tr>
 <tr><td> Taxa summary bar plots </td><td> <a href=\"./taxa_plots/taxa_summary_plots/bar_charts.html\" target=\"_blank\"> bar_charts.html </a></td></tr>" >> $outdir/index.html
+	fi
 
-	for line in `cat cdiv_temp/categories.tempfile`; do
+## Taxa plots by category
+	for line in `cat $catlist`; do
+	if [[ -d $outdir/taxa_plots_${line} ]]; then
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Taxonomic summary results (by $line) </td></tr>
 <tr><td> Taxa summary bar plots </td><td> <a href=\"./taxa_plots_$line/taxa_summary_plots/bar_charts.html\" target=\"_blank\"> bar_charts.html </a></td></tr>
 <tr><td> Taxa summary pie plots </td><td> <a href=\"./taxa_plots_$line/taxa_summary_plots/pie_charts.html\" target=\"_blank\"> pie_charts.html </a></td></tr>" >> $outdir/index.html
+	fi
 	done
 
+## Kruskal-Wallis results
+	if [[ -d $outdir/KruskalWallis ]]; then
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Group Significance Results (Kruskal-Wallis - nonparametric ANOVA) <br><br> All mean values are percent of total counts by sample (relative OTU abundances) </td></tr>" >> $outdir/index.html
 
-	for line in `cat cdiv_temp/categories.tempfile`; do
+	for line in `cat $catlist`; do
 	if [[ -f $outdir/KruskalWallis/kruskalwallis_${line}_OTU.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - OTU level </td><td> <a href=\"./KruskalWallis/kruskalwallis_${line}_OTU.txt\" target=\"_blank\"> kruskalwallis_${line}_OTU.txt </a></td></tr>" >> $outdir/index.html
 	fi
 	done
 
-	for line in `cat cdiv_temp/categories.tempfile`; do
+	for line in `cat $catlist`; do
 	if [[ -f $outdir/KruskalWallis/kruskalwallis_${line}_L7.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - species level (L7) </td><td> <a href=\"./KruskalWallis/kruskalwallis_${line}_L7.txt\" target=\"_blank\"> kruskalwallis_${line}_L7.txt </a></td></tr>" >> $outdir/index.html
 	fi
 	done
 
-	for line in `cat cdiv_temp/categories.tempfile`; do
+	for line in `cat $catlist`; do
 	if [[ -f $outdir/KruskalWallis/kruskalwallis_${line}_L6.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - genus level (L6) </td><td> <a href=\"./KruskalWallis/kruskalwallis_${line}_L6.txt\" target=\"_blank\"> kruskalwallis_${line}_L6.txt </a></td></tr>" >> $outdir/index.html
 	fi
 	done
 
-	for line in `cat cdiv_temp/categories.tempfile`; do
+	for line in `cat $catlist`; do
 	if [[ -f $outdir/KruskalWallis/kruskalwallis_${line}_L5.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - family level (L5) </td><td> <a href=\"./KruskalWallis/kruskalwallis_${line}_L5.txt\" target=\"_blank\"> kruskalwallis_${line}_L5.txt </a></td></tr>" >> $outdir/index.html
 	fi
 	done
 
-	for line in `cat cdiv_temp/categories.tempfile`; do
+	for line in `cat $catlist`; do
 	if [[ -f $outdir/KruskalWallis/kruskalwallis_${line}_L4.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - order level (L4) </td><td> <a href=\"./KruskalWallis/kruskalwallis_${line}_L4.txt\" target=\"_blank\"> kruskalwallis_${line}_L4.txt </a></td></tr>" >> $outdir/index.html
 	fi
 	done
 
-	for line in `cat cdiv_temp/categories.tempfile`; do
+	for line in `cat $catlist`; do
 	if [[ -f $outdir/KruskalWallis/kruskalwallis_${line}_L3.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - class level (L3) </td><td> <a href=\"./KruskalWallis/kruskalwallis_${line}_L3.txt\" target=\"_blank\"> kruskalwallis_${line}_L3.txt </a></td></tr>" >> $outdir/index.html
 	fi
 	done
 
-	for line in `cat cdiv_temp/categories.tempfile`; do
+	for line in `cat $catlist`; do
 	if [[ -f $outdir/KruskalWallis/kruskalwallis_${line}_L2.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - phylum level (L2) </td><td> <a href=\"./KruskalWallis/kruskalwallis_${line}_L2.txt\" target=\"_blank\"> kruskalwallis_${line}_L2.txt </a></td></tr>" >> $outdir/index.html
 	fi
 	done
+	fi
 
+## Nonparametric T-test results
+	if [[ -d $outdir/Nonparametric_ttest ]]; then
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Group Significance Results (Nonparametric T-test, 1000 permutations) <br><br> Results only generated when comparing two groups <br><br> All mean values are percent of total counts by sample (relative OTU abundances) </td></tr>" >> $outdir/index.html
 
-	for line in `cat cdiv_temp/categories.tempfile`; do
+	for line in `cat $catlist`; do
 	if [[ -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_OTU.txt ]]; then
 echo "<tr><td> Nonparametric T-test results - ${line} - OTU level </td><td> <a href=\"./Nonparametric_ttest/nonparametric_ttest_${line}_OTU.txt\" target=\"_blank\"> nonparametric_ttest_${line}_OTU.txt </a></td></tr>" >> $outdir/index.html
 	fi
 	done
 
-	for line in `cat cdiv_temp/categories.tempfile`; do
+	for line in `cat $catlist`; do
 	if [[ -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L7.txt ]]; then
 echo "<tr><td> Nonparametric T-test results - ${line} - species level (L7) </td><td> <a href=\"./Nonparametric_ttest/nonparametric_ttest_${line}_L7.txt\" target=\"_blank\"> nonparametric_ttest_${line}_L7.txt </a></td></tr>" >> $outdir/index.html
 	fi
 	done
 
-	for line in `cat cdiv_temp/categories.tempfile`; do
+	for line in `cat $catlist`; do
 	if [[ -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L6.txt ]]; then
 echo "<tr><td> Nonparametric T-test results - ${line} - genus level (L6) </td><td> <a href=\"./Nonparametric_ttest/nonparametric_ttest_${line}_L6.txt\" target=\"_blank\"> nonparametric_ttest_${line}_L6.txt </a></td></tr>" >> $outdir/index.html
 	fi
 	done
 
-	for line in `cat cdiv_temp/categories.tempfile`; do
+	for line in `cat $catlist`; do
 	if [[ -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L5.txt ]]; then
 echo "<tr><td> Nonparametric T-test results - ${line} - family level (L5) </td><td> <a href=\"./Nonparametric_ttest/nonparametric_ttest_${line}_L5.txt\" target=\"_blank\"> nonparametric_ttest_${line}_L5.txt </a></td></tr>" >> $outdir/index.html
 	fi
 	done
 
-	for line in `cat cdiv_temp/categories.tempfile`; do
+	for line in `cat $catlist`; do
 	if [[ -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L4.txt ]]; then
 echo "<tr><td> Nonparametric T-test results - ${line} - order level (L4) </td><td> <a href=\"./Nonparametric_ttest/nonparametric_ttest_${line}_L4.txt\" target=\"_blank\"> nonparametric_ttest_${line}_L4.txt </a></td></tr>" >> $outdir/index.html
 	fi
 	done
 
-	for line in `cat cdiv_temp/categories.tempfile`; do
+	for line in `cat $catlist`; do
 	if [[ -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L3.txt ]]; then
 echo "<tr><td> Nonparametric T-test results - ${line} - class level (L3) </td><td> <a href=\"./Nonparametric_ttest/nonparametric_ttest_${line}_L3.txt\" target=\"_blank\"> nonparametric_ttest_${line}_L3.txt </a></td></tr>" >> $outdir/index.html
 	fi
 	done
 
-	for line in `cat cdiv_temp/categories.tempfile`; do
+	for line in `cat $catlist`; do
 	if [[ -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L2.txt ]]; then
 echo "<tr><td> Nonparametric T-test results - ${line} - phylum level (L2) </td><td> <a href=\"./Nonparametric_ttest/nonparametric_ttest_${line}_L2.txt\" target=\"_blank\"> nonparametric_ttest_${line}_L2.txt </a></td></tr>" >> $outdir/index.html
 	fi
 	done
+	fi
 
+## Alpha diversity results
+	if [[ -d $outdir/arare_max${depth} ]]; then
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Alpha Diversity Results </td></tr>
 <tr><td> Alpha rarefaction plots </td><td> <a href=\"./arare_max$depth/alpha_rarefaction_plots/rarefaction_plots.html\" target=\"_blank\"> rarefaction_plots.html </a></td></tr>" >> $outdir/index.html
@@ -192,8 +218,10 @@ echo "<tr><td> Alpha diversity statistics ($category, $metric, parametric) </td>
 <tr><td> Alpha diversity boxplots ($category, $metric, nonparametric) </td><td> <a href=\"./arare_max$depth/compare_${metric}_nonparametric/${category}_boxplots.pdf\" target=\"_blank\"> ${category}_boxplots.pdf </a></td></tr>" >> $outdir/index.html
 	done
 	done
+	fi
 
-if [[ -d $outdir/bdiv_normalized ]]; then
+## Normalized beta diversity results
+	if [[ -d $outdir/bdiv_normalized ]]; then
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Beta Diversity Results -- NORMALIZED DATA </td></tr>
 <tr><td> Anosim results (normalized) </td><td> <a href=\"./bdiv_normalized/anosim_results_collated.txt\" target=\"_blank\"> anosim_results_collated.txt -- NORMALIZED DATA </a></td></tr>
@@ -219,8 +247,10 @@ echo "<tr><td> Distance matrix (${dmbase}) </td><td> <a href=\"./bdiv_normalized
 
 	done
 
-fi
+	fi
 
+## Rarefied beta diversity results
+	if [[ -d $outdir/bdiv ]]; then
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Beta Diversity Results -- RAREFIED DATA </td></tr>
 <tr><td> Anosim results </td><td> <a href=\"./bdiv/anosim_results_collated.txt\" target=\"_blank\"> anosim_results_collated.txt -- RAREFIED DATA </a></td></tr>
@@ -245,14 +275,20 @@ echo "<tr><td> Distance matrix (${dmbase}) </td><td> <a href=\"./bdiv/${dmbase}_
 <tr><td> NMDS coordinates (${dmbase}) </td><td> <a href=\"./bdiv/${dmbase}_nmds.txt\" target=\"_blank\"> ${dmbase}_nmds.txt </a></td></tr>" >> $outdir/index.html
 
 	done
+	fi
 
+## Rank abundance plots
+	if [[ -d $outdir/RankAbundance ]]; then
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Rank Abundance Plots (relative abundances) </td></tr> 
 <tr><td> Rank abundance (xlog-ylog) </td><td> <a href=\"RankAbundance/rankabund_xlog-ylog.pdf\" target=\"_blank\"> rankabund_xlog-ylog.pdf </a></td></tr>
 <tr><td> Rank abundance (xlinear-ylog) </td><td> <a href=\"RankAbundance/rankabund_xlinear-ylog.pdf\" target=\"_blank\"> rankabund_xlinear-ylog.pdf </a></td></tr>
 <tr><td> Rank abundance (xlog-ylinear) </td><td> <a href=\"RankAbundance/rankabund_xlog-ylinear.pdf\" target=\"_blank\"> rankabund_xlog-ylinear.pdf </a></td></tr>
 <tr><td> Rank abundance (xlinear-ylinear) </td><td> <a href=\"RankAbundance/rankabund_xlinear-ylinear.pdf\" target=\"_blank\"> rankabund_xlinear-ylinear.pdf </a></td></tr>" >> $outdir/index.html
+	fi
 
+## Supervised learning (normalized)
+	if [[ -d $outdir/bdiv_normalized/SupervisedLearning ]]; then
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Supervised Learning (out of bag) -- NORMALIZED DATA </td></tr>" >> $outdir/index.html
 	for category in `cat cdiv_temp/categories.tempfile`; do
@@ -262,7 +298,10 @@ echo "<tr><td> Summary (${category}) </td><td> <a href=\"bdiv_normalized/Supervi
 <tr><td> CV Probabilities (${category}) </td><td> <a href=\"bdiv_normalized/SupervisedLearning/${category}/cv_probabilities.txt\" target=\"_blank\"> cv_probabilities.txt </a></td></tr>
 <tr><td> Feature Importance Scores (${category}) </td><td> <a href=\"bdiv_normalized/SupervisedLearning/${category}/feature_importance_scores.txt\" target=\"_blank\"> feature_importance_scores.txt </a></td></tr>" >> $outdir/index.html
 	done
+	fi
 
+## Supervised learning (rarefied)
+	if [[ -d $outdir/SupervisedLearning ]]; then
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Supervised Learning (out of bag) -- RAREFIED DATA </td></tr>" >> $outdir/index.html
 	for category in `cat cdiv_temp/categories.tempfile`; do
@@ -272,7 +311,10 @@ echo "<tr><td> Summary (${category}) </td><td> <a href=\"SupervisedLearning/${ca
 <tr><td> CV Probabilities (${category}) </td><td> <a href=\"SupervisedLearning/${category}/cv_probabilities.txt\" target=\"_blank\"> cv_probabilities.txt </a></td></tr>
 <tr><td> Feature Importance Scores (${category}) </td><td> <a href=\"SupervisedLearning/${category}/feature_importance_scores.txt\" target=\"_blank\"> feature_importance_scores.txt </a></td></tr>" >> $outdir/index.html
 	done
+	fi
 
+## Biplots (normalized)
+	if [[ -d $outdir/bdiv_normalized/biplots ]]; then
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Biplots -- NORMALIZED DATA </td></tr>" >> $outdir/index.html
 
@@ -287,7 +329,10 @@ echo "<tr><td> PCoA biplot, ${Level} (${dmbase}) </td><td> <a href=\"./bdiv_norm
 
 	done
 	done
+	fi
 
+## Biplots (rarefied)
+	if [[ -d $outdir/biplots ]]; then
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Biplots -- RAREFIED DATA </td></tr>" >> $outdir/index.html
 
@@ -303,29 +348,6 @@ echo "<tr><td> PCoA biplot, ${Level} (${dmbase}) </td><td> <a href=\"biplots/${d
 
 	done
 	done
-
-## Log workflow end
-
-	res1=$( date +%s.%N )
-	dt=$( echo $res1 - $res0 | bc )
-	dd=$( echo $dt/86400 | bc )
-	dt2=$( echo $dt-86400*$dd | bc )
-	dh=$( echo $dt2/3600 | bc )
-	dt3=$( echo $dt2-3600*$dh | bc )
-	dm=$( echo $dt3/60 | bc )
-	ds=$( echo $dt3-60*$dm | bc )
-
-	runtime=`printf "Function runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
-
-echo "
-Nonnormalized diversity analyses completed!
-$runtime
-"
-echo "
-Nonnormalized diversity analyses completed!
-$runtime
-" >> $log
-
-cp $log $outdir
+	fi
 
 exit 0
