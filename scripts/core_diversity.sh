@@ -152,6 +152,7 @@ for table in `cat $tablelist`; do
 		## Define table-specific variables, make output directory if necessary
 		## and move table there for normalizing, rarefaction, and filtering
 		inputdir=$(dirname $table)
+		inputdirup1=$(dirname $inputdir)
 		inputbase=$(basename $table .biom)
 		outdir="$inputdir/core_diversity/$inputbase"
 		tabledir="$outdir/OTU_tables"
@@ -276,6 +277,17 @@ normalize_table.py -i $filtertable -o $CSStable -a CSS" >> $log
 		fi
 
 		## Find phylogenetic tree or set mode nonphylogenetic
+		if [[ -f $inputdirup1/pynast_alignment/fasttree_phylogeny.tre ]]; then
+		tree="$inputdirup1/pynast_alignment/fasttree_phylogeny.tre"
+		phylogenetic="YES"
+		fi
+		if [[ -f $inputdirup1/mafft_alignment/fasttree_phylogeny.tre ]]; then
+		tree="$inputdirup1/mafft_alignment/fasttree_phylogeny.tre"
+		phylogenetic="YES"
+		fi
+		if [[ -z $phylogenetic ]]; then
+		phylogenetic="NO"
+		fi
 
 exit 0
 done
