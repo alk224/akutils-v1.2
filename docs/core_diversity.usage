@@ -1,0 +1,14 @@
+
+akutils core_diversity - run the akutils core_diversity workflow
+
+Usage (order is important):
+	akutils core_diversity <input> <mapping_file> <comma_separated_categories> <processors_to_use>
+
+		<input> can be any of the following:
+
+			help		detailed help
+			table.biom	an input table (non-normalized)
+			table		an input table prefix
+			OTU_tables/	an input table directory
+			ALL		will process all tables two directories down
+

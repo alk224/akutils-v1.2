@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-#  cdiv_graphs_and_stats_workflow.sh - Core diversity analysis through QIIME for OTU table analysis
+#  core_diversity.sh - Core diversity analysis through QIIME for OTU table analysis
 #
-#  Version 1.1.0 (June 16, 2015)
+#  Version 2.0 (December 16, 2015)
 #
 #  Copyright (c) 2014-2015 Andrew Krohn
 #
@@ -22,72 +22,45 @@
 #     misrepresented as being the original software.
 #  3. This notice may not be removed or altered from any source distribution.
 #
+## Trap function on exit.
+function finish {
+if [[ -f $cdivtemp ]]; then
+	rm $cdivtemp
+fi
 
-set -e
+}
+trap finish EXIT
 
-## Check whether user had supplied -h or --help. If yes display help 
-
+## Define variables.
 	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
-	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
-	less $scriptdir/docs/cdiv_graphs_and_stats_workflow.help
-		exit 0
-	fi 
+	repodir=$(dirname $scriptdir)
+	workdir=$(pwd)
+	tempdir="$repodir/temp"
+	stdout="$1"
+	stderr="$2"
+	randcode="$3"
+	config="$4"
+	input="$5"
+	mapfile="$6"
+	cats="$7"
+	cores="$8"
 
-## Check whether user had supplied "rerun."  If yes, source command from log file to rerun workflow
+	date0=$(date +%Y%m%d_%I%M%p)
+	res0=$(date +%s.%N)
 
-	if [[ "$1" == "rerun" ]]; then
-	## get command form log file and execute it as previously done
-	logcount=`ls log_cdiv_graphs_and_stats* 2>/dev/null | wc -l`
-	
-	if [[ $logcount > 0 ]]; then
-	log=`ls log_cdiv_graphs_and_stats_workflow*.txt | head -1`
-	rerun_command=`grep -A 1 "Command as issued:" $log | tail -1`
-	echo "
-Rerunning workflow according to original command:
-$rerun_command
-	"
-$rerun_command
-	exit 0
-	elif [[ $logcount == "0" ]]; then
-	echo "
-cdiv_graphs_and_stats_workflow.sh has not previously been executed in
-this directory.  Run it first accourding to usage:
+	bold=$(tput bold)
+	normal=$(tput sgr0)
+	underline=$(tput smul)
 
-Usage (order is important!!):
-cdiv_graphs_and_stats_workflow.sh <input_table_prefix or input_table> <mapping_file> <comma_separated_categories> <processors_to_use>
+## Define temp files
+	cdivtemp="$tempdir/${randcode}_cdiv_temp.temp"
 
-	Input table for single table mode only
-	Input table prefix for batch mode (execute within existing dir)
-	Table prefix precedes \"_table_hdf5.biom\"
+## If incorrect number of arguments supplied, display usage 
 
-	Workflow will look for akutils-generated tree.  If found, 
-	analysis will be Phylogenetic.
-		"
+	if [[ "$#" -ne 8 ]]; then 
+	cat $repodir/docs/core_diversity.usage
 		exit 1
 	fi
-	fi
-
-## If less than five or more than 6 arguments supplied, display usage 
-
-	if [[ "$#" -le 3 ]] || [[ "$#" -ge 6 ]]; then 
-		echo "
-Usage (order is important!!):
-cdiv_graphs_and_stats_workflow.sh <input_table_prefix or input_table> <mapping_file> <comma_separated_categories> <processors_to_use>
-
-	Input table for single table mode only
-	Input table prefix for batch mode (execute within existing dir)
-	Table prefix precedes \"_table_hdf5.biom\"
-
-	Workflow will look for akutils-generated tree.  If found, 
-	analysis will be Phylogenetic.
-		"
-		exit 1
-	fi
-
-## Set date functions
-
-	date0=`date +%Y%m%d_%I%M%p`
-	date1=`date "+%a %b %d %I:%M %p %Z %Y"`
 
 ## Define log file or use existing
 
