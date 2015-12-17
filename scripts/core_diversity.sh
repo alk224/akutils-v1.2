@@ -33,6 +33,12 @@ fi
 if [[ -f $catlist ]]; then
 	rm $catlist
 fi
+if [[ -f $insamples ]]; then
+	rm $insamples
+fi
+if [[ -f $raresamples ]]; then
+	rm $raresamples
+fi
 
 }
 trap finish EXIT
@@ -65,13 +71,18 @@ trap finish EXIT
 	catlist="$tempdir/${randcode}_cdiv_categories.temp"
 
 ## If incorrect number of arguments supplied, display usage 
-
 	if [[ "$#" -ne 8 ]]; then 
 	cat $repodir/docs/core_diversity.usage
 		exit 1
 	fi
 
-## Find log file or set new one.
+## Read in variables from config file
+	tree=(`grep "Tree" $config | grep -v "#" | cut -f 2`)
+	cores=(`grep "CPU_cores" $config | grep -v "#" | cut -f 2`)
+	adepth=(`grep "Rarefaction_depth" $config | grep -v "#" | cut -f 2`)
+	threads=$(($cores-1))
+
+## Find log file or set new one. ## NEED TO EDIT SO A LOG GOES TO EACH ANALYSIS DIRECTORY
 	rm log_core_diversity*~ 2>/dev/null
 	logcount=$(ls log_core_diversity* 2>/dev/null | head -1 | wc -l)
 	if [[ "$logcount" -eq 1 ]]; then
@@ -128,19 +139,138 @@ $mode
 
 ## Make normalized tables if necessary
 
-	echo "Normalizing tables if necessary.
-	"
-	bash $scriptdir/norm_tables.sh $stdout $stderr $log $tablelist $threads
+#	echo "Normalizing tables if necessary.
+#	"
+#	bash $scriptdir/norm_tables.sh $stdout $stderr $log $tablelist $threads
 
+################################################################################
+## Start of for loop to process each table in the master list sequentially
+################################################################################
+
+for table in `cat $tablelist`; do
+
+		## Define table-specific variables, make output directory if necessary
+		## and move table there for normalizing, rarefaction, and filtering
+		inputdir=$(dirname $table)
+		inputbase=$(basename $table .biom)
+		outdir="$inputdir/core_diversity/$inputbase"
+		tabledir="$outdir/OTU_tables"
+		if [[ ! -d $outdir ]]; then
+			mkdir -p $outdir
+		fi
+		if [[ ! -d $tabledir ]]; then
+			mkdir -p $tabledir
+		fi
+		if [[ ! -f $tabledir/$inputbase.biom ]]; then
+			cp $table $tabledir
+		fi
+		intable="$tabledir/$inputbase.biom"
+		insummary="$tabledir/$inputbase.summary"
+
+		## Find log file or set new one. ## NEED TO EDIT SO A LOG GOES TO EACH ANALYSIS DIRECTORY
+		rm log_core_diversity*~ 2>/dev/null
+		logcount=$(ls $outdir/log_core_diversity* 2>/dev/null | head -1 | wc -l)
+		if [[ "$logcount" -eq 1 ]]; then
+		log=`ls $outdir/log_core_diversity*.txt | head -1`
+		elif [[ "$logcount" -eq 0 ]]; then
+		log="$outdir/log_core_diversity_$date0.txt"
+		fi
+		echo "
+${bold}akutils core_diversity workflow beginning.${normal}"
+		echo "
+akutils core_diversity workflow beginning." >> $log
+		date >> $log
+
+		## Summarize input table
+		biom-summarize_folder.sh $tabledir &>/dev/null
+
+		## Determine rarefaction depth
+		if [[ $adepth =~ ^[0-9]+$ ]]; then
+		depth=($adepth)
+		else
+		depth=`awk '/Counts\/sample detail:/ {for(i=1; i<=1; i++) {getline; print $NF}}' $tabledir/$inputbase.summary | awk -F. '{print $1}'`
+		fi
+
+		## Rarefy input table according to established depth
+		raretable="$tabledir/table_even$depth.biom"
+		raresummary="$tabledir/table_even$depth.summary"
+		if [[ ! -f $raretable ]]; then
+		echo "
+Input table: $table
+Rarefying input table according to config file.
+Depth: $depth"
+
+		echo "
+Input table: $table
+Rarefying input table according to config file.
+Depth: $depth" >> $log
+
+		echo "
+Single rarefaction command:
+	single_rarefaction.py -i $intable -o $raretable -d $depth" >> $log
+		single_rarefaction.py -i $intable -o $raretable -d $depth 1> $stdout 2> $stderr
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+		fi
+
+		biom-summarize_folder.sh $tabledir &>/dev/null
+		rarebase=$(basename $raretable .biom)
+
+		## Filter any samples removed by rarefying from the original input table
+		inlines0=$(cat $insummary | wc -l)
+		inlines=$(($inlines0-14))
+		rarelines0=$(cat $raresummary | wc -l)
+		rarelines=$(($rarelines0-14))
+
+		insamples="$tempdir/${randcode}_insamples.temp"
+		raresamples="$tempdir/${randcode}_raresamples.temp"
+		cat $insummary | tail -$inlines | cut -d":" -f1 > $insamples
+		cat $raresummary | tail -$rarelines | cut -d":" -f1 > $raresamples
+		insamplecount=$(cat $insamples | wc -l)
+		raresamplecount=$(cat $raresamples | wc -l)
+		diffcount=$(($insamplecount-$raresamplecount))
+
+		echo "
+Filtering any samples removed during rarefaction."
+		echo "
+Filtering any samples removed during rarefaction." >> $log
+		filtertable="$tabledir/sample_filtered_table.biom"
+		filter_samples_from_otu_table.py -i $intable -o $filtertable --sample_id_fp $raresamples
+		echo "filter_samples_from_otu_table.py -i $intable -o $filtertable --sample_id_fp $raresamples" >> $log
+		echo "
+Removed $diffcount samples from the analysis:"
+		echo "
+Removed $diffcount samples from the analysis:" >> $log
+		grep -vFf $raresamples $insamples
+		grep -vFf $raresamples $insamples >> $log
+
+		## Normalize filtered table with CSS and DESeq2 transformations
+		CSStable="$tabledir/CSS_table.biom"
+		DESeq2table="$tabledir/DESeq2_table.biom"
+		if [[ ! -f $CSStable ]]; then
+		echo "
+Normalizing sample-filtered table with CSS transformation."
+		echo "
+Normalizing sample-filtered table with CSS transformation.
+normalize_table.py -i $filtertable -o $CSStable -a CSS" >> $log
+			if [[ ! -f $CSStable ]]; then
+			 normalize_table.py -i $filtertable -o $CSStable -a CSS 2>/dev/null
+			fi
+#			if [[ ! -f $DESeq2table ]]; then
+#			( normalize_table.py -i $filtertable -o $DESeq2table -a DESeq2 2>/dev/null ) &
+#			fi
+		wait
+		fi
+	
+		## Summarize tables one last time
+		biom-summarize_folder.sh $tabledir &>/dev/null
 exit 0
-
-
+done
 ## If function to control mode and for loop for batch processing start here
 
 	if [[ $mode == "table" ]]; then
 
 	## Check for valid input (file has .biom extension)
-	biombase=`basename "$1" | cut -d. -f1`
+
 	biombase_fields=`echo $biombase | grep -o "_" | wc -l`
 	outbase=`basename "$1" | cut -d. -f1 | cut -d"_" -f1-$biombase_fields`
 	biomextension="${1##*.}"

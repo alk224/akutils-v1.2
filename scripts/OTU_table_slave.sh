@@ -74,16 +74,17 @@ trap finish EXIT
 		otudir=`dirname $(dirname $line)`
 		taxtype=`echo $line | cut -d"/" -f2 | cut -d"_" -f1`
 		tabledir="$otudir/OTU_tables_${taxtype}_taxonomy"
+		rawtabledir="$otudir/OTU_tables_${taxtype}_taxonomy/raw_OTU_tables"
 		logtemp="$tabledir/${randcode}_logtemp.txt"
 		stdouttemp="$tabledir/${randcode}_stdout.txt"
 		stderrtemp="$tabledir/${randcode}_stderr.txt"
-		if [[ ! -d $tabledir ]]; then
-			mkdir -p $tabledir
+		if [[ ! -d $rawtabledir ]]; then
+			mkdir -p $rawtabledir
 		fi
 
-		if [[ ! -f $tabledir/raw_otu_table.biom ]]; then
-		echo "make_otu_table.py -i $otudir/merged_otu_map.txt -t $line -o $tabledir/initial_otu_table.biom" >> $logtemp
-		( make_otu_table.py -i $otudir/merged_otu_map.txt -t $line -o $tabledir/initial_otu_table.biom 1>$stderrtemp 2>$stdouttemp || true ) &
+		if [[ ! -f $rawtabledir/raw_otu_table.biom ]]; then
+		echo "make_otu_table.py -i $otudir/merged_otu_map.txt -t $line -o $rawtabledir/initial_otu_table.biom" >> $logtemp
+		( make_otu_table.py -i $otudir/merged_otu_map.txt -t $line -o $rawtabledir/initial_otu_table.biom 1>$stderrtemp 2>$stdouttemp || true ) &
 		cat $logtemp >> $log
 		bash $scriptdir/log_slave.sh $stdouttemp $stderrtemp $log
 		rm $stdouttemp $stderrtemp $logtemp 2>/dev/null
@@ -92,21 +93,21 @@ trap finish EXIT
 	wait
 
 ## Make list of initial OTU tables
-	find ./ -maxdepth 3 -mindepth 3 | grep "initial_otu_table.biom" > $initialtables
+	find ./ -maxdepth 4 -mindepth 4 | grep "initial_otu_table.biom" > $initialtables
 
 	## Ensure initial table is hdf5, change name to raw table
 	for line in `cat $initialtables`; do
 		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 		sleep 1
 		done
-		tabledir=$(dirname $line)
+		rawtabledir=$(dirname $line)
 		logtemp="$tabledir/${randcode}_logtemp.txt"
 		stdouttemp="$tabledir/${randcode}_stdout.txt"
 		stderrtemp="$tabledir/${randcode}_stderr.txt"
 
-		if [[ ! -f $tabledir/raw_otu_table.biom ]]; then
-		echo "biom convert -i $line -o $tabledir/raw_otu_table.biom --table-type=\"OTU table\" --to-hdf5" >> $logtemp
-		( biom convert -i $line -o $tabledir/raw_otu_table.biom --table-type="OTU table" --to-hdf5 1>$stderrtemp 2>$stdouttemp || true ) &
+		if [[ ! -f $rawtabledir/raw_otu_table.biom ]]; then
+		echo "biom convert -i $line -o $rawtabledir/raw_otu_table.biom --table-type=\"OTU table\" --to-hdf5" >> $logtemp
+		( biom convert -i $line -o $rawtabledir/raw_otu_table.biom --table-type="OTU table" --to-hdf5 1>$stderrtemp 2>$stdouttemp || true ) &
 		cat $logtemp >> $log
 		bash $scriptdir/log_slave.sh $stdouttemp $stderrtemp $log
 		rm $stdouttemp $stderrtemp $logtemp 2>/dev/null
@@ -115,7 +116,7 @@ trap finish EXIT
 	wait
 
 ## Make list of raw OTU tables
-	find ./ -maxdepth 3 -mindepth 3 | grep "raw_otu_table.biom" > $rawtables
+	find ./ -maxdepth 4 -mindepth 4 | grep "raw_otu_table.biom" > $rawtables
 
 ## Filter non-target taxa (ITS and 16S mode only)
 
@@ -127,14 +128,14 @@ trap finish EXIT
 		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 		sleep 1
 		done
-		tabledir=$(dirname $line)
+		rawtabledir=$(dirname $line)
 		logtemp="$tabledir/${randcode}_logtemp.txt"
 		stdouttemp="$tabledir/${randcode}_stdout.txt"
 		stderrtemp="$tabledir/${randcode}_stderr.txt"
 
-		if [[ ! -f $tabledir/raw_otu_table_bacteria_only.biom ]]; then
-		echo "filter_taxa_from_otu_table.py -i $tabledir/raw_otu_table.biom -o $tabledir/raw_otu_table_bacteria_only.biom -p k__Bacteria,k__Archaea" >> $logtemp
-		( filter_taxa_from_otu_table.py -i $tabledir/raw_otu_table.biom -o $tabledir/raw_otu_table_bacteria_only.biom -p k__Bacteria,k__Archaea 1>$stderrtemp 2>$stdouttemp || true ) &
+		if [[ ! -f $rawtabledir/raw_otu_table_bacteria_only.biom ]]; then
+		echo "filter_taxa_from_otu_table.py -i $line -o $rawtabledir/raw_otu_table_bacteria_only.biom -p k__Bacteria,k__Archaea" >> $logtemp
+		( filter_taxa_from_otu_table.py -i $line -o $rawtabledir/raw_otu_table_bacteria_only.biom -p k__Bacteria,k__Archaea 1>$stderrtemp 2>$stdouttemp || true ) &
 		cat $logtemp >> $log
 		bash $scriptdir/log_slave.sh $stdouttemp $stderrtemp $log
 		rm $stdouttemp $stderrtemp $logtemp 2>/dev/null
@@ -143,7 +144,7 @@ trap finish EXIT
 	wait
 
 	## Update list of raw tables to reflect 16S taxa filtering
-	find ./ -maxdepth 3 -mindepth 3 | grep "raw_otu_table_bacteria_only.biom" > $rawtables
+	find ./ -maxdepth 4 -mindepth 4 | grep "raw_otu_table_bacteria_only.biom" > $rawtables
 	fi
 
 	if [[ $mode == "ITS" ]]; then
@@ -154,14 +155,14 @@ trap finish EXIT
 		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 		sleep 1
 		done
-		tabledir=$(dirname $line)
+		rawtabledir=$(dirname $line)
 		logtemp="$tabledir/${randcode}_logtemp.txt"
 		stdouttemp="$tabledir/${randcode}_stdout.txt"
 		stderrtemp="$tabledir/${randcode}_stderr.txt"
 
-		if [[ ! -f $tabledir/raw_otu_table_fungi_only.biom ]]; then
-		echo "filter_taxa_from_otu_table.py -i $tabledir/raw_otu_table.biom -o $tabledir/raw_otu_table_fungi_only.biom -p k__Fungi" >> $logtemp
-		( filter_taxa_from_otu_table.py -i $tabledir/raw_otu_table.biom -o $tabledir/raw_otu_table_fungi_only.biom -p k__Fungi 1>$stderrtemp 2>$stdouttemp || true ) &
+		if [[ ! -f $rawtabledir/raw_otu_table_fungi_only.biom ]]; then
+		echo "filter_taxa_from_otu_table.py -i $line -o $rawtabledir/raw_otu_table_fungi_only.biom -p k__Fungi" >> $logtemp
+		( filter_taxa_from_otu_table.py -i $line -o $rawtabledir/raw_otu_table_fungi_only.biom -p k__Fungi 1>$stderrtemp 2>$stdouttemp || true ) &
 		cat $logtemp >> $log
 		bash $scriptdir/log_slave.sh $stdouttemp $stderrtemp $log
 		rm $stdouttemp $stderrtemp $logtemp 2>/dev/null
@@ -170,7 +171,7 @@ trap finish EXIT
 	wait
 
 	## Update list of raw tables to reflect ITS taxa filtering
-	find ./ -maxdepth 3 -mindepth 3 | grep "raw_otu_table_fungi_only.biom" > $rawtables
+	find ./ -maxdepth 4 -mindepth 4 | grep "raw_otu_table_fungi_only.biom" > $rawtables
 	fi
 
 ## Filter low count samples
@@ -182,14 +183,14 @@ trap finish EXIT
 		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 		sleep 1
 		done
-		tabledir=$(dirname $line)
+		rawtabledir=$(dirname $line)
 		logtemp="$tabledir/${randcode}_logtemp.txt"
 		stdouttemp="$tabledir/${randcode}_stdout.txt"
 		stderrtemp="$tabledir/${randcode}_stderr.txt"
 
-		if [[ ! -f $tabledir/min100_table.biom ]]; then
-		echo "filter_samples_from_otu_table.py -i $line -o $tabledir/min100_table.biom -n 100" >> $logtemp
-		( filter_samples_from_otu_table.py -i $line -o $tabledir/min100_table.biom -n 100 1>$stderrtemp 2>$stdouttemp || true ) &
+		if [[ ! -f $rawtabledir/min100_table.biom ]]; then
+		echo "filter_samples_from_otu_table.py -i $line -o $rawtabledir/min100_table.biom -n 100" >> $logtemp
+		( filter_samples_from_otu_table.py -i $line -o $rawtabledir/min100_table.biom -n 100 1>$stderrtemp 2>$stdouttemp || true ) &
 		cat $logtemp >> $log
 		bash $scriptdir/log_slave.sh $stdouttemp $stderrtemp $log
 		rm $stdouttemp $stderrtemp $logtemp 2>/dev/null
@@ -198,112 +199,116 @@ trap finish EXIT
 	wait
 
 	## Update list of raw tables to reflect ITS taxa filtering
-	find ./ -maxdepth 3 -mindepth 3 | grep "min100_table.biom" > $min100tables
+	find ./ -maxdepth 4 -mindepth 4 | grep "min100_table.biom" > $min100tables
 
 ## Final filtering and normalizing steps
-	echo "Final filtering and normalizing steps.
+	echo "Final filtering steps.
 	"
-	echo "Final filtering and normalizing steps:" >> $log
+	echo "Final filtering steps:" >> $log
 
 	for line in `cat $min100tables`; do
 		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 		sleep 1
 		done
-		tabledir=$(dirname $line)
-		if [[ ! -f $tabledir/n2_table_hdf5.biom ]]; then
+		rawtabledir=$(dirname $line)
+		tabledir=$(dirname $rawtabledir)
+		if [[ ! -f $tabledir/n2_table.biom ]]; then
 		## filter singletons by sample
-		( filter_observations_by_sample.py -i $tabledir/min100_table.biom -o $tabledir/n2_table0.biom -n 1 ;
-		filter_otus_from_otu_table.py -i $tabledir/n2_table0.biom -o $tabledir/n2_table.biom -n 1 -s 2 ;
-		biom convert -i $tabledir/n2_table.biom -o $tabledir/n2_table_hdf5.biom --table-type="OTU table" --to-hdf5 ; rm $tabledir/n2_table0.biom $tabledir/n2_table.biom 2>/dev/null ) &
+		( filter_observations_by_sample.py -i $rawtabledir/min100_table.biom -o $tabledir/n2_table0.biom -n 1 ;
+		filter_otus_from_otu_table.py -i $tabledir/n2_table0.biom -o $tabledir/n2_table1.biom -n 1 -s 2 ;
+		biom convert -i $tabledir/n2_table1.biom -o $tabledir/n2_table.biom --table-type="OTU table" --to-hdf5 ; rm $tabledir/n2_table0.biom $tabledir/n2_table1.biom 2>/dev/null ) &
 		fi
 	done
 	wait
+
+#	for line in `cat $min100tables`; do
+#		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+#		sleep 1
+#		done
+#		tabledir=$(dirname $line)
+#		if [[ ! -f $tabledir/n2_table_CSS.biom ]]; then
+#		## normalize singleton by sample-filtered tables
+#		( normalize_table.py -i $tabledir/n2_table_hdf5.biom -o $tabledir/n2_table_CSS.biom -a CSS >/dev/null 2>&1 || true ) &
+#		fi
+#	done
+#	wait
 
 	for line in `cat $min100tables`; do
 		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 		sleep 1
 		done
-		tabledir=$(dirname $line)
-		if [[ ! -f $tabledir/n2_table_CSS.biom ]]; then
-		## normalize singleton by sample-filtered tables
-		( normalize_table.py -i $tabledir/n2_table_hdf5.biom -o $tabledir/n2_table_CSS.biom -a CSS >/dev/null 2>&1 || true ) &
-		fi
-	done
-	wait
-
-	for line in `cat $min100tables`; do
-		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
-		sleep 1
-		done
-		tabledir=$(dirname $line)
-		if [[ ! -f $tabledir/mc2_table_hdf5.biom ]]; then
+		rawtabledir=$(dirname $line)
+		tabledir=$(dirname $rawtabledir)
+		if [[ ! -f $tabledir/mc2_table.biom ]]; then
 		## filter singletons by table
-		( filter_otus_from_otu_table.py -i $tabledir/min100_table.biom -o $tabledir/mc2_table_hdf5.biom -n 2 -s 2 >/dev/null 2>&1 || true ) &
+		( filter_otus_from_otu_table.py -i $rawtabledir/min100_table.biom -o $tabledir/mc2_table.biom -n 2 -s 2 >/dev/null 2>&1 || true ) &
 		fi
 	done
 	wait
+
+#	for line in `cat $min100tables`; do
+#		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+#		sleep 1
+#		done
+#		tabledir=$(dirname $line)
+#		if [[ ! -f $tabledir/mc2_table_CSS.biom ]]; then
+#		## normalize singleton by table-filtered tables
+#		( normalize_table.py -i $tabledir/mc2_table_hdf5.biom -o $tabledir/mc2_table_CSS.biom -a CSS >/dev/null 2>&1 || true ) &
+#		fi
+#	done
+#	wait
 
 	for line in `cat $min100tables`; do
 		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 		sleep 1
 		done
-		tabledir=$(dirname $line)
-		if [[ ! -f $tabledir/mc2_table_CSS.biom ]]; then
-		## normalize singleton by table-filtered tables
-		( normalize_table.py -i $tabledir/mc2_table_hdf5.biom -o $tabledir/mc2_table_CSS.biom -a CSS >/dev/null 2>&1 || true ) &
-		fi
-	done
-	wait
-
-	for line in `cat $min100tables`; do
-		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
-		sleep 1
-		done
-		tabledir=$(dirname $line)
-		if [[ ! -f $tabledir/005_table_hdf5.biom ]]; then
+		rawtabledir=$(dirname $line)
+		tabledir=$(dirname $rawtabledir)
+		if [[ ! -f $tabledir/005_table.biom ]]; then
 		## filter tables by 0.005 percent
-		( filter_otus_from_otu_table.py -i $tabledir/min100_table.biom -o $tabledir/005_table_hdf5.biom --min_count_fraction 0.00005 -s 2 >/dev/null 2>&1 || true ) &
+		( filter_otus_from_otu_table.py -i $rawtabledir/min100_table.biom -o $tabledir/005_table.biom --min_count_fraction 0.00005 -s 2 >/dev/null 2>&1 || true ) &
 		fi
 	done
 	wait
+
+#	for line in `cat $min100tables`; do
+#		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+#		sleep 1
+#		done
+#		tabledir=$(dirname $line)
+#		if [[ ! -f $tabledir/005_table_CSS.biom ]]; then
+#		## normalize 0.005 percent-filtered tables
+#		( normalize_table.py -i $tabledir/005_table_hdf5.biom -o $tabledir/005_table_CSS.biom -a CSS >/dev/null 2>&1 || true ) &
+#		fi
+#	done
+#	wait
 
 	for line in `cat $min100tables`; do
 		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 		sleep 1
 		done
-		tabledir=$(dirname $line)
-		if [[ ! -f $tabledir/005_table_CSS.biom ]]; then
-		## normalize 0.005 percent-filtered tables
-		( normalize_table.py -i $tabledir/005_table_hdf5.biom -o $tabledir/005_table_CSS.biom -a CSS >/dev/null 2>&1 || true ) &
-		fi
-	done
-	wait
-
-	for line in `cat $min100tables`; do
-		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
-		sleep 1
-		done
-		tabledir=$(dirname $line)
-		if [[ ! -f $tabledir/03_table_hdf5.biom ]]; then
+		rawtabledir=$(dirname $line)
+		tabledir=$(dirname $rawtabledir)
+		if [[ ! -f $tabledir/03_table.biom ]]; then
 		## filter at 0.3 percent by sample
-		( filter_observations_by_sample.py -i $tabledir/min100_table.biom -o $tabledir/03_table0.biom -f -n 0.003 ;
-		filter_otus_from_otu_table.py -i $tabledir/03_table0.biom -o $tabledir/03_table.biom -n 1 -s 2 ;
-		biom convert -i $tabledir/03_table.biom -o $tabledir/03_table_hdf5.biom --table-type="OTU table" --to-hdf5 ; rm $tabledir/03_table0.biom $tabledir/03_table.biom 2>/dev/null ) &
+		( filter_observations_by_sample.py -i $rawtabledir/min100_table.biom -o $tabledir/03_table0.biom -f -n 0.003 ;
+		filter_otus_from_otu_table.py -i $tabledir/03_table0.biom -o $tabledir/03_table1.biom -n 1 -s 2 ;
+		biom convert -i $tabledir/03_table1.biom -o $tabledir/03_table.biom --table-type="OTU table" --to-hdf5 ; rm $tabledir/03_table0.biom $tabledir/03_table1.biom 2>/dev/null ) &
 		fi
 	done
 	wait
 
-	for line in `cat $min100tables`; do
-		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
-		sleep 1
-		done
-		tabledir=$(dirname $line)
-		if [[ ! -f $tabledir/03_table_CSS.biom ]]; then
-		## normalize 0.3 percent by sample-filtered tables
-		( normalize_table.py -i $tabledir/03_table_hdf5.biom -o $tabledir/03_table_CSS.biom -a CSS >/dev/null 2>&1 || true ) &
-		fi
-	done
-	wait
+#	for line in `cat $min100tables`; do
+#		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+#		sleep 1
+#		done
+#		tabledir=$(dirname $line)
+#		if [[ ! -f $tabledir/03_table_CSS.biom ]]; then
+#		## normalize 0.3 percent by sample-filtered tables
+#		( normalize_table.py -i $tabledir/03_table_hdf5.biom -o $tabledir/03_table_CSS.biom -a CSS >/dev/null 2>&1 || true ) &
+#		fi
+#	done
+#	wait
 
 ## Summarize raw otu tables
 
@@ -311,7 +316,8 @@ trap finish EXIT
 		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 		sleep 1
 		done
-		tabledir=$(dirname $line)
+		rawtabledir=$(dirname $line)
+		tabledir=$(dirname $rawtabledir)
 		biom-summarize_folder.sh $tabledir &>/dev/null
 	done
 	wait
