@@ -173,7 +173,7 @@ File: $target/pynast_alignment/${repsetbase}_aligned.fasta
 	"
 	fi
 
-	if [[ ! -s $1/pynast_alignment/${repsetbase}_aligned.fasta ]]; then
+	if [[ ! -s $target/pynast_alignment/${repsetbase}_aligned.fasta ]]; then
 	echo "No valid alignment produced.  Check your inputs and try again.  Exiting.
 	"
 	exit 1
