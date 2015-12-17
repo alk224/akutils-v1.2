@@ -165,7 +165,7 @@ akutils test
 		cat $repodir/docs/core_diversity.help
 		exit 0
 		fi
-	bash $scriptdir/core_diversity.sh $stdout $stderr $randcode $configfile $2 $3
+	bash $scriptdir/core_diversity.sh $stdout $stderr $randcode $configfile $2 $3 $4 $5
 	exit 0
 	fi
 

@@ -30,6 +30,9 @@ fi
 if [[ -f $tablelist ]]; then
 	rm $tablelist
 fi
+if [[ -f $catlist ]]; then
+	rm $catlist
+fi
 
 }
 trap finish EXIT
@@ -82,38 +85,45 @@ ${bold}akutils core_diversity workflow beginning.${normal}
 akutils core_diversity workflow beginning." >> $log
 	date >> $log
 
-## Set workflow mode (table, directory, prefix, ALL)
-	if [[ -f "$input" && "$input" == "*.biom" ]]; then
+## Set workflow mode (table, directory, prefix, ALL) and send list of tables to temp file
+	if [[ -f "$input" && "$input" == *.biom ]]; then
 	mode="table"
 	echo "$input" > $tablelist
 	fi
-	if [[ -f "$input" && "$input" == "*.biom" ]]; then
-	mode="table"
-	echo "$input" > $tablelist
+	if [[ "$input" == "ALL" ]]; then
+	mode="ALL"
+	find . -mindepth 3 -maxdepth 3 -name "*.biom" 2>/dev/null | grep -v "_CSS.biom" | grep -v "_DESeq2.biom" > $tablelist
+	fi
+	prefixtest=$(find . -mindepth 3 -maxdepth 3 -name "$input.biom" 2>/dev/null | grep -v "_CSS.biom" | grep -v "_DESeq2.biom" | wc -l)
+	if [[ "$prefixtest" -ge 1 ]]; then
+	mode="prefix"
+	find . -mindepth 3 -maxdepth 3 -name "$input.biom" 2>/dev/null | grep -v "_CSS.biom" | grep -v "_DESeq2.biom" > $tablelist
+	fi
+	if [[ -d "$input" ]]; then
+	mode="directory"
+	find $input -name "*.biom" 2>/dev/null | grep -v "_CSS.biom" | grep -v "_DESeq2.biom" > $tablelist
 	fi
 
+	## Exit if above tests failed to add any files to tablelist
+	if [[ ! -f $tablelist ]]; then
+	echo "Failed to locate any tables to process with supplied input.
+You supplied: $input
+
+Exiting.
+	"
+	exit 1
+	fi
 
 	res0=$(date +%s.%N)
 
 echo "
-mode
+$mode
 "
-exit 0
 
 ## Make categories temp file
 
-	IN=$cats
-	OIFS=$IFS
-	IFS=','
-	arr=$IN
-	mkdir -p cdiv_temp
-	tempdir="cdiv_temp"
-	echo > $tempdir/categories.tempfile
-	for x in $arr; do
-		echo $x >> $tempdir/categories.tempfile
-	done
-	IFS=$OIFS
-	sed -i '/^\s*$/d' $tempdir/categories.tempfile
+	bash $scriptdir/parse_cats.sh $stdout $stderr $log $mapfile $cats $catlist $randcode $tempdir
+exit 0
 
 ## If function to control mode and for loop for batch processing start here
 
