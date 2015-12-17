@@ -40,9 +40,6 @@ trap finish EXIT
 	done
 	IFS=$OIFS
 	sed -i '/^\s*$/d' $catlist
-echo "
-catlist:"
-cat $catlist
 
 ## Parse mapping file categories and create temp file
 	mapcats=$(mapcats.sh $mapfile | grep -e "^Categories: " | sed 's/Categories: //')
@@ -57,17 +54,11 @@ cat $catlist
 	done
 	IFS=$OIFS
 	sed -i '/^\s*$/d' $mapcatstemp
-echo "
-mapcatslist:"
-cat $mapcatstemp
 
 ## Filter any erroneous categories
 	for line in `cat $catlist`; do
 		grep $line $mapcatstemp >> $filtertemp
 	done
 cat $filtertemp > $catlist
-echo "
-catlist:"
-cat $catlist
 
 exit 0

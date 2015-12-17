@@ -50,6 +50,7 @@ trap finish EXIT
 	mapfile="$6"
 	cats="$7"
 	cores="$8"
+	threads=$(($cores+1))
 
 	date0=$(date +%Y%m%d_%I%M%p)
 	res0=$(date +%s.%N)
@@ -121,9 +122,18 @@ $mode
 "
 
 ## Make categories temp file
-
+	echo "Parsing input categories.
+	"
 	bash $scriptdir/parse_cats.sh $stdout $stderr $log $mapfile $cats $catlist $randcode $tempdir
+
+## Make normalized tables if necessary
+
+	echo "Normalizing tables if necessary.
+	"
+	bash $scriptdir/norm_tables.sh $stdout $stderr $log $tablelist $threads
+
 exit 0
+
 
 ## If function to control mode and for loop for batch processing start here
 
