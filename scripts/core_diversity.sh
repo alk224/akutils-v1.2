@@ -27,6 +27,9 @@ function finish {
 if [[ -f $cdivtemp ]]; then
 	rm $cdivtemp
 fi
+if [[ -f $tablelist ]]; then
+	rm $tablelist
+fi
 
 }
 trap finish EXIT
@@ -53,7 +56,9 @@ trap finish EXIT
 	underline=$(tput smul)
 
 ## Define temp files
-	cdivtemp="$tempdir/${randcode}_cdiv_temp.temp"
+	cdivtemp="$tempdir/${randcode}_cdiv.temp"
+	tablelist="$tempdir/${randcode}_cdiv_tablelist.temp"
+	catlist="$tempdir/${randcode}_cdiv_categories.temp"
 
 ## If incorrect number of arguments supplied, display usage 
 
@@ -62,95 +67,38 @@ trap finish EXIT
 		exit 1
 	fi
 
-## Define log file or use existing
+## Find log file or set new one.
+	rm log_core_diversity*~ 2>/dev/null
+	logcount=$(ls log_core_diversity* 2>/dev/null | head -1 | wc -l)
+	if [[ "$logcount" -eq 1 ]]; then
+		log=`ls log_core_diversity*.txt | head -1`
+	elif [[ "$logcount" -eq 0 ]]; then
+		log="$workdir/log_core_diversity_$date0.txt"
+	fi
+	echo "
+${bold}akutils core_diversity workflow beginning.${normal}
+	"
+	echo "
+akutils core_diversity workflow beginning." >> $log
+	date >> $log
 
-	logcount=`ls log_cdiv_graphs_and_stats* 2>/dev/null | wc -l`
-	
-	if [[ $logcount > 0 ]]; then
-		log=`ls log_cdiv_graphs_and_stats_workflow*.txt | head -1`
-		echo "
-Core diversity workflow restarting."
-		echo "$date1"
-			echo "
-Core diversity workflow restarting." >> $log
-			date "+%a %b %d %I:%M %p %Z %Y" >> $log
-	elif [[ $logcount == "0" ]]; then
-		echo "
-Command as issued:
-cdiv_graphs_and_stats_workflow.sh $1 $2 $3 $4 $5
-
-Core diversity workflow beginning."
-		echo "$date1"
-		log=log_cdiv_graphs_and_stats_workflow_$date0.txt
-		echo "
-Command as issued:
-cdiv_graphs_and_stats_workflow.sh $1 $2 $3 $4 $5
-
-Core diversity workflow beginning." > $log
-		date "+%a %b %d %I:%M %p %Z %Y" >> $log
+## Set workflow mode (table, directory, prefix, ALL)
+	if [[ -f "$input" && "$input" == "*.biom" ]]; then
+	mode="table"
+	echo "$input" > $tablelist
+	fi
+	if [[ -f "$input" && "$input" == "*.biom" ]]; then
+	mode="table"
+	echo "$input" > $tablelist
 	fi
 
-## Define variables
-
-input=($1)
-mapfile=($2)
-cats=($3)
-cores=($4)
-threads=`expr $4 + 1`
-tree=($5)
-
-#set outname below to facilitate batch processing
-#otuname=$(basename $intable .biom)
-
-## Set output below to facilitate batch processing
-
-
-	#might need to move this down to facilitate batch processing
-	#I deleted this variable opting for auto determination of runmode
-#if [[ $runmode == "TABLE" ]]; then
-		#need to fix this string to auto determine depth
-#depth=`grep -A 1 "Counts/sample detail" swarm_otus_d1/OTU_tables_uclust_tax/03_table_hdf5.summary | sed '/Counts/d' | cut -d" " -f3 | cut -d. -f1`
-
-## Make output directory and get full working path
-
-## Need to move this down to facilitate batch processing
-
-#	if [[ ! -d $outdir ]]; then
-#	mkdir -p $outdir
-#	fi
-
-## Set analysis mode (phylogenetic or nonphylogenetic)
-
-#	if [[ -z $tree ]]; then
-#	analysis="Nonphylogenetic"
-#	metrics="bray_curtis,chord,hellinger,kulczynski"
-#	else
-#	analysis="Phylogenetic"
-#	metrics="bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac"
-#	fi
-#	echo "Analysis: $analysis"
-#	echo "Analysis: $analysis" >> $log
-
-## Set workflow mode (table or batch)
-
-	if [[ -f $input ]]; then
-	mode=table
-	outdir0=`dirname $input`
-	outdir="$dirname0/core_diversity"
-	echo "Mode: Table only
-Input: $input"
-	echo "Mode: Table only
-Input: $input" >> $log
-	else
-	mode=batch
-	execdir=`pwd`
-	echo "Mode: Batch
-Directory: $execdir"
-	echo "Mode: Batch
-Directory: $execdir" >> $log
-	fi
 
 	res0=$(date +%s.%N)
+
+echo "
+mode
+"
+exit 0
 
 ## Make categories temp file
 
