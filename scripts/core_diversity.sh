@@ -254,7 +254,8 @@ Normalizing sample-filtered table with CSS transformation."
 Normalizing sample-filtered table with CSS transformation.
 normalize_table.py -i $filtertable -o $CSStable -a CSS" >> $log
 			if [[ ! -f $CSStable ]]; then
-			 normalize_table.py -i $filtertable -o $CSStable -a CSS 2>/dev/null
+			normalize_table.py -i $filtertable -o $CSStable -a CSS 1> $stdout 2> $stderr
+			bash $scriptdir/log_slave.sh $stdout $stderr $log
 			fi
 #			if [[ ! -f $DESeq2table ]]; then
 #			( normalize_table.py -i $filtertable -o $DESeq2table -a DESeq2 2>/dev/null ) &
@@ -289,214 +290,144 @@ normalize_table.py -i $filtertable -o $CSStable -a CSS" >> $log
 		phylogenetic="NO"
 		fi
 
+		if [[ "$phylogenetic" == "YES" ]]; then
+		metrics="bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac"
+		echo "
+Analysis will be phylogenetic."
+		echo "
+Analysis will be phylogenetic." >> $log
+		elif [[ "$phylogenetic" == "NO" ]]; then
+		metrics="bray_curtis,chord,hellinger,kulczynski"
+		echo "
+Analysis will be nonphylogenetic."
+		echo "
+Analysis will be nonphylogenetic." >> $log
+		fi
+
+################################################################################
+## START OF NORMALIZED ANALYSIS HERE
+
+	echo "
+Processing normalized table."
+	echo "
+Processing normalized table." >> $log
+
+## Summarize taxa (yields relative abundance tables)
+	if [[ ! -d $outdir/bdiv_normalized/summarized_tables ]]; then
+	echo "
+Summarize taxa command:
+	summarize_taxa.py -i $CSSsort -o $outdir/bdiv_normalized/summarized_tables -L 2,3,4,5,6,7" >> $log
+	echo "Summarizing taxonomy by sample and building plots.
+	"
+	summarize_taxa.py -i $CSSsort -o $outdir/bdiv_normalized/summarized_tables -L 2,3,4,5,6,7 1> $stdout 2> $stderr
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
+	fi
+
 exit 0
 done
-## If function to control mode and for loop for batch processing start here
 
-	if [[ $mode == "table" ]]; then
+	
 
-	## Check for valid input (file has .biom extension)
-
-	biombase_fields=`echo $biombase | grep -o "_" | wc -l`
-	outbase=`basename "$1" | cut -d. -f1 | cut -d"_" -f1-$biombase_fields`
-	biomextension="${1##*.}"
-	biomname="${1%.*}"
-	biomdir=$(dirname $1)
-
-	if [[ $biomextension != "biom" ]]; then
-	echo "
-	Input file is not a biom file.  Check your input and try again.
-	Exiting.
-	"
-	exit 1
-	else
-	table=$1
-
-	## Check for associated phylogenetic tree and set analysis mode
-	OTUdir=$(dirname $biomdir)
-	if [[ -f "$OTUdir/pynast_alignment/fasttree_phylogeny.tre" ]]; then
-	analysis="Phylogenetic"
-	metrics="bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac"
-	tree="$OTUdir/pynast_alignment/fasttree_phylogeny.tre"
-	elif [[ -f "$OTUdir/mafft_alignment/fasttree_phylogeny.tre" ]]; then
-	analysis="Phylogenetic"
-	metrics="bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac"
-	tree="$OTUdir/mafft_alignment/fasttree_phylogeny.tre"
-	else
-	analysis="Nonhylogenetic"
-	metrics="bray_curtis,chord,hellinger,kulczynski"
-	fi
-
-	## Summarize input table(s) if necessary and extract rarefaction depth from shallowest sample
-	if [[ ! -f $biomdir/$biombase.summary ]]; then
-	biom-summarize_folder.sh $biomdir &>/dev/null
-	fi
-	depth=`grep -A 1 "Counts/sample detail" $biomdir/$biombase.summary | sed '/Counts/d' | cut -d" " -f3 | cut -d. -f1`
-
-	## Set output directory
-	outdir=$biomdir/core_diversity/$outbase
-	outdir1=$biomdir/core_diversity
-	mkdir -p $outdir
-
-	## Check for normalized table
-	normbase=`echo $biombase | sed 's/hdf5/CSS/'`
-	normcount=`ls $biomdir/$normbase.biom 2>/dev/null | wc -l`
-	if [[ $normcount == "0" ]]; then
-	normtable="None supplied"
-	else
-	normtable="$biomdir/$normbase.biom"
-	fi
-
-	echo "Normalized table: $normtable
-Output: $outdir
-Rarefaction depth: $depth
-Analysis: $analysis
-	"
-	echo "Normalized table: $normtable
-Output: $outdir
-Rarefaction depth: $depth
-Analysis: $analysis
-	" >> $log
-
-	if [[ $normcount == "1" ]]; then
-	echo "Calling normalized_table_beta_diversity.sh function.
-"
-	echo "Calling normalized_table_beta_diversity.sh function.
-Command:
-bash $scriptdir/normalized_table_beta_diversity.sh <normalized_table> <output_dir> <mapping_file> <cores> <optional_tree>
-bash $scriptdir/normalized_table_beta_diversity.sh $normtable $outdir $mapfile $cores $tree
-" >> $log
-	bash $scriptdir/normalized_table_beta_diversity.sh $normtable $outdir $mapfile $cores $tree
-	fi
-
-	echo "Calling nonnormalized_table_diversity_analyses.sh function.
-"
-	echo "Calling nonnormalized_table_diversity_analyses.sh function.
-Command:
-bash $scriptdir/nonnormalized_table_diversity_analyses.sh <OTU_table> <output_dir> <mapping_file> <cores> <rarefaction_depth> <optional_tree>
-bash $scriptdir/nonnormalized_table_diversity_analyses.sh $table $outdir $mapfile $cores $depth $tree
-" >> $log
-	bash $scriptdir/nonnormalized_table_diversity_analyses.sh $table $outdir $mapfile $cats $cores $depth $tree
-	fi
-
-	elif [[ $mode == "batch" ]]; then
-	ls | grep "_otus_" > $tempdir/otupickdirs.temp
-	echo > $tempdir/batch_tablecount.temp
-	for line in `cat $tempdir/otupickdirs.temp`; do
-	for otutabledir in `ls $line 2>/dev/null | grep "OTU_tables"`; do
-	eachtablecount=`ls $line/$otutabledir/${input}_table_hdf5.biom 2>/dev/null | wc -l`
-	if [[ $eachtablecount == 1 ]]; then
-	echo $eachtablecount >> $tempdir/batch_tablecount.temp
-	fi
-	done
-	done
-	sed -i '/^\s*$/d' $tempdir/batch_tablecount.temp
-	alltablescount=`cat $tempdir/batch_tablecount.temp | wc -l`
-	if [[ $alltablescount == 0 ]]; then
-	echo "
-No OTU tables found matching the supplied prefix.  To perform batch
-processing, execute cdiv_graphs_and_stats_workflow.sh from the same
-directory you processed the rest of your data.  If you want to target
-the tables matching \"03_table_hdf5.biom\" and the associated normalized
-table, you would enter \"03\" as the prefix.
-
-You supplied: $input
-
-Exiting.
-	"
-	else
-	echo "Processing core diversity analyses for $alltablescount OTU tables.
-	"
-
-	# Build list of tables to process
-	echo > $tempdir/batch_tablelist.temp
-	for line in `cat $tempdir/otupickdirs.temp`; do
-	for otutabledir in `ls $line 2>/dev/null | grep "OTU_tables"`; do
-	if [[ -f $line/$otutabledir/${input}_table_hdf5.biom ]]; then
-	echo $line/$otutabledir/${input}_table_hdf5.biom >> $tempdir/batch_tablelist.temp
-	fi
-	done
-	done
-
-	# Process tables loop
-	for table in `cat $tempdir/batch_tablelist.temp`; do
-	## Check for valid input (file has .biom extension)
-	biombase=`basename "$table" | cut -d. -f1`
-	outbase=`basename "$table" | cut -d. -f1 | cut -d"_" -f1-2`
-	biomextension="${table##*.}"
-	biomname="${table%.*}"
-	biomdir=$(dirname $table)
-	## Check for associated phylogenetic tree and set analysis mode for each table
-	OTUdir=$(dirname $biomdir)
-	if [[ -f "$OTUdir/pynast_alignment/fasttree_phylogeny.tre" ]]; then
-	analysis="Phylogenetic"
-	metrics="bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac"
-	tree="$OTUdir/pynast_alignment/fasttree_phylogeny.tre"
-	elif [[ -f "$OTUdir/mafft_alignment/fasttree_phylogeny.tre" ]]; then
-	analysis="Phylogenetic"
-	metrics="bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac"
-	tree="$OTUdir/mafft_alignment/fasttree_phylogeny.tre"
-	else
-	analysis="Nonhylogenetic"
-	metrics="bray_curtis,chord,hellinger,kulczynski"
-	fi	
-	## Summarize input table(s) if necessary and extract rarefaction depth from shallowest sample
-	if [[ ! -f $biomdir/$biombase.summary ]]; then
-	biom-summarize_folder.sh $biomdir &>/dev/null
-	fi
-	depth=`grep -A 1 "Counts/sample detail" $biomdir/$biombase.summary | sed '/Counts/d' | cut -d" " -f3 | cut -d. -f1`
-
-	## Check for normalized table
-	normbase=`echo $biombase | sed 's/hdf5/CSS/'`
-	normcount=`ls $biomdir/$normbase.biom 2>/dev/null | wc -l`
-	if [[ $normcount == "0" ]]; then
-	normtable="None supplied"
-	else
-	normtable="$biomdir/$normbase.biom"
-	fi
-
-	## Set output directory
-	outdir=$biomdir/core_diversity/$outbase
-	outdir1=$biomdir/core_diversity
-	mkdir -p $outdir
-
-	echo "Input table: $table
-Normalized table: $normtable
-Output: $outdir
-Rarefaction depth: $depth
-Analysis: $analysis
-	"
-	echo "Input table: $table
-Normalized table: $normtable
-Output: $outdir
-Rarefaction depth: $depth
-Analysis: $analysis
-	" >> $log
-	echo "Calling normalized_table_beta_diversity.sh function.
-"
-	echo "Calling normalized_table_beta_diversity.sh function.
-Command:
-bash $scriptdir/normalized_table_beta_diversity.sh <normalized_table> <output_dir> <mapping_file> <cores> <optional_tree>
-bash $scriptdir/normalized_table_beta_diversity.sh $normtable $outdir $mapfile $cores $tree
-" >> $log
 	bash $scriptdir/normalized_table_beta_diversity.sh $normtable $outdir $mapfile $cores $tree
 
-	echo "Calling nonnormalized_table_diversity_analyses.sh function.
-"
-	echo "Calling nonnormalized_table_diversity_analyses.sh function.
-Command:
-bash $scriptdir/nonnormalized_table_diversity_analyses.sh <OTU_table> <output_dir> <mapping_file> <cores> <rarefaction_depth> <optional_tree>
-bash $scriptdir/nonnormalized_table_diversity_analyses.sh $table $outdir $mapfile $cores $depth $tree
-" >> $log
+
 	bash $scriptdir/nonnormalized_table_diversity_analyses.sh $table $outdir $mapfile $cats $cores $depth $tree
-	done
-	fi
+
+## Beta diversity
+	if [[ "$phylogenetic" == "YES" ]]; then
+	echo "
+Parallel beta diversity command:
+	parallel_beta_diversity.py -i $table -o $outdir/bdiv_normalized/ --metrics $metrics -T  -t $tree --jobs_to_start $cores" >> $log
+	echo "Calculating beta diversity distance matrices.
+	"
+	parallel_beta_diversity.py -i $table -o $outdir/bdiv_normalized/ --metrics $metrics -T  -t $tree --jobs_to_start $cores 1> $stdout 2> $stderr
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
+	elif [[ "$phylogenetic" == "NO" ]]; then
+	echo "
+Parallel beta diversity command:
+	parallel_beta_diversity.py -i $table -o $outdir/bdiv_normalized/ --metrics $metrics -T --jobs_to_start $cores" >> $log
+	echo "Calculating beta diversity distance matrices.
+	"
+	parallel_beta_diversity.py -i $table -o $outdir/bdiv_normalized/ --metrics $metrics -T --jobs_to_start $cores 1> $stdout 2> $stderr
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	fi
 
-## Tidy up
-#	if [[ -d cdiv_temp ]]; then
-#	rm -r cdiv_temp
-#	fi
+## Rename output files
+	for dm in $outdir/bdiv_normalized/*_table.txt; do
+	dmbase=$(basename $dm _table.txt)
+	mv $dm $outdir/bdiv_normalized/$dmbase\_dm.txt
+	done
+
+## Principal coordinates and NMDS commands
+	echo "
+Principal coordinates and NMDS commands:" >> $log
+	echo "Constructing PCoA and NMDS coordinate files.
+	"
+	for dm in $outdir/bdiv_normalized/*_dm.txt; do
+	dmbase=$(basename $dm _dm.txt)
+	echo "	principal_coordinates.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_pc.txt
+	nmds.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_nmds.txt" >> $log
+	principal_coordinates.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_pc.txt >/dev/null 2>&1 || true
+	nmds.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_nmds.txt >/dev/null 2>&1 || true
+	python $scriptdir/convert_nmds_coords.py -i $outdir/bdiv_normalized/$dmbase\_nmds.txt -o $outdir/bdiv_normalized/$dmbase\_nmds_converted.txt
+	done
+
+## Make 3D emperor plots (PCoA)
+	echo "
+Make emperor commands:" >> $log
+	echo "Generating 3D PCoA plots.
+	"
+	for pc in $outdir/bdiv_normalized/*_pc.txt; do
+	pcbase=$( basename $pc _pc.txt )
+		if [[ -d $outdir/bdiv_normalized/$pcbase\_emperor_pcoa_plot/ ]]; then
+		rm -r $outdir/bdiv_normalized/$pcbase\_emperor_pcoa_plot/
+		fi
+	echo "	make_emperor.py -i $pc -o $outdir/bdiv_normalized/$pcbase\_emperor_pcoa_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples" >> $log
+	make_emperor.py -i $pc -o $outdir/bdiv_normalized/$pcbase\_emperor_pcoa_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples >/dev/null 2>&1 || true
+	done
+
+## Make 3D emperor plots (NMDS)
+	echo "
+Make emperor commands:" >> $log
+	echo "Generating 3D NMDS plots.
+	"
+	for nmds in $outdir/bdiv_normalized/*_nmds_converted.txt; do
+	nmdsbase=$( basename $nmds _nmds_converted.txt )
+		if [[ -d $outdir/bdiv_normalized/$nmdsbase\_emperor_nmds_plot/ ]]; then
+		rm -r $outdir/bdiv_normalized/$nmdsbase\_emperor_nmds_plot/
+		fi
+	echo "	make_emperor.py -i $nmds -o $outdir/bdiv_normalized/$nmdsbase\_emperor_nmds_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples" >> $log
+	make_emperor.py -i $nmds -o $outdir/bdiv_normalized/$nmdsbase\_emperor_nmds_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples >/dev/null 2>&1 || true
+	done
+	fi
+
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+
+## Make 2D plots
+	if [[ ! -d $outdir/bdiv_normalized/2D_PCoA_bdiv_plots ]]; then
+	echo "
+Make 2D plots commands:" >> $log
+	echo "Generating 2D PCoA plots.
+	"
+	for pc in $outdir/bdiv_normalized/*_pc.txt; do
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	make_2d_plots.py -i $pc -m $mapfile -o $outdir/bdiv_normalized/2D_PCoA_bdiv_plots" >> $log
+	( make_2d_plots.py -i $pc -m $mapfile -o $outdir/bdiv_normalized/2D_PCoA_bdiv_plots >/dev/null 2>&1 || true ) &
+	done
+	fi
+wait
+
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+
+
+
+
+
+
 
 ## Log end of workflow and exit
 
