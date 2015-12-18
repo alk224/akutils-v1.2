@@ -6,6 +6,7 @@ inputbase="$1"
 outdir="$2"
 depth="$3"
 catlist="$4"
+alphatemp="$5"
 
 ## Make html files
 	##sequences and alignments html
@@ -211,7 +212,7 @@ echo "
 <tr><td> Alpha rarefaction plots </td><td> <a href=\"./arare_max$depth/alpha_rarefaction_plots/rarefaction_plots.html\" target=\"_blank\"> rarefaction_plots.html </a></td></tr>" >> $outdir/index.html
 
 	for category in `cat $catlist`; do
-	for metric in `cat cdiv_temp/alpha_metrics.tempfile`; do
+	for metric in `cat $alphatemp`; do
 echo "<tr><td> Alpha diversity statistics ($category, $metric, parametric) </td><td> <a href=\"./arare_max$depth/compare_${metric}_parametric/${category}_stats.txt\" target=\"_blank\"> ${category}_stats.txt </a></td></tr>
 <tr><td> Alpha diversity boxplots ($category, $metric, parametric) </td><td> <a href=\"./arare_max$depth/compare_${metric}_parametric/${category}_boxplots.pdf\" target=\"_blank\"> ${category}_boxplots.pdf </a></td></tr>
 <tr><td> Alpha diversity statistics ($category, $metric, nonparametric) </td><td> <a href=\"./arare_max$depth/compare_${metric}_nonparametric/${category}_stats.txt\" target=\"_blank\"> ${category}_stats.txt </a></td></tr>

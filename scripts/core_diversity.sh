@@ -39,6 +39,9 @@ fi
 if [[ -f $raresamples ]]; then
 	rm $raresamples
 fi
+if [[ -f $alphatemp ]]; then
+	rm $alphatemp
+fi
 
 }
 trap finish EXIT
@@ -184,13 +187,13 @@ INITIAL TABLE PROCESSING STARTS HERE
 " >> $log
 
 		## Initiate html output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
 		## Summarize input table
 		biom-summarize_folder.sh $tabledir &>/dev/null
 
 		## Refresh html output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
 		## Rarefy input table according to established depth
 		raretable="$tabledir/rarefied_table.biom"
@@ -218,7 +221,7 @@ Single rarefaction command:
 		rarebase=$(basename $raretable .biom)
 
 		## Refresh html output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
 		## Filter any samples removed by rarefying from the original input table
 		inlines0=$(cat $insummary | wc -l)
@@ -279,7 +282,7 @@ Normalizing sample-filtered table with CSS transformation:
 	
 		## Summarize tables one last time and refresh html output
 		biom-summarize_folder.sh $tabledir &>/dev/null
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
 		## Sort OTU tables
 		CSSsort="$outdir/OTU_tables/CSS_table_sorted.biom"
@@ -306,25 +309,44 @@ Normalizing sample-filtered table with CSS transformation:
 
 		if [[ "$phylogenetic" == "YES" ]]; then
 		metrics="bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac"
+		alphametrics="PD_whole_tree,chao1,observed_species,shannon"
 		echo "
 Analysis will be ${bold}phylogenetic${normal}.
-Metrics: bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac
+Alpha diversity metrics: $alphametrics
+Beta diversity metrics: $metrics
 Tree file: $tree"
 		echo "
 Analysis will be phylogenetic.
-Metrics: bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac
+Alpha diversity metrics: $alphametrics
+Beta diversity metrics: $metrics
 Tree file: $tree" >> $log
 		elif [[ "$phylogenetic" == "NO" ]]; then
 		metrics="bray_curtis,chord,hellinger,kulczynski"
+		alphametrics="chao1,observed_species,shannon"
 		echo "
 Analysis will be nonphylogenetic.
-Metrics: bray_curtis,chord,hellinger,kulczynski
+Alpha diversity metrics: $alphametrics
+Beta diversity metrics: $metrics
 Tree file: None found"
 		echo "
 Analysis will be nonphylogenetic.
-Metrics: bray_curtis,chord,hellinger,kulczynski
+Alpha diversity metrics: $alphametrics
+Beta diversity metrics: $metrics
 Tree file: None found" >> $log
 		fi
+
+## Make alpha metrics temp file
+	alphatemp="$tempdir/${randcode}_alphametrics.temp"
+	echo > $alphatemp
+	IN=$alphametrics
+	OIFS=$IFS
+	IFS=','
+	arr=$IN
+	for x in $arr; do
+		echo $x >> $alphatemp
+	done
+	IFS=$OIFS
+	sed -i '/^\s*$/d' $alphatemp
 
 ################################################################################
 ## START OF NORMALIZED ANALYSIS HERE
@@ -520,7 +542,7 @@ Generating 3D NMDS plots."
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
 ## Make 2D plots
 	if [[ ! -d $outdir/bdiv_normalized/2D_PCoA_bdiv_plots ]]; then
@@ -543,7 +565,7 @@ Generating 2D PCoA plots."
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
 ## Comparing categories statistics
 if [[ ! -f $outdir/bdiv_normalized/permanova_results_collated.txt && ! -f $outdir/bdiv_normalized/permdisp_results_collated.txt && ! -f $outdir/bdiv_normalized/anosim_results_collated.txt && ! -f $outdir/bdiv_normalized/dbrda_results_collated.txt && ! -f $outdir/bdiv_normalized/adonis_results_collated.txt ]]; then
@@ -695,7 +717,7 @@ echo "
 Categorical comparisons already present." >> $log
 fi
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
 ## Distance boxplots for each category
 	boxplotscount=`ls $outdir/bdiv_normalized/*_boxplots 2>/dev/null | wc -l`
@@ -722,7 +744,7 @@ Boxplots already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
 ## Make biplots
 	if [[ ! -d $outdir/bdiv_normalized/biplots ]]; then
@@ -756,7 +778,7 @@ Biplots already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
 ## Run supervised learning on data using supplied categories
 	if [[ ! -d $outdir/bdiv_normalized/SupervisedLearning ]]; then
@@ -778,7 +800,7 @@ Supervised Learning already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
 echo "
 ********************************************************************************
@@ -982,7 +1004,7 @@ Generating 3D NMDS plots."
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
 ## Make 2D plots
 	if [[ ! -d $outdir/bdiv_rarefied/2D_PCoA_bdiv_plots ]]; then
@@ -1005,7 +1027,7 @@ Generating 2D PCoA plots."
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
 ## Comparing categories statistics
 if [[ ! -f $outdir/bdiv_rarefied/permanova_results_collated.txt && ! -f $outdir/bdiv_rarefied/permdisp_results_collated.txt && ! -f $outdir/bdiv_rarefied/anosim_results_collated.txt && ! -f $outdir/bdiv_rarefied/dbrda_results_collated.txt && ! -f $outdir/bdiv_rarefied/adonis_results_collated.txt ]]; then
@@ -1157,7 +1179,7 @@ echo "
 Categorical comparisons already present." >> $log
 fi
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
 ## Distance boxplots for each category
 	boxplotscount=`ls $outdir/bdiv_rarefied/*_boxplots 2>/dev/null | wc -l`
@@ -1184,7 +1206,7 @@ Boxplots already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
 ## Make biplots
 	if [[ ! -d $outdir/bdiv_rarefied/biplots ]]; then
@@ -1217,6 +1239,9 @@ Generating PCoA biplots:"
 Biplots already present." >> $log
 	fi
 
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+
 ## Run supervised learning on data using supplied categories
 	if [[ ! -d $outdir/bdiv_rarefied/SupervisedLearning ]]; then
 	mkdir $outdir/bdiv_rarefied/SupervisedLearning
@@ -1228,8 +1253,8 @@ Running supervised learning analysis."
 		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 		sleep 1
 		done
-		echo "	supervised_learning.py -i $table -m $mapfile -c $category -o $outdir/bdiv_rarefied/SupervisedLearning/$category --ntree 1000" >> $log
-		( supervised_learning.py -i $table -m $mapfile -c $category -o $outdir/bdiv_rarefied/SupervisedLearning/$category --ntree 1000 >/dev/null 2>&1 || true ) &
+		echo "	supervised_learning.py -i $raresort -m $mapfile -c $category -o $outdir/bdiv_rarefied/SupervisedLearning/$category --ntree 1000" >> $log
+		( supervised_learning.py -i $raresort -m $mapfile -c $category -o $outdir/bdiv_rarefied/SupervisedLearning/$category --ntree 1000 >/dev/null 2>&1 || true ) &
 	done
 	else
 	echo "
@@ -1237,8 +1262,81 @@ Supervised Learning already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
+###################################
+## Start of alpha diversity steps
+
+## Multiple rarefactions
+	alphastepsize=$(($depth/10))
+
+	if [[ ! -d $outdir/arare_max$depth ]]; then
+	echo "
+Multiple rarefaction command:
+	parallel_multiple_rarefactions.py -T -i $raresort -m 10 -x $depth -s $alphastepsize -o $outdir/arare_max$depth/rarefaction/ -O $cores" >> $log
+	echo "
+Performing mutiple rarefactions for alpha diversity analysis."
+	parallel_multiple_rarefactions.py -T -i $raresort -m 10 -x $depth -s $alphastepsize -o $outdir/arare_max$depth/rarefaction/ -O $cores 1> $stdout 2> $stderr
+	wait
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
+
+## Alpha diversity
+	if [[ "$phylogenetic" == "YES" ]]; then
+	echo "
+Alpha diversity command:
+	parallel_alpha_diversity.py -T -i $outdir/arare_max$depth/rarefaction/ -o $outdir/arare_max$depth/alpha_div/ -t $tree -O $cores -m $alphametrics" >> $log
+	echo "
+Calculating alpha diversity."
+	parallel_alpha_diversity.py -T -i $outdir/arare_max$depth/rarefaction/ -o $outdir/arare_max$depth/alpha_div/ -t $tree -O $cores -m $alphametrics
+        elif [[ "$phylogenetic" == "NO" ]]; then
+	echo "
+Alpha diversity command:
+        parallel_alpha_diversity.py -T -i $outdir/arare_max$depth/rarefaction/ -o $outdir/arare_max$depth/alpha_div/ -O $cores -m $alphametrics" >> $log
+	echo "
+Calculating alpha diversity."
+        parallel_alpha_diversity.py -T -i $outdir/arare_max$depth/rarefaction/ -o $outdir/arare_max$depth/alpha_div/ -O $cores -m $alphametrics
+	fi
+	fi
+
+## Collate alpha
+	if [[ ! -d $outdir/arare_max$depth/alpha_div_collated/ ]]; then
+	echo "
+Collate alpha command:
+	collate_alpha.py -i $outdir/arare_max$depth/alpha_div/ -o $outdir/arare_max$depth/alpha_div_collated/" >> $log
+	collate_alpha.py -i $outdir/arare_max$depth/alpha_div/ -o $outdir/arare_max$depth/alpha_div_collated/ 1> $stdout 2> $stderr
+	wait
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
+	rm -r $outdir/arare_max$depth/rarefaction/ $outdir/arare_max$depth/alpha_div/
+
+## Make rarefaction plots
+	echo "
+Make rarefaction plots command:
+	make_rarefaction_plots.py -i $outdir/arare_max$depth/alpha_div_collated/ -m $mapfile -o $outdir/arare_max$depth/alpha_rarefaction_plots/ -d 300 -e stderr" >> $log
+	echo "
+Generating alpha rarefaction plots."
+	make_rarefaction_plots.py -i $outdir/arare_max$depth/alpha_div_collated/ -m $mapfile -o $outdir/arare_max$depth/alpha_rarefaction_plots/ -d 300 -e stderr 1> $stdout 2> $stderr || true
+	wait
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
+
+## Alpha diversity stats
+	echo "
+Compare alpha diversity commands:" >> $log
+	echo "
+Calculating alpha diversity statistics."
+	for file in $outdir/arare_max$depth/alpha_div_collated/*.txt; do
+	filebase=$(basename $file .txt)
+		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+		sleep 1
+		done
+		echo "compare_alpha_diversity.py -i $file -m $mapfile -c $cats -o $outdir/arare_max$depth/alpha_compare_parametric -t parametric -p fdr" >> $log
+		( compare_alpha_diversity.py -i $file -m $mapfile -c $cats -o $outdir/arare_max$depth/compare_$filebase\_parametric -t parametric -p fdr >/dev/null 2>&1 || true ) &
+		echo "compare_alpha_diversity.py -i $file -m $mapfile -c $cats -o $outdir/arare_max$depth/alpha_compare_nonparametric -t nonparametric -p fdr" >> $log
+		( compare_alpha_diversity.py -i $file -m $mapfile -c $cats -o $outdir/arare_max$depth/compare_$filebase\_nonparametric -t nonparametric -p fdr >/dev/null 2>&1 || true ) &
+	done
+	fi
+
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
 
 
