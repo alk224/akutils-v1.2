@@ -186,6 +186,38 @@ INITIAL TABLE PROCESSING STARTS HERE
 ********************************************************************************
 " >> $log
 
+		## Find phylogenetic tree or set mode nonphylogenetic
+		if [[ -f $inputdirup1/pynast_alignment/fasttree_phylogeny.tre ]]; then
+		tree="$inputdirup1/pynast_alignment/fasttree_phylogeny.tre"
+		phylogenetic="YES"
+		metrics="bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac"
+		alphametrics="PD_whole_tree,chao1,observed_species,shannon"
+		fi
+		if [[ -f $inputdirup1/mafft_alignment/fasttree_phylogeny.tre ]]; then
+		tree="$inputdirup1/mafft_alignment/fasttree_phylogeny.tre"
+		phylogenetic="YES"
+		metrics="bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac"
+		alphametrics="PD_whole_tree,chao1,observed_species,shannon"
+		fi
+		if [[ -z $phylogenetic ]]; then
+		phylogenetic="NO"
+		metrics="bray_curtis,chord,hellinger,kulczynski"
+		alphametrics="chao1,observed_species,shannon"
+		fi
+
+		## Make alpha metrics temp file
+		alphatemp="$tempdir/${randcode}_alphametrics.temp"
+		echo > $alphatemp
+		IN=$alphametrics
+		OIFS=$IFS
+		IFS=','
+		arr=$IN
+		for x in $arr; do
+			echo $x >> $alphatemp
+		done
+		IFS=$OIFS
+		sed -i '/^\s*$/d' $alphatemp
+
 		## Initiate html output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
@@ -294,22 +326,7 @@ Normalizing sample-filtered table with CSS transformation:
 		sort_otu_table.py -i $raretable -o $raresort
 		fi
 
-		## Find phylogenetic tree or set mode nonphylogenetic
-		if [[ -f $inputdirup1/pynast_alignment/fasttree_phylogeny.tre ]]; then
-		tree="$inputdirup1/pynast_alignment/fasttree_phylogeny.tre"
-		phylogenetic="YES"
-		fi
-		if [[ -f $inputdirup1/mafft_alignment/fasttree_phylogeny.tre ]]; then
-		tree="$inputdirup1/mafft_alignment/fasttree_phylogeny.tre"
-		phylogenetic="YES"
-		fi
-		if [[ -z $phylogenetic ]]; then
-		phylogenetic="NO"
-		fi
-
 		if [[ "$phylogenetic" == "YES" ]]; then
-		metrics="bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac"
-		alphametrics="PD_whole_tree,chao1,observed_species,shannon"
 		echo "
 Analysis will be ${bold}phylogenetic${normal}.
 Alpha diversity metrics: $alphametrics
@@ -321,8 +338,6 @@ Alpha diversity metrics: $alphametrics
 Beta diversity metrics: $metrics
 Tree file: $tree" >> $log
 		elif [[ "$phylogenetic" == "NO" ]]; then
-		metrics="bray_curtis,chord,hellinger,kulczynski"
-		alphametrics="chao1,observed_species,shannon"
 		echo "
 Analysis will be nonphylogenetic.
 Alpha diversity metrics: $alphametrics
@@ -334,19 +349,6 @@ Alpha diversity metrics: $alphametrics
 Beta diversity metrics: $metrics
 Tree file: None found" >> $log
 		fi
-
-## Make alpha metrics temp file
-	alphatemp="$tempdir/${randcode}_alphametrics.temp"
-	echo > $alphatemp
-	IN=$alphametrics
-	OIFS=$IFS
-	IFS=','
-	arr=$IN
-	for x in $arr; do
-		echo $x >> $alphatemp
-	done
-	IFS=$OIFS
-	sed -i '/^\s*$/d' $alphatemp
 
 ################################################################################
 ## START OF NORMALIZED ANALYSIS HERE
@@ -1296,7 +1298,6 @@ Alpha diversity command:
 Calculating alpha diversity."
         parallel_alpha_diversity.py -T -i $outdir/arare_max$depth/rarefaction/ -o $outdir/arare_max$depth/alpha_div/ -O $cores -m $alphametrics
 	fi
-	fi
 
 ## Collate alpha
 	if [[ ! -d $outdir/arare_max$depth/alpha_div_collated/ ]]; then
@@ -1334,13 +1335,61 @@ Calculating alpha diversity statistics."
 		( compare_alpha_diversity.py -i $file -m $mapfile -c $cats -o $outdir/arare_max$depth/compare_$filebase\_nonparametric -t nonparametric -p fdr >/dev/null 2>&1 || true ) &
 	done
 	fi
-
+	wait
+	else
+	echo "
+Alpha diversity analysis already completed." >> $log
+	fi
+	
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
+#######################################
+## Start of taxonomy plotting steps
 
+## Plot taxa summaries
+		if [[ ! -d $outdir/taxa_plots ]]; then
+	echo "
+Plotting taxonomy by sample."
+	echo "
+Plot taxa summaries command:
+	plot_taxa_summary.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L2.txt,$outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L3.txt,$outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L4.txt,$outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L5.txt,$outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L6.txt,$outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L7.txt -o $outdir/taxa_plots/taxa_summary_plots/ -c bar" >> $log
+	plot_taxa_summary.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L2.txt,$outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L3.txt,$outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L4.txt,$outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L5.txt,$outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L6.txt,$outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L7.txt -o $outdir/taxa_plots/taxa_summary_plots/ -c bar 1> $stdout 2> $stderr || true
+	wait
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+		fi
 
+## Taxa summaries for each category
+	for line in `cat $catlist`; do
+		if [[ ! -d $outdir/taxa_plots_$line ]]; then
+	echo "
+Building taxonomy plots for category: $line."
+	echo "
+Summarize taxa commands by category \"$line\":
+	collapse_samples.py -m ${mapfile} -b ${raresort} --output_biom_fp ${outdir}/taxa_plots_${line}/${line}_otu_table.biom --output_mapping_fp ${outdir}/taxa_plots_${line}/${line}_map.txt --collapse_fields $line
+	sort_otu_table.py -i ${outdir}/taxa_plots_${line}/${line}_otu_table.biom -o ${outdir}/taxa_plots_${line}/${line}_otu_table_sorted.biom
+	summarize_taxa.py -i ${outdir}/taxa_plots_${line}/${line}_otu_table_sorted.biom -o ${outdir}/taxa_plots_${line}/  -L 2,3,4,5,6,7 -a
+	plot_taxa_summary.py -i ${outdir}/taxa_plots_${line}/${line}_otu_table_sorted_L2.txt,${outdir}/taxa_plots_${line}/${line}_otu_table_sorted_L3.txt,${outdir}/taxa_plots_${line}/${line}_otu_table_sorted_L4.txt,${outdir}/taxa_plots_${line}/${line}_otu_table_sorted_L5.txt,${outdir}/taxa_plots_${line}/${line}_otu_table_sorted_L6.txt,${outdir}/taxa_plots_${line}/${line}_otu_table_sorted_L7.txt -o ${outdir}/taxa_plots_${line}/taxa_summary_plots/ -c bar,pie" >> $log
 
+		mkdir $outdir/taxa_plots_$line
+
+	collapse_samples.py -m ${mapfile} -b ${raresort} --output_biom_fp ${outdir}/taxa_plots_${line}/${line}_otu_table.biom --output_mapping_fp ${outdir}/taxa_plots_${line}/${line}_map.txt --collapse_fields $line 1> $stdout 2> $stderr || true
+	wait
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+	sort_otu_table.py -i ${outdir}/taxa_plots_${line}/${line}_otu_table.biom -o ${outdir}/taxa_plots_${line}/${line}_otu_table_sorted.biom 1> $stdout 2> $stderr || true
+	wait
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+	summarize_taxa.py -i ${outdir}/taxa_plots_${line}/${line}_otu_table_sorted.biom -o ${outdir}/taxa_plots_${line}/  -L 2,3,4,5,6,7 -a 1> $stdout 2> $stderr || true
+	wait
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+	plot_taxa_summary.py -i ${outdir}/taxa_plots_${line}/${line}_otu_table_sorted_L2.txt,${outdir}/taxa_plots_${line}/${line}_otu_table_sorted_L3.txt,${outdir}/taxa_plots_${line}/${line}_otu_table_sorted_L4.txt,${outdir}/taxa_plots_${line}/${line}_otu_table_sorted_L5.txt,${outdir}/taxa_plots_${line}/${line}_otu_table_sorted_L6.txt,${outdir}/taxa_plots_${line}/${line}_otu_table_sorted_L7.txt -o ${outdir}/taxa_plots_${line}/taxa_summary_plots/ -c bar,pie 1> $stdout 2> $stderr || true
+	wait
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+		fi
+	done
+
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
 
 done
