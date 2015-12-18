@@ -168,6 +168,11 @@ for table in `cat $tablelist`; do
 		echo "
 ${bold}akutils core_diversity workflow beginning.${normal}"
 		echo "
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 akutils core_diversity workflow beginning." >> $log
 		date >> $log
 echo "
@@ -188,8 +193,8 @@ INITIAL TABLE PROCESSING STARTS HERE
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
 
 		## Rarefy input table according to established depth
-		raretable="$tabledir/table_even$depth.biom"
-		raresummary="$tabledir/table_even$depth.summary"
+		raretable="$tabledir/rarefied_table.biom"
+		raresummary="$tabledir/rarefied_table.summary"
 		if [[ ! -f $raretable ]]; then
 		echo "
 Input table: $table
@@ -205,6 +210,7 @@ Rarefaction depth: $depth" >> $log
 Single rarefaction command:
 	single_rarefaction.py -i $intable -o $raretable -d $depth" >> $log
 		single_rarefaction.py -i $intable -o $raretable -d $depth 1> $stdout 2> $stderr
+		mv $tabledir/table_even$depth.biom $tabledir/rarefied_table.biom
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 		fi
 
@@ -228,14 +234,19 @@ Single rarefaction command:
 		raresamplecount=$(cat $raresamples | wc -l)
 		diffcount=$(($insamplecount-$raresamplecount))
 
+		filtertable="$tabledir/sample_filtered_table.biom"
+		if [[ ! -f $filtertable ]]; then
 		echo "
 Filtering any samples removed during rarefaction."
 		echo "
 Filtering any samples removed during rarefaction:
 	filter_samples_from_otu_table.py -i $intable -o $filtertable --sample_id_fp $raresamples" >> $log
-		filtertable="$tabledir/sample_filtered_table.biom"
 		filter_samples_from_otu_table.py -i $intable -o $filtertable --sample_id_fp $raresamples 1> $stdout 2> $stderr
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
+		else
+		echo "
+Sample-filtered table already present." >> $log
+		fi
 
 		## Log any sample removals
 		echo "
@@ -275,7 +286,7 @@ Normalizing sample-filtered table with CSS transformation:
 		if [[ ! -f $CSSsort ]]; then
 		sort_otu_table.py -i $CSStable -o $CSSsort
 		fi
-		raresort="$outdir/OTU_tables/table_even${depth}_sorted.biom"
+		raresort="$outdir/OTU_tables/rarefied_table_sorted.biom"
 		if [[ ! -f $raresort ]]; then
 		sort_otu_table.py -i $raretable -o $raresort
 		fi
@@ -307,10 +318,12 @@ Tree file: $tree" >> $log
 		metrics="bray_curtis,chord,hellinger,kulczynski"
 		echo "
 Analysis will be nonphylogenetic.
-Metrics: bray_curtis,chord,hellinger,kulczynski"
+Metrics: bray_curtis,chord,hellinger,kulczynski
+Tree file: None found"
 		echo "
 Analysis will be nonphylogenetic.
-Metrics: bray_curtis,chord,hellinger,kulczynski" >> $log
+Metrics: bray_curtis,chord,hellinger,kulczynski
+Tree file: None found" >> $log
 		fi
 
 ################################################################################
@@ -338,7 +351,12 @@ Summarize taxa command:
 Summarizing taxonomy by sample and building plots."
 	summarize_taxa.py -i $CSSsort -o $outdir/bdiv_normalized/summarized_tables -L 2,3,4,5,6,7 1> $stdout 2> $stderr
 	bash $scriptdir/log_slave.sh $stdout $stderr $log
+	
+	else
+	echo "
+Relative abundance tables already present." >> $log
 	fi
+	wait
 
 ## Beta diversity
 	if [[ "$phylogenetic" == "YES" ]]; then
@@ -361,6 +379,9 @@ Calculating beta diversity distance matrices."
 	parallel_beta_diversity.py -i $CSSsort -o $outdir/bdiv_normalized/ --metrics $metrics -T --jobs_to_start $cores 1> $stdout 2> $stderr
 	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	fi
+	else
+	echo "
+Beta diversity matrices already present." >> $log
 	fi
 	wait
 
@@ -369,31 +390,41 @@ Calculating beta diversity distance matrices."
 	bcdm=$(ls $outdir/bdiv_normalized/bray_curtis_*.txt)
 	mv $bcdm $outdir/bdiv_normalized/bray_curtis_dm.txt 2>/dev/null
 	fi
+	wait
 	if [[ ! -f $outdir/bdiv_normalized/chord_dm.txt ]]; then
 	cdm=$(ls $outdir/bdiv_normalized/chord_*.txt)
 	mv $cdm $outdir/bdiv_normalized/chord_dm.txt 2>/dev/null
 	fi
+	wait
 	if [[ ! -f $outdir/bdiv_normalized/hellinger_dm.txt ]]; then
 	hdm=$(ls $outdir/bdiv_normalized/hellinger_*.txt)
 	mv $hdm $outdir/bdiv_normalized/hellinger_dm.txt 2>/dev/null
 	fi
+	wait
 	if [[ ! -f $outdir/bdiv_normalized/kulczynski_dm.txt ]]; then
 	kdm=$(ls $outdir/bdiv_normalized/kulczynski_*.txt)
 	mv $kdm $outdir/bdiv_normalized/kulczynski_dm.txt 2>/dev/null
 	fi
+	wait
 	if [[ "$phylogenetic" == "YES" ]]; then
 	if [[ ! -f $outdir/bdiv_normalized/unweighted_unifrac_dm.txt ]]; then
 	uudm=$(ls $outdir/bdiv_normalized/unweighted_unifrac_*.txt)
 	mv $uudm $outdir/bdiv_normalized/unweighted_unifrac_dm.txt 2>/dev/null
 	fi
+	wait
 	if [[ ! -f $outdir/bdiv_normalized/weighted_unifrac_dm.txt ]]; then
 	wudm=$(ls $outdir/bdiv_normalized/weighted_unifrac_*.txt)
 	mv $wudm $outdir/bdiv_normalized/weighted_unifrac_dm.txt 2>/dev/null
 	fi
+	wait
 	fi
 	wait
 
 ## Principal coordinates and NMDS commands
+	pcoacoordscount=`ls $outdir/bdiv_normalized/*_pc.txt 2>/dev/null | wc -l`
+	nmdscoordscount=`ls $outdir/bdiv_normalized/*_nmds.txt 2>/dev/null | wc -l`
+	nmdsconvertcoordscount=`ls $outdir/bdiv_normalized/*_nmds_converted.txt 2>/dev/null | wc -l`
+	if [[ $pcoacoordscount == 0 && $nmdscoordscount == 0 && $nmdsconvertcoordscount == 0 ]]; then
 	echo "
 Principal coordinates and NMDS commands." >> $log
 	echo "
@@ -401,11 +432,11 @@ Constructing PCoA and NMDS coordinate files."
 	echo "Principal coordinates:" >> $log
 	for dm in $outdir/bdiv_normalized/*_dm.txt; do
 	dmbase=$(basename $dm _dm.txt)
-	echo "	principal_coordinates.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_pc.txt" >> $log
+	echo "	principal_coordinates.py -i $dm -o $outdir/bdiv_normalized/${dmbase}_pc.txt" >> $log
 	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 	sleep 1
 	done
-	( principal_coordinates.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_pc.txt >/dev/null 2>&1 || true ) &
+	( principal_coordinates.py -i $dm -o $outdir/bdiv_normalized/${dmbase}_pc.txt >/dev/null 2>&1 || true ) &
 	done
 	wait
 	echo "" >> $log
@@ -413,11 +444,11 @@ Constructing PCoA and NMDS coordinate files."
 	echo "NMDS coordinates:" >> $log
 	for dm in $outdir/bdiv_normalized/*_dm.txt; do
 	dmbase=$(basename $dm _dm.txt)
-	echo "	nmds.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_nmds.txt" >> $log
+	echo "	nmds.py -i $dm -o $outdir/bdiv_normalized/${dmbase}_nmds.txt" >> $log
 	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 	sleep 1
 	done
-	( nmds.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_nmds.txt >/dev/null 2>&1 || true ) &
+	( nmds.py -i $dm -o $outdir/bdiv_normalized/${dmbase}_nmds.txt >/dev/null 2>&1 || true ) &
 	done
 	wait
 	echo "" >> $log
@@ -425,16 +456,22 @@ Constructing PCoA and NMDS coordinate files."
 	echo "Convert NMDS coordinates:" >> $log
 	for dm in $outdir/bdiv_normalized/*_dm.txt; do
 	dmbase=$(basename $dm _dm.txt)
-	echo "	python $scriptdir/convert_nmds_coords.py -i $outdir/bdiv_normalized/$dmbase\_nmds.txt -o $outdir/bdiv_normalized/$dmbase\_nmds_converted.txt" >> $log
+	echo "	python $scriptdir/convert_nmds_coords.py -i $outdir/bdiv_normalized/${dmbase}_nmds.txt -o $outdir/bdiv_normalized/${dmbase}_nmds_converted.txt" >> $log
 	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 	sleep 1
 	done
-	( python $scriptdir/convert_nmds_coords.py -i $outdir/bdiv_normalized/$dmbase\_nmds.txt -o $outdir/bdiv_normalized/$dmbase\_nmds_converted.txt >/dev/null 2>&1 || true ) &
+	( python $scriptdir/convert_nmds_coords.py -i $outdir/bdiv_normalized/${dmbase}_nmds.txt -o $outdir/bdiv_normalized/${dmbase}_nmds_converted.txt >/dev/null 2>&1 || true ) &
 	done
 	wait
 	echo "" >> $log
+	else
+	echo "
+PCoA and NMDS coordinate files already present." >> $log
+	fi
 
 ## Make 3D emperor plots (PCoA)
+	pcoaplotscount=`ls $outdir/bdiv_normalized/*_pcoa_plot 2>/dev/null | wc -l`
+	if [[ $pcoaplotscount == 0 ]]; then
 	echo "
 Make emperor commands:" >> $log
 	echo "
@@ -442,35 +479,45 @@ Generating 3D PCoA plots."
 	echo "PCoA plots:" >> $log
 	for pc in $outdir/bdiv_normalized/*_pc.txt; do
 	pcbase=$(basename $pc _pc.txt)
-		if [[ -d $outdir/bdiv_normalized/$pcbase\_emperor_pcoa_plot/ ]]; then
-		rm -r $outdir/bdiv_normalized/$pcbase\_emperor_pcoa_plot/
+		if [[ -d $outdir/bdiv_normalized/${pcbase}_emperor_pcoa_plot/ ]]; then
+		rm -r $outdir/bdiv_normalized/${pcbase}_emperor_pcoa_plot/
 		fi
 	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 	sleep 1
 	done
-	echo "	make_emperor.py -i $pc -o $outdir/bdiv_normalized/$pcbase\_emperor_pcoa_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples" >> $log
-	( make_emperor.py -i $pc -o $outdir/bdiv_normalized/$pcbase\_emperor_pcoa_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples >/dev/null 2>&1 || true ) &
+	echo "	make_emperor.py -i $pc -o $outdir/bdiv_normalized/${pcbase}_emperor_pcoa_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples" >> $log
+	( make_emperor.py -i $pc -o $outdir/bdiv_normalized/${pcbase}_emperor_pcoa_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples >/dev/null 2>&1 || true ) &
 	done
 	wait
 	echo "" >> $log
+	else
+	echo "
+3D PCoA plots already present." >> $log
+	fi
 
 ## Make 3D emperor plots (NMDS)
+	nmdsplotscount=`ls $outdir/bdiv_normalized/*_nmds_plot 2>/dev/null | wc -l`
+	if [[ $nmdsplotscount == 0 ]]; then
 	echo "
 Generating 3D NMDS plots."
 	echo "NMDS plots:" >> $log
 	for nmds in $outdir/bdiv_normalized/*_nmds_converted.txt; do
 	nmdsbase=$(basename $nmds _nmds_converted.txt)
-		if [[ -d $outdir/bdiv_normalized/$nmdsbase\_emperor_nmds_plot/ ]]; then
-		rm -r $outdir/bdiv_normalized/$nmdsbase\_emperor_nmds_plot/
+		if [[ -d $outdir/bdiv_normalized/${nmdsbase}_emperor_nmds_plot/ ]]; then
+		rm -r $outdir/bdiv_normalized/${nmdsbase}_emperor_nmds_plot/
 		fi
 	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 	sleep 1
 	done
-	echo "	make_emperor.py -i $nmds -o $outdir/bdiv_normalized/$nmdsbase\_emperor_nmds_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples" >> $log
-	( make_emperor.py -i $nmds -o $outdir/bdiv_normalized/$nmdsbase\_emperor_nmds_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples >/dev/null 2>&1 || true ) &
+	echo "	make_emperor.py -i $nmds -o $outdir/bdiv_normalized/${nmdsbase}_emperor_nmds_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples" >> $log
+	( make_emperor.py -i $nmds -o $outdir/bdiv_normalized/${nmdsbase}_emperor_nmds_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples >/dev/null 2>&1 || true ) &
 	done
 	wait
 	echo "" >> $log
+	else
+	echo "
+3D NMDS plots already present." >> $log
+	fi
 
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
@@ -488,14 +535,18 @@ Generating 2D PCoA plots."
 	echo "	make_2d_plots.py -i $pc -m $mapfile -o $outdir/bdiv_normalized/2D_PCoA_bdiv_plots" >> $log
 	( make_2d_plots.py -i $pc -m $mapfile -o $outdir/bdiv_normalized/2D_PCoA_bdiv_plots >/dev/null 2>&1 || true ) &
 	done
-	fi
 	wait
 	echo "" >> $log
+	else
+	echo "
+2D plots already present." >> $log
+	fi
 
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
 
-## Anosim and permanova stats
+## Comparing categories statistics
+if [[ ! -f $outdir/bdiv_normalized/permanova_results_collated.txt && ! -f $outdir/bdiv_normalized/permdisp_results_collated.txt && ! -f $outdir/bdiv_normalized/anosim_results_collated.txt && ! -f $outdir/bdiv_normalized/dbrda_results_collated.txt && ! -f $outdir/bdiv_normalized/adonis_results_collated.txt ]]; then
 echo "
 Compare categories commands:" >> $log
 	echo "
@@ -639,12 +690,14 @@ echo "Adonis:" >> $log
 	done
 	wait
 	fi
-
+else
+echo "
+Categorical comparisons already present." >> $log
+fi
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
 
 ## Distance boxplots for each category
-
 	boxplotscount=`ls $outdir/bdiv_normalized/*_boxplots 2>/dev/null | wc -l`
 	if [[ $boxplotscount == 0 ]]; then
 	echo "
@@ -656,14 +709,541 @@ Generating distance boxplots."
 	sleep 1
 	done
 		for dm in $outdir/bdiv_normalized/*_dm.txt; do
-		dmbase=$( basename $dm _dm.txt )
-		echo "	make_distance_boxplots.py -d $outdir/bdiv_normalized/$dmbase\_dm.txt -f $line -o $outdir/bdiv_normalized/$dmbase\_boxplots/ -m $mapfile -n 999" >> $log
-		( make_distance_boxplots.py -d $outdir/bdiv_normalized/$dmbase\_dm.txt -f $line -o $outdir/bdiv_normalized/$dmbase\_boxplots/ -m $mapfile -n 999 >/dev/null 2>&1 || true ) &
+		dmbase=$(basename $dm _dm.txt)
+		echo "	make_distance_boxplots.py -d $outdir/bdiv_normalized/${dmbase}_dm.txt -f $line -o $outdir/bdiv_normalized/${dmbase}_boxplots/ -m $mapfile -n 999" >> $log
+		( make_distance_boxplots.py -d $outdir/bdiv_normalized/${dmbase}_dm.txt -f $line -o $outdir/bdiv_normalized/${dmbase}_boxplots/ -m $mapfile -n 999 >/dev/null 2>&1 || true ) &
 		done
 	done
-	fi
 	wait
 	echo "" >> $log
+	else
+	echo "
+Boxplots already present." >> $log
+	fi
+
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+
+## Make biplots
+	if [[ ! -d $outdir/bdiv_normalized/biplots ]]; then
+	echo "
+Make biplots commands:" >> $log
+	echo "
+Generating PCoA biplots:"
+	mkdir $outdir/bdiv_normalized/biplots
+	for pc in $outdir/bdiv_normalized/*_pc.txt; do
+	pcmethod=$(basename $pc _pc.txt)
+	mkdir $outdir/bdiv_normalized/biplots/$pcmethod
+	done
+	wait
+
+	for pc in $outdir/bdiv_normalized/*_pc.txt; do
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	pcmethod=$(basename $pc _pc.txt)
+		for level in $outdir/bdiv_normalized/summarized_tables/CSS_table_sorted_*.txt; do
+		L=$(basename $level .txt)
+		echo "	make_emperor.py -i $pc -m $mapfile -o $outdir/bdiv_normalized/biplots/$pcmethod/$L -t $level --add_unique_columns --ignore_missing_samples" >> $log
+		( make_emperor.py -i $pc -m $mapfile -o $outdir/bdiv_normalized/biplots/$pcmethod/$L -t $level --add_unique_columns --ignore_missing_samples >/dev/null 2>&1 || true ) &
+		done
+	done
+	wait
+	echo "" >> $log
+	else
+	echo "
+Biplots already present." >> $log
+	fi
+
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+
+## Run supervised learning on data using supplied categories
+	if [[ ! -d $outdir/bdiv_normalized/SupervisedLearning ]]; then
+	mkdir $outdir/bdiv_normalized/SupervisedLearning
+	echo "
+Supervised learning commands:" >> $log
+	echo "
+Running supervised learning analysis."
+	for category in `cat $catlist`; do
+		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+		sleep 1
+		done
+		echo "	supervised_learning.py -i $table -m $mapfile -c $category -o $outdir/bdiv_normalized/SupervisedLearning/$category --ntree 1000" >> $log
+		( supervised_learning.py -i $table -m $mapfile -c $category -o $outdir/bdiv_normalized/SupervisedLearning/$category --ntree 1000 >/dev/null 2>&1 || true ) &
+	done
+	else
+	echo "
+Supervised Learning already present." >> $log
+	fi
+
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+
+echo "
+********************************************************************************
+
+END OF NORMALIZED TABLE PROCESSING STEPS
+
+********************************************************************************
+" >> $log
+
+################################################################################
+## START OF RAREFIED ANALYSIS HERE
+
+echo "
+********************************************************************************
+
+RAREFIED TABLE PROCESSING STARTS HERE
+
+********************************************************************************
+" >> $log
+
+	echo "
+Processing rarefied table."
+	echo "
+Processing rarefied table." >> $log
+
+## Summarize taxa (yields relative abundance tables)
+	if [[ ! -d $outdir/bdiv_rarefied/summarized_tables ]]; then
+	echo "
+Summarize taxa command:
+	summarize_taxa.py -i $raresort -o $outdir/bdiv_rarefied/summarized_tables -L 2,3,4,5,6,7" >> $log
+	echo "
+Summarizing taxonomy by sample and building plots."
+	summarize_taxa.py -i $raresort -o $outdir/bdiv_rarefied/summarized_tables -L 2,3,4,5,6,7 1> $stdout 2> $stderr
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
+	
+	else
+	echo "
+Relative abundance tables already present." >> $log
+	fi
+	wait
+
+## Beta diversity
+	if [[ "$phylogenetic" == "YES" ]]; then
+	if [[ ! -f $outdir/bdiv_rarefied/bray_curtis_dm.txt && ! -f $outdir/bdiv_rarefied/chord_dm.txt && ! -f $outdir/bdiv_rarefied/hellinger_dm.txt && ! -f $outdir/bdiv_rarefied/kulczynski_dm.txt && ! -f $outdir/bdiv_rarefied/unweighted_unifrac_dm.txt && ! -f $outdir/bdiv_rarefied/weighted_unifrac_dm.txt ]]; then
+	echo "
+Parallel beta diversity command:
+	parallel_beta_diversity.py -i $raresort -o $outdir/bdiv_rarefied/ --metrics $metrics -T  -t $tree --jobs_to_start $cores" >> $log
+	echo "
+Calculating beta diversity distance matrices."
+	parallel_beta_diversity.py -i $raresort -o $outdir/bdiv_rarefied/ --metrics $metrics -T  -t $tree --jobs_to_start $cores 1> $stdout 2> $stderr
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
+	fi
+	elif [[ "$phylogenetic" == "NO" ]]; then
+	if [[ ! -f $outdir/bdiv_rarefied/bray_curtis_dm.txt && ! -f $outdir/bdiv_rarefied/chord_dm.txt && ! -f $outdir/bdiv_rarefied/hellinger_dm.txt && ! -f $outdir/bdiv_rarefied/kulczynski_dm.txt ]]; then
+	echo "
+Parallel beta diversity command:
+	parallel_beta_diversity.py -i $raresort -o $outdir/bdiv_rarefied/ --metrics $metrics -T --jobs_to_start $cores" >> $log
+	echo "
+Calculating beta diversity distance matrices."
+	parallel_beta_diversity.py -i $raresort -o $outdir/bdiv_rarefied/ --metrics $metrics -T --jobs_to_start $cores 1> $stdout 2> $stderr
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
+	fi
+	else
+	echo "
+Beta diversity matrices already present." >> $log
+	fi
+	wait
+
+## Rename output files
+	if [[ ! -f $outdir/bdiv_rarefied/bray_curtis_dm.txt ]]; then
+	bcdm=$(ls $outdir/bdiv_rarefied/bray_curtis_rarefied_table_sorted.txt)
+	mv $bcdm $outdir/bdiv_rarefied/bray_curtis_dm.txt 2>/dev/null
+	fi
+	wait
+	if [[ ! -f $outdir/bdiv_rarefied/chord_dm.txt ]]; then
+	cdm=$(ls $outdir/bdiv_rarefied/chord_rarefied_table_sorted.txt)
+	mv $cdm $outdir/bdiv_rarefied/chord_dm.txt 2>/dev/null
+	fi
+	wait
+	if [[ ! -f $outdir/bdiv_rarefied/hellinger_dm.txt ]]; then
+	hdm=$(ls $outdir/bdiv_rarefied/hellinger_rarefied_table_sorted.txt)
+	mv $hdm $outdir/bdiv_rarefied/hellinger_dm.txt 2>/dev/null
+	fi
+	wait
+	if [[ ! -f $outdir/bdiv_rarefied/kulczynski_dm.txt ]]; then
+	kdm=$(ls $outdir/bdiv_rarefied/kulczynski_rarefied_table_sorted.txt)
+	mv $kdm $outdir/bdiv_rarefied/kulczynski_dm.txt 2>/dev/null
+	fi
+	wait
+	if [[ "$phylogenetic" == "YES" ]]; then
+	if [[ ! -f $outdir/bdiv_rarefied/unweighted_unifrac_dm.txt ]]; then
+	uudm=$(ls $outdir/bdiv_rarefied/unweighted_unifrac_rarefied_table_sorted.txt)
+	mv $uudm $outdir/bdiv_rarefied/unweighted_unifrac_dm.txt 2>/dev/null
+	fi
+	wait
+	if [[ ! -f $outdir/bdiv_rarefied/weighted_unifrac_dm.txt ]]; then
+	wudm=$(ls $outdir/bdiv_rarefied/weighted_unifrac_rarefied_table_sorted.txt)
+	mv $wudm $outdir/bdiv_rarefied/weighted_unifrac_dm.txt 2>/dev/null
+	fi
+	wait
+	fi
+	wait
+
+## Principal coordinates and NMDS commands
+	pcoacoordscount=`ls $outdir/bdiv_rarefied/*_pc.txt 2>/dev/null | wc -l`
+	nmdscoordscount=`ls $outdir/bdiv_rarefied/*_nmds.txt 2>/dev/null | wc -l`
+	nmdsconvertcoordscount=`ls $outdir/bdiv_rarefied/*_nmds_converted.txt 2>/dev/null | wc -l`
+	if [[ $pcoacoordscount == 0 && $nmdscoordscount == 0 && $nmdsconvertcoordscount == 0 ]]; then
+	echo "
+Principal coordinates and NMDS commands." >> $log
+	echo "
+Constructing PCoA and NMDS coordinate files."
+	echo "Principal coordinates:" >> $log
+	for dm in $outdir/bdiv_rarefied/*_dm.txt; do
+	dmbase=$(basename $dm _dm.txt)
+	echo "	principal_coordinates.py -i $dm -o $outdir/bdiv_rarefied/${dmbase}_pc.txt" >> $log
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	( principal_coordinates.py -i $dm -o $outdir/bdiv_rarefied/${dmbase}_pc.txt >/dev/null 2>&1 || true ) &
+	done
+	wait
+	echo "" >> $log
+
+	echo "NMDS coordinates:" >> $log
+	for dm in $outdir/bdiv_rarefied/*_dm.txt; do
+	dmbase=$(basename $dm _dm.txt)
+	echo "	nmds.py -i $dm -o $outdir/bdiv_rarefied/${dmbase}_nmds.txt" >> $log
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	( nmds.py -i $dm -o $outdir/bdiv_rarefied/${dmbase}_nmds.txt >/dev/null 2>&1 || true ) &
+	done
+	wait
+	echo "" >> $log
+
+	echo "Convert NMDS coordinates:" >> $log
+	for dm in $outdir/bdiv_rarefied/*_dm.txt; do
+	dmbase=$(basename $dm _dm.txt)
+	echo "	python $scriptdir/convert_nmds_coords.py -i $outdir/bdiv_rarefied/${dmbase}_nmds.txt -o $outdir/bdiv_rarefied/${dmbase}_nmds_converted.txt" >> $log
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	( python $scriptdir/convert_nmds_coords.py -i $outdir/bdiv_rarefied/${dmbase}_nmds.txt -o $outdir/bdiv_rarefied/${dmbase}_nmds_converted.txt >/dev/null 2>&1 || true ) &
+	done
+	wait
+	echo "" >> $log
+	else
+	echo "
+PCoA and NMDS coordinate files already present." >> $log
+	fi
+
+## Make 3D emperor plots (PCoA)
+	pcoaplotscount=`ls $outdir/bdiv_rarefied/*_pcoa_plot 2>/dev/null | wc -l`
+	if [[ $pcoaplotscount == 0 ]]; then
+	echo "
+Make emperor commands:" >> $log
+	echo "
+Generating 3D PCoA plots."
+	echo "PCoA plots:" >> $log
+	for pc in $outdir/bdiv_rarefied/*_pc.txt; do
+	pcbase=$(basename $pc _pc.txt)
+		if [[ -d $outdir/bdiv_rarefied/${pcbase}_emperor_pcoa_plot/ ]]; then
+		rm -r $outdir/bdiv_rarefied/${pcbase}_emperor_pcoa_plot/
+		fi
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	make_emperor.py -i $pc -o $outdir/bdiv_rarefied/${pcbase}_emperor_pcoa_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples" >> $log
+	( make_emperor.py -i $pc -o $outdir/bdiv_rarefied/${pcbase}_emperor_pcoa_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples >/dev/null 2>&1 || true ) &
+	done
+	wait
+	echo "" >> $log
+	else
+	echo "
+3D PCoA plots already present." >> $log
+	fi
+
+## Make 3D emperor plots (NMDS)
+	nmdsplotscount=`ls $outdir/bdiv_rarefied/*_nmds_plot 2>/dev/null | wc -l`
+	if [[ $nmdsplotscount == 0 ]]; then
+	echo "
+Generating 3D NMDS plots."
+	echo "NMDS plots:" >> $log
+	for nmds in $outdir/bdiv_rarefied/*_nmds_converted.txt; do
+	nmdsbase=$(basename $nmds _nmds_converted.txt)
+		if [[ -d $outdir/bdiv_rarefied/${nmdsbase}_emperor_nmds_plot/ ]]; then
+		rm -r $outdir/bdiv_rarefied/${nmdsbase}_emperor_nmds_plot/
+		fi
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	make_emperor.py -i $nmds -o $outdir/bdiv_rarefied/${nmdsbase}_emperor_nmds_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples" >> $log
+	( make_emperor.py -i $nmds -o $outdir/bdiv_rarefied/${nmdsbase}_emperor_nmds_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples >/dev/null 2>&1 || true ) &
+	done
+	wait
+	echo "" >> $log
+	else
+	echo "
+3D NMDS plots already present." >> $log
+	fi
+
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+
+## Make 2D plots
+	if [[ ! -d $outdir/bdiv_rarefied/2D_PCoA_bdiv_plots ]]; then
+	echo "
+Make 2D PCoA plots commands:" >> $log
+	echo "
+Generating 2D PCoA plots."
+	for pc in $outdir/bdiv_rarefied/*_pc.txt; do
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	make_2d_plots.py -i $pc -m $mapfile -o $outdir/bdiv_rarefied/2D_PCoA_bdiv_plots" >> $log
+	( make_2d_plots.py -i $pc -m $mapfile -o $outdir/bdiv_rarefied/2D_PCoA_bdiv_plots >/dev/null 2>&1 || true ) &
+	done
+	wait
+	echo "" >> $log
+	else
+	echo "
+2D plots already present." >> $log
+	fi
+
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+
+## Comparing categories statistics
+if [[ ! -f $outdir/bdiv_rarefied/permanova_results_collated.txt && ! -f $outdir/bdiv_rarefied/permdisp_results_collated.txt && ! -f $outdir/bdiv_rarefied/anosim_results_collated.txt && ! -f $outdir/bdiv_rarefied/dbrda_results_collated.txt && ! -f $outdir/bdiv_rarefied/adonis_results_collated.txt ]]; then
+echo "
+Compare categories commands:" >> $log
+	echo "
+Calculating one-way statsitics from distance matrices."
+	if [[ ! -f $outdir/bdiv_rarefied/permanova_results_collated.txt ]]; then
+echo "Running PERMANOVA tests."
+echo "PERMANOVA:" >> $log
+	for line in `cat $catlist`; do
+		for dm in $outdir/bdiv_rarefied/*_dm.txt; do
+		method=$(basename $dm _dm.txt)
+		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+		sleep 1
+		done
+		echo "	compare_categories.py --method permanova -i $dm -m $mapfile -c $line -o $outdir/bdiv_rarefied/permanova_out/$line/$method/" >> $log
+		( compare_categories.py --method permanova -i $dm -m $mapfile -c $line -o $outdir/bdiv_rarefied/permanova_out/$line/$method/ >/dev/null 2>&1 || true ) &
+		done
+	done
+	wait
+	echo "" >> $log
+
+	for line in `cat $catlist`; do
+		for dm in $outdir/bdiv_rarefied/*_dm.txt; do
+		method=$(basename $dm _dm.txt)
+		echo "Category: $line" >> $outdir/bdiv_rarefied/permanova_results_collated.txt
+		echo "Method: $method" >> $outdir/bdiv_rarefied/permanova_results_collated.txt
+		cat $outdir/bdiv_rarefied/permanova_out/$line/$method/permanova_results.txt >> $outdir/bdiv_rarefied/permanova_results_collated.txt 2>/dev/null || true
+		echo "" >> $outdir/bdiv_rarefied/permanova_results_collated.txt
+		done
+	done
+	wait
+	fi
+
+	if [[ ! -f $outdir/bdiv_rarefied/permdisp_results_collated.txt ]]; then
+echo "Running PERMDISP tests."
+echo "PERMDISP:" >> $log
+	for line in `cat $catlist`; do
+		for dm in $outdir/bdiv_rarefied/*_dm.txt; do
+		method=$(basename $dm _dm.txt)
+		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+		sleep 1
+		done
+		echo "	compare_categories.py --method permdisp -i $dm -m $mapfile -c $line -o $outdir/bdiv_rarefied/permdisp_out/$line/$method/" >> $log
+		( compare_categories.py --method permdisp -i $dm -m $mapfile -c $line -o $outdir/bdiv_rarefied/permdisp_out/$line/$method/ >/dev/null 2>&1 || true ) &
+		done
+	done
+	wait
+	echo "" >> $log
+
+	for line in `cat $catlist`; do
+		for dm in $outdir/bdiv_rarefied/*_dm.txt; do
+		method=$(basename $dm _dm.txt)
+		echo "Category: $line" >> $outdir/bdiv_rarefied/permdisp_results_collated.txt
+		echo "Method: $method" >> $outdir/bdiv_rarefied/permdisp_results_collated.txt
+		cat $outdir/bdiv_rarefied/permdisp_out/$line/$method/permdisp_results.txt >> $outdir/bdiv_rarefied/permdisp_results_collated.txt 2>/dev/null || true
+		echo "" >> $outdir/bdiv_rarefied/permdisp_results_collated.txt
+		done
+	done
+	wait
+	fi
+
+	if [[ ! -f $outdir/bdiv_rarefied/anosim_results_collated.txt ]]; then
+echo "Running ANOSIM tests."
+echo "ANOSIM:" >> $log
+	for line in `cat $catlist`; do
+		for dm in $outdir/bdiv_rarefied/*_dm.txt; do
+		method=$(basename $dm _dm.txt)
+		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+		sleep 1
+		done
+		echo "	compare_categories.py --method anosim -i $dm -m $mapfile -c $line -o $outdir/bdiv_rarefied/anosim_out/$line/$method/" >> $log
+		( compare_categories.py --method anosim -i $dm -m $mapfile -c $line -o $outdir/bdiv_rarefied/anosim_out/$line/$method/ 2>/dev/null 2>&1 || true ) &
+		done
+	done
+	wait
+	echo "" >> $log
+
+	for line in `cat $catlist`; do
+		for dm in $outdir/bdiv_rarefied/*_dm.txt; do
+		method=$(basename $dm _dm.txt)
+		echo "Category: $line" >> $outdir/bdiv_rarefied/anosim_results_collated.txt
+		echo "Method: $method" >> $outdir/bdiv_rarefied/anosim_results_collated.txt
+		cat $outdir/bdiv_rarefied/anosim_out/$line/$method/anosim_results.txt >> $outdir/bdiv_rarefied/anosim_results_collated.txt 2>/dev/null || true
+		echo "" >> $outdir/bdiv_rarefied/anosim_results_collated.txt
+		done
+	done
+	wait
+	fi
+
+	if [[ ! -f $outdir/bdiv_rarefied/dbrda_results_collated.txt ]]; then
+echo "Running DB-RDA tests."
+echo "DB-RDA:" >> $log
+	for line in `cat $catlist`; do
+		for dm in $outdir/bdiv_rarefied/*_dm.txt; do
+		method=$(basename $dm _dm.txt)
+		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+		sleep 1
+		done
+		echo "	compare_categories.py --method dbrda -i $dm -m $mapfile -c $line -o $outdir/bdiv_rarefied/dbrda_out/$line/$method/" >> $log
+		( compare_categories.py --method dbrda -i $dm -m $mapfile -c $line -o $outdir/bdiv_rarefied/dbrda_out/$line/$method/ 2>/dev/null 2>&1 || true ) &
+		done
+	done
+	wait
+	echo "" >> $log
+
+	for line in `cat $catlist`; do
+		for dm in $outdir/bdiv_rarefied/*_dm.txt; do
+		method=$(basename $dm _dm.txt)
+		echo "Category: $line" >> $outdir/bdiv_rarefied/dbrda_results_collated.txt
+		echo "Method: $method" >> $outdir/bdiv_rarefied/dbrda_results_collated.txt
+		cat $outdir/bdiv_rarefied/dbrda_out/$line/$method/dbrda_results.txt >> $outdir/bdiv_rarefied/dbrda_results_collated.txt 2>/dev/null || true
+		echo "" >> $outdir/bdiv_rarefied/dbrda_results_collated.txt
+		done
+	done
+	wait
+	fi
+
+	if [[ ! -f $outdir/bdiv_rarefied/adonis_results_collated.txt ]]; then
+echo "Running Adonis tests."
+echo "Adonis:" >> $log
+	for line in `cat $catlist`; do
+		for dm in $outdir/bdiv_rarefied/*_dm.txt; do
+		method=$(basename $dm _dm.txt)
+		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+		sleep 1
+		done
+		echo "	compare_categories.py --method adonis -i $dm -m $mapfile -c $line -o $outdir/bdiv_rarefied/adonis_out/$line/$method/" >> $log
+		( compare_categories.py --method adonis -i $dm -m $mapfile -c $line -o $outdir/bdiv_rarefied/adonis_out/$line/$method/ 2>/dev/null 2>&1 || true ) &
+		done
+	done
+	wait
+	echo "" >> $log
+
+	for line in `cat $catlist`; do
+		for dm in $outdir/bdiv_rarefied/*_dm.txt; do
+		method=$(basename $dm _dm.txt)
+		echo "Category: $line" >> $outdir/bdiv_rarefied/adonis_results_collated.txt
+		echo "Method: $method" >> $outdir/bdiv_rarefied/adonis_results_collated.txt
+		cat $outdir/bdiv_rarefied/adonis_out/$line/$method/adonis_results.txt >> $outdir/bdiv_rarefied/adonis_results_collated.txt 2>/dev/null || true
+		echo "" >> $outdir/bdiv_rarefied/adonis_results_collated.txt
+		done
+	done
+	wait
+	fi
+else
+echo "
+Categorical comparisons already present." >> $log
+fi
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+
+## Distance boxplots for each category
+	boxplotscount=`ls $outdir/bdiv_rarefied/*_boxplots 2>/dev/null | wc -l`
+	if [[ $boxplotscount == 0 ]]; then
+	echo "
+Make distance boxplots commands:" >> $log
+	echo "
+Generating distance boxplots."
+	for line in `cat $catlist`; do
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+		for dm in $outdir/bdiv_rarefied/*_dm.txt; do
+		dmbase=$(basename $dm _dm.txt)
+		echo "	make_distance_boxplots.py -d $outdir/bdiv_rarefied/${dmbase}_dm.txt -f $line -o $outdir/bdiv_rarefied/${dmbase}_boxplots/ -m $mapfile -n 999" >> $log
+		( make_distance_boxplots.py -d $outdir/bdiv_rarefied/${dmbase}_dm.txt -f $line -o $outdir/bdiv_rarefied/${dmbase}_boxplots/ -m $mapfile -n 999 >/dev/null 2>&1 || true ) &
+		done
+	done
+	wait
+	echo "" >> $log
+	else
+	echo "
+Boxplots already present." >> $log
+	fi
+
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+
+## Make biplots
+	if [[ ! -d $outdir/bdiv_rarefied/biplots ]]; then
+	echo "
+Make biplots commands:" >> $log
+	echo "
+Generating PCoA biplots:"
+	mkdir $outdir/bdiv_rarefied/biplots
+	for pc in $outdir/bdiv_rarefied/*_pc.txt; do
+	pcmethod=$(basename $pc _pc.txt)
+	mkdir $outdir/bdiv_rarefied/biplots/$pcmethod
+	done
+	wait
+
+	for pc in $outdir/bdiv_rarefied/*_pc.txt; do
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	pcmethod=$(basename $pc _pc.txt)
+		for level in $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_*.txt; do
+		L=$(basename $level .txt)
+		echo "	make_emperor.py -i $pc -m $mapfile -o $outdir/bdiv_rarefied/biplots/$pcmethod/$L -t $level --add_unique_columns --ignore_missing_samples" >> $log
+		( make_emperor.py -i $pc -m $mapfile -o $outdir/bdiv_rarefied/biplots/$pcmethod/$L -t $level --add_unique_columns --ignore_missing_samples >/dev/null 2>&1 || true ) &
+		done
+	done
+	wait
+	echo "" >> $log
+	else
+	echo "
+Biplots already present." >> $log
+	fi
+
+## Run supervised learning on data using supplied categories
+	if [[ ! -d $outdir/bdiv_rarefied/SupervisedLearning ]]; then
+	mkdir $outdir/bdiv_rarefied/SupervisedLearning
+	echo "
+Supervised learning commands:" >> $log
+	echo "
+Running supervised learning analysis."
+	for category in `cat $catlist`; do
+		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+		sleep 1
+		done
+		echo "	supervised_learning.py -i $table -m $mapfile -c $category -o $outdir/bdiv_rarefied/SupervisedLearning/$category --ntree 1000" >> $log
+		( supervised_learning.py -i $table -m $mapfile -c $category -o $outdir/bdiv_rarefied/SupervisedLearning/$category --ntree 1000 >/dev/null 2>&1 || true ) &
+	done
+	else
+	echo "
+Supervised Learning already present." >> $log
+	fi
+
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+
+
+
+
+
+
 
 done
 
@@ -686,9 +1266,13 @@ Processed $tablecount OTU tables.
 $runtime
 "
 echo "
+********************************************************************************
+
 akutils core_diversity steps completed.  Hooray!
 Processed $tablecount OTU tables.
 $runtime
+
+********************************************************************************
 " >> $log
 
 exit 0
