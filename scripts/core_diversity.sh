@@ -254,7 +254,7 @@ Normalizing sample-filtered table with CSS transformation."
 Normalizing sample-filtered table with CSS transformation.
 normalize_table.py -i $filtertable -o $CSStable -a CSS" >> $log
 			if [[ ! -f $CSStable ]]; then
-			normalize_table.py -i $filtertable -o $CSStable -a CSS 1> $stdout 2> $stderr
+			normalize_table.py -i $filtertable -o $CSStable -a CSS 1> $stdout 2> $stderr || true
 			bash $scriptdir/log_slave.sh $stdout $stderr $log
 			fi
 #			if [[ ! -f $DESeq2table ]]; then
@@ -317,37 +317,27 @@ Processing normalized table." >> $log
 	echo "
 Summarize taxa command:
 	summarize_taxa.py -i $CSSsort -o $outdir/bdiv_normalized/summarized_tables -L 2,3,4,5,6,7" >> $log
-	echo "Summarizing taxonomy by sample and building plots.
-	"
+	echo "
+Summarizing taxonomy by sample and building plots."
 	summarize_taxa.py -i $CSSsort -o $outdir/bdiv_normalized/summarized_tables -L 2,3,4,5,6,7 1> $stdout 2> $stderr
 	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	fi
-
-exit 0
-done
-
-	
-
-	bash $scriptdir/normalized_table_beta_diversity.sh $normtable $outdir $mapfile $cores $tree
-
-
-	bash $scriptdir/nonnormalized_table_diversity_analyses.sh $table $outdir $mapfile $cats $cores $depth $tree
 
 ## Beta diversity
 	if [[ "$phylogenetic" == "YES" ]]; then
 	echo "
 Parallel beta diversity command:
 	parallel_beta_diversity.py -i $table -o $outdir/bdiv_normalized/ --metrics $metrics -T  -t $tree --jobs_to_start $cores" >> $log
-	echo "Calculating beta diversity distance matrices.
-	"
+	echo "
+Calculating beta diversity distance matrices."
 	parallel_beta_diversity.py -i $table -o $outdir/bdiv_normalized/ --metrics $metrics -T  -t $tree --jobs_to_start $cores 1> $stdout 2> $stderr
 	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	elif [[ "$phylogenetic" == "NO" ]]; then
 	echo "
 Parallel beta diversity command:
 	parallel_beta_diversity.py -i $table -o $outdir/bdiv_normalized/ --metrics $metrics -T --jobs_to_start $cores" >> $log
-	echo "Calculating beta diversity distance matrices.
-	"
+	echo "
+Calculating beta diversity distance matrices."
 	parallel_beta_diversity.py -i $table -o $outdir/bdiv_normalized/ --metrics $metrics -T --jobs_to_start $cores 1> $stdout 2> $stderr
 	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	fi
@@ -361,8 +351,8 @@ Parallel beta diversity command:
 ## Principal coordinates and NMDS commands
 	echo "
 Principal coordinates and NMDS commands:" >> $log
-	echo "Constructing PCoA and NMDS coordinate files.
-	"
+	echo "
+Constructing PCoA and NMDS coordinate files."
 	for dm in $outdir/bdiv_normalized/*_dm.txt; do
 	dmbase=$(basename $dm _dm.txt)
 	echo "	principal_coordinates.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_pc.txt
@@ -375,8 +365,8 @@ Principal coordinates and NMDS commands:" >> $log
 ## Make 3D emperor plots (PCoA)
 	echo "
 Make emperor commands:" >> $log
-	echo "Generating 3D PCoA plots.
-	"
+	echo "
+Generating 3D PCoA plots."
 	for pc in $outdir/bdiv_normalized/*_pc.txt; do
 	pcbase=$( basename $pc _pc.txt )
 		if [[ -d $outdir/bdiv_normalized/$pcbase\_emperor_pcoa_plot/ ]]; then
@@ -389,8 +379,8 @@ Make emperor commands:" >> $log
 ## Make 3D emperor plots (NMDS)
 	echo "
 Make emperor commands:" >> $log
-	echo "Generating 3D NMDS plots.
-	"
+	echo "
+Generating 3D NMDS plots."
 	for nmds in $outdir/bdiv_normalized/*_nmds_converted.txt; do
 	nmdsbase=$( basename $nmds _nmds_converted.txt )
 		if [[ -d $outdir/bdiv_normalized/$nmdsbase\_emperor_nmds_plot/ ]]; then
@@ -399,7 +389,6 @@ Make emperor commands:" >> $log
 	echo "	make_emperor.py -i $nmds -o $outdir/bdiv_normalized/$nmdsbase\_emperor_nmds_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples" >> $log
 	make_emperor.py -i $nmds -o $outdir/bdiv_normalized/$nmdsbase\_emperor_nmds_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples >/dev/null 2>&1 || true
 	done
-	fi
 
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
@@ -408,8 +397,8 @@ Make emperor commands:" >> $log
 	if [[ ! -d $outdir/bdiv_normalized/2D_PCoA_bdiv_plots ]]; then
 	echo "
 Make 2D plots commands:" >> $log
-	echo "Generating 2D PCoA plots.
-	"
+	echo "
+Generating 2D PCoA plots."
 	for pc in $outdir/bdiv_normalized/*_pc.txt; do
 	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 	sleep 1
@@ -423,37 +412,73 @@ wait
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
 
+## Anosim and permanova stats
+	if [[ ! -f $outdir/bdiv_normalized/permanova_results_collated.txt ]]; then
+echo > $outdir/bdiv_normalized/permanova_results_collated.txt
+echo > $outdir/bdiv_normalized/anosim_results_collated.txt
+echo "
+Compare categories commands:" >> $log
+	echo "
+Calculating one-way statsitics from distance matrices."
+echo "Running PERMANOVA tests."
+	for line in `cat $catlist`; do
+		for dm in $outdir/bdiv_normalized/*_dm.txt; do
+		method=$( basename $dm _dm.txt )
+		echo "	compare_categories.py --method permanova -i $dm -m $mapfile -c $line -o $outdir/bdiv_normalized/permanova_temp/$line/$method/" >> $log
+		compare_categories.py --method permanova -i $dm -m $mapfile -c $line -o $outdir/bdiv_normalized/permanova_temp/$line/$method/ >/dev/null 2>&1 || true
+		echo "Category: $line" >> $outdir/bdiv_normalized/permanova_results_collated.txt
+		echo "Method: $method" >> $outdir/bdiv_normalized/permanova_results_collated.txt
+		cat $outdir/bdiv_normalized/permanova_temp/$line/$method/permanova_results.txt >> $outdir/bdiv_normalized/permanova_results_collated.txt  2>/dev/null || true
+		echo "" >> $outdir/bdiv_normalized/permanova_results_collated.txt
+		done
+	done
 
+echo "Running ANOSIM tests."
+	for line in `cat $catlist`; do
+		for dm in $outdir/bdiv_normalized/*_dm.txt; do
+		method=$( basename $dm _dm.txt )
 
+		echo "	compare_categories.py --method anosim -i $dm -m $mapfile -c $line -o $outdir/bdiv_normalized/anosim_temp/$line/$method/" >> $log
+		compare_categories.py --method anosim -i $dm -m $mapfile -c $line -o $outdir/bdiv_normalized/anosim_temp/$line/$method/ 2>/dev/null 2>&1 || true
+		echo "Category: $line" >> $outdir/bdiv_normalized/anosim_results_collated.txt
+		echo "Method: $method" >> $outdir/bdiv_normalized/anosim_results_collated.txt
+		cat $outdir/bdiv_normalized/anosim_temp/$line/$method/anosim_results.txt >> $outdir/bdiv_normalized/anosim_results_collated.txt  2>/dev/null || true
+		echo "" >> $outdir/bdiv_normalized/anosim_results_collated.txt
+		done
+	done
+	fi
 
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
 
+done
+exit 0
 
 
 ## Log end of workflow and exit
 
-res1=$(date +%s.%N)
-dt=$(echo "$res1 - $res0" | bc)
-dd=$(echo "$dt/86400" | bc)
-dt2=$(echo "$dt-86400*$dd" | bc)
-dh=$(echo "$dt2/3600" | bc)
-dt3=$(echo "$dt2-3600*$dh" | bc)
-dm=$(echo "$dt3/60" | bc)
-ds=$(echo "$dt3-60*$dm" | bc)
+#res1=$(date +%s.%N)
+#dt=$(echo "$res1 - $res0" | bc)
+#dd=$(echo "$dt/86400" | bc)
+#dt2=$(echo "$dt-86400*$dd" | bc)
+#dh=$(echo "$dt2/3600" | bc)
+#dt3=$(echo "$dt2-3600*$dh" | bc)
+#dm=$(echo "$dt3/60" | bc)
+#ds=$(echo "$dt3-60*$dm" | bc)
+#
+#runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
+#
+#if [[ $mode == "table" ]]; then
+#	alltablescount="1"
+#fi
+#
+#echo "All cdiv_graphs_and_stats_workflow.sh steps completed.  Hooray!
+#Processed $alltablescount OTU tables.
+#$runtime
+#"
+#echo "All cdiv_graphs_and_stats_workflow.sh steps completed.  Hooray!
+#Processed $alltablescount OTU tables.
+#$runtime
+#" >> $log
 
-runtime=`printf "Total runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
-
-if [[ $mode == "table" ]]; then
-	alltablescount="1"
-fi
-
-echo "All cdiv_graphs_and_stats_workflow.sh steps completed.  Hooray!
-Processed $alltablescount OTU tables.
-$runtime
-"
-echo "All cdiv_graphs_and_stats_workflow.sh steps completed.  Hooray!
-Processed $alltablescount OTU tables.
-$runtime
-" >> $log
-
-exit 0
-
+#exit 0
