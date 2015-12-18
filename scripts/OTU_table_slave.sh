@@ -321,6 +321,7 @@ trap finish EXIT
 		biom-summarize_folder.sh $tabledir &>/dev/null
 	done
 	wait
+cp $rawtabledir/raw_otu_table.biom $tabledir
 
 echo "Table filtering complete.
 "

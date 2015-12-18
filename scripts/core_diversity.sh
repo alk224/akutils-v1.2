@@ -131,12 +131,19 @@ Parsing input categories."
 
 for table in `cat $tablelist`; do
 
+		## Determine rarefaction depth
+		if [[ $adepth =~ ^[0-9]+$ ]]; then
+		depth=($adepth)
+		else
+		depth=`awk '/Counts\/sample detail:/ {for(i=1; i<=1; i++) {getline; print $NF}}' $tabledir/$inputbase.summary | awk -F. '{print $1}'`
+		fi
+
 		## Define table-specific variables, make output directory if necessary
 		## and move table there for normalizing, rarefaction, and filtering
 		inputdir=$(dirname $table)
 		inputdirup1=$(dirname $inputdir)
 		inputbase=$(basename $table .biom)
-		outdir="$inputdir/core_diversity/$inputbase"
+		outdir="$inputdir/core_diversity/${inputbase}_depth${depth}"
 		tabledir="$outdir/OTU_tables"
 		if [[ ! -d $outdir ]]; then
 			mkdir -p $outdir
@@ -163,16 +170,22 @@ ${bold}akutils core_diversity workflow beginning.${normal}"
 		echo "
 akutils core_diversity workflow beginning." >> $log
 		date >> $log
+echo "
+********************************************************************************
+
+INITIAL TABLE PROCESSING STARTS HERE
+
+********************************************************************************
+" >> $log
+
+		## Initiate html output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
 
 		## Summarize input table
 		biom-summarize_folder.sh $tabledir &>/dev/null
 
-		## Determine rarefaction depth
-		if [[ $adepth =~ ^[0-9]+$ ]]; then
-		depth=($adepth)
-		else
-		depth=`awk '/Counts\/sample detail:/ {for(i=1; i<=1; i++) {getline; print $NF}}' $tabledir/$inputbase.summary | awk -F. '{print $1}'`
-		fi
+		## Refresh html output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
 
 		## Rarefy input table according to established depth
 		raretable="$tabledir/table_even$depth.biom"
@@ -181,7 +194,7 @@ akutils core_diversity workflow beginning." >> $log
 		echo "
 Input table: $table
 Rarefying input table according to config file ($adepth).
-Rarefaction depth: $depth"
+${bold}Rarefaction depth: $depth${normal}"
 
 		echo "
 Input table: $table
@@ -197,6 +210,9 @@ Single rarefaction command:
 
 		biom-summarize_folder.sh $tabledir &>/dev/null
 		rarebase=$(basename $raretable .biom)
+
+		## Refresh html output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
 
 		## Filter any samples removed by rarefying from the original input table
 		inlines0=$(cat $insummary | wc -l)
@@ -215,14 +231,17 @@ Single rarefaction command:
 		echo "
 Filtering any samples removed during rarefaction."
 		echo "
-Filtering any samples removed during rarefaction." >> $log
+Filtering any samples removed during rarefaction:
+	filter_samples_from_otu_table.py -i $intable -o $filtertable --sample_id_fp $raresamples" >> $log
 		filtertable="$tabledir/sample_filtered_table.biom"
-		filter_samples_from_otu_table.py -i $intable -o $filtertable --sample_id_fp $raresamples
-		echo "filter_samples_from_otu_table.py -i $intable -o $filtertable --sample_id_fp $raresamples" >> $log
+		filter_samples_from_otu_table.py -i $intable -o $filtertable --sample_id_fp $raresamples 1> $stdout 2> $stderr
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+
+		## Log any sample removals
 		echo "
-Removed $diffcount samples from the analysis:"
+${bold}Removed $diffcount samples${normal} from the analysis:"
 		echo "
-Removed $diffcount samples from the analysis:" >> $log
+Removed $diffcount samples from the analysis following rarefaction:" >> $log
 		grep -vFf $raresamples $insamples
 		grep -vFf $raresamples $insamples >> $log
 
@@ -233,19 +252,21 @@ Removed $diffcount samples from the analysis:" >> $log
 		echo "
 Normalizing sample-filtered table with CSS transformation."
 		echo "
-Normalizing sample-filtered table with CSS transformation.
-normalize_table.py -i $filtertable -o $CSStable -a CSS" >> $log
+Normalizing sample-filtered table with CSS transformation:
+	normalize_table.py -i $filtertable -o $CSStable -a CSS" >> $log
 			if [[ ! -f $CSStable ]]; then
 			normalize_table.py -i $filtertable -o $CSStable -a CSS 1> $stdout 2> $stderr || true
 			bash $scriptdir/log_slave.sh $stdout $stderr $log
 			fi
+
+#			## This is the script/syntax for normalizing a folder of tables in parallel
 #			if [[ ! -f $DESeq2table ]]; then
 #			( normalize_table.py -i $filtertable -o $DESeq2table -a DESeq2 2>/dev/null ) &
 #			fi
 		wait
 		fi
 	
-		## Summarize tables one last time and initiate html output
+		## Summarize tables one last time and refresh html output
 		biom-summarize_folder.sh $tabledir &>/dev/null
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
 
@@ -275,19 +296,33 @@ normalize_table.py -i $filtertable -o $CSStable -a CSS" >> $log
 		if [[ "$phylogenetic" == "YES" ]]; then
 		metrics="bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac"
 		echo "
-Analysis will be phylogenetic."
+Analysis will be ${bold}phylogenetic${normal}.
+Metrics: bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac
+Tree file: $tree"
 		echo "
-Analysis will be phylogenetic." >> $log
+Analysis will be phylogenetic.
+Metrics: bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac
+Tree file: $tree" >> $log
 		elif [[ "$phylogenetic" == "NO" ]]; then
 		metrics="bray_curtis,chord,hellinger,kulczynski"
 		echo "
-Analysis will be nonphylogenetic."
+Analysis will be nonphylogenetic.
+Metrics: bray_curtis,chord,hellinger,kulczynski"
 		echo "
-Analysis will be nonphylogenetic." >> $log
+Analysis will be nonphylogenetic.
+Metrics: bray_curtis,chord,hellinger,kulczynski" >> $log
 		fi
 
 ################################################################################
 ## START OF NORMALIZED ANALYSIS HERE
+
+echo "
+********************************************************************************
+
+NORMALIZED TABLE PROCESSING STARTS HERE
+
+********************************************************************************
+" >> $log
 
 	echo "
 Processing normalized table."
@@ -327,6 +362,7 @@ Calculating beta diversity distance matrices."
 	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	fi
 	fi
+	wait
 
 ## Rename output files
 	if [[ ! -f $outdir/bdiv_normalized/bray_curtis_dm.txt ]]; then
@@ -355,47 +391,55 @@ Calculating beta diversity distance matrices."
 	mv $wudm $outdir/bdiv_normalized/weighted_unifrac_dm.txt 2>/dev/null
 	fi
 	fi
+	wait
 
 ## Principal coordinates and NMDS commands
 	echo "
-Principal coordinates and NMDS commands:" >> $log
+Principal coordinates and NMDS commands." >> $log
 	echo "
 Constructing PCoA and NMDS coordinate files."
+	echo "Principal coordinates:" >> $log
 	for dm in $outdir/bdiv_normalized/*_dm.txt; do
 	dmbase=$(basename $dm _dm.txt)
-	echo "	principal_coordinates.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_pc.txt
-	nmds.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_nmds.txt" >> $log
+	echo "	principal_coordinates.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_pc.txt" >> $log
 	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 	sleep 1
 	done
 	( principal_coordinates.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_pc.txt >/dev/null 2>&1 || true ) &
 	done
+	wait
+	echo "" >> $log
 
+	echo "NMDS coordinates:" >> $log
 	for dm in $outdir/bdiv_normalized/*_dm.txt; do
 	dmbase=$(basename $dm _dm.txt)
-	echo "	principal_coordinates.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_pc.txt
-	nmds.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_nmds.txt" >> $log
+	echo "	nmds.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_nmds.txt" >> $log
 	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 	sleep 1
 	done
 	( nmds.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_nmds.txt >/dev/null 2>&1 || true ) &
 	done
+	wait
+	echo "" >> $log
 
+	echo "Convert NMDS coordinates:" >> $log
 	for dm in $outdir/bdiv_normalized/*_dm.txt; do
 	dmbase=$(basename $dm _dm.txt)
-	echo "	principal_coordinates.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_pc.txt
-	nmds.py -i $dm -o $outdir/bdiv_normalized/$dmbase\_nmds.txt" >> $log
+	echo "	python $scriptdir/convert_nmds_coords.py -i $outdir/bdiv_normalized/$dmbase\_nmds.txt -o $outdir/bdiv_normalized/$dmbase\_nmds_converted.txt" >> $log
 	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 	sleep 1
 	done
 	( python $scriptdir/convert_nmds_coords.py -i $outdir/bdiv_normalized/$dmbase\_nmds.txt -o $outdir/bdiv_normalized/$dmbase\_nmds_converted.txt >/dev/null 2>&1 || true ) &
 	done
+	wait
+	echo "" >> $log
 
 ## Make 3D emperor plots (PCoA)
 	echo "
 Make emperor commands:" >> $log
 	echo "
 Generating 3D PCoA plots."
+	echo "PCoA plots:" >> $log
 	for pc in $outdir/bdiv_normalized/*_pc.txt; do
 	pcbase=$(basename $pc _pc.txt)
 		if [[ -d $outdir/bdiv_normalized/$pcbase\_emperor_pcoa_plot/ ]]; then
@@ -407,12 +451,13 @@ Generating 3D PCoA plots."
 	echo "	make_emperor.py -i $pc -o $outdir/bdiv_normalized/$pcbase\_emperor_pcoa_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples" >> $log
 	( make_emperor.py -i $pc -o $outdir/bdiv_normalized/$pcbase\_emperor_pcoa_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples >/dev/null 2>&1 || true ) &
 	done
+	wait
+	echo "" >> $log
 
 ## Make 3D emperor plots (NMDS)
 	echo "
-Make emperor commands:" >> $log
-	echo "
 Generating 3D NMDS plots."
+	echo "NMDS plots:" >> $log
 	for nmds in $outdir/bdiv_normalized/*_nmds_converted.txt; do
 	nmdsbase=$(basename $nmds _nmds_converted.txt)
 		if [[ -d $outdir/bdiv_normalized/$nmdsbase\_emperor_nmds_plot/ ]]; then
@@ -424,6 +469,8 @@ Generating 3D NMDS plots."
 	echo "	make_emperor.py -i $nmds -o $outdir/bdiv_normalized/$nmdsbase\_emperor_nmds_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples" >> $log
 	( make_emperor.py -i $nmds -o $outdir/bdiv_normalized/$nmdsbase\_emperor_nmds_plot/ -m $mapfile --add_unique_columns --ignore_missing_samples >/dev/null 2>&1 || true ) &
 	done
+	wait
+	echo "" >> $log
 
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
@@ -431,7 +478,7 @@ Generating 3D NMDS plots."
 ## Make 2D plots
 	if [[ ! -d $outdir/bdiv_normalized/2D_PCoA_bdiv_plots ]]; then
 	echo "
-Make 2D plots commands:" >> $log
+Make 2D PCoA plots commands:" >> $log
 	echo "
 Generating 2D PCoA plots."
 	for pc in $outdir/bdiv_normalized/*_pc.txt; do
@@ -442,7 +489,8 @@ Generating 2D PCoA plots."
 	( make_2d_plots.py -i $pc -m $mapfile -o $outdir/bdiv_normalized/2D_PCoA_bdiv_plots >/dev/null 2>&1 || true ) &
 	done
 	fi
-wait
+	wait
+	echo "" >> $log
 
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
@@ -454,6 +502,7 @@ Compare categories commands:" >> $log
 Calculating one-way statsitics from distance matrices."
 	if [[ ! -f $outdir/bdiv_normalized/permanova_results_collated.txt ]]; then
 echo "Running PERMANOVA tests."
+echo "PERMANOVA:" >> $log
 	for line in `cat $catlist`; do
 		for dm in $outdir/bdiv_normalized/*_dm.txt; do
 		method=$(basename $dm _dm.txt)
@@ -465,6 +514,7 @@ echo "Running PERMANOVA tests."
 		done
 	done
 	wait
+	echo "" >> $log
 
 	for line in `cat $catlist`; do
 		for dm in $outdir/bdiv_normalized/*_dm.txt; do
@@ -475,10 +525,12 @@ echo "Running PERMANOVA tests."
 		echo "" >> $outdir/bdiv_normalized/permanova_results_collated.txt
 		done
 	done
+	wait
 	fi
 
 	if [[ ! -f $outdir/bdiv_normalized/permdisp_results_collated.txt ]]; then
 echo "Running PERMDISP tests."
+echo "PERMDISP:" >> $log
 	for line in `cat $catlist`; do
 		for dm in $outdir/bdiv_normalized/*_dm.txt; do
 		method=$(basename $dm _dm.txt)
@@ -490,6 +542,7 @@ echo "Running PERMDISP tests."
 		done
 	done
 	wait
+	echo "" >> $log
 
 	for line in `cat $catlist`; do
 		for dm in $outdir/bdiv_normalized/*_dm.txt; do
@@ -500,10 +553,12 @@ echo "Running PERMDISP tests."
 		echo "" >> $outdir/bdiv_normalized/permdisp_results_collated.txt
 		done
 	done
+	wait
 	fi
 
 	if [[ ! -f $outdir/bdiv_normalized/anosim_results_collated.txt ]]; then
 echo "Running ANOSIM tests."
+echo "ANOSIM:" >> $log
 	for line in `cat $catlist`; do
 		for dm in $outdir/bdiv_normalized/*_dm.txt; do
 		method=$(basename $dm _dm.txt)
@@ -515,6 +570,7 @@ echo "Running ANOSIM tests."
 		done
 	done
 	wait
+	echo "" >> $log
 
 	for line in `cat $catlist`; do
 		for dm in $outdir/bdiv_normalized/*_dm.txt; do
@@ -525,10 +581,12 @@ echo "Running ANOSIM tests."
 		echo "" >> $outdir/bdiv_normalized/anosim_results_collated.txt
 		done
 	done
+	wait
 	fi
 
 	if [[ ! -f $outdir/bdiv_normalized/dbrda_results_collated.txt ]]; then
 echo "Running DB-RDA tests."
+echo "DB-RDA:" >> $log
 	for line in `cat $catlist`; do
 		for dm in $outdir/bdiv_normalized/*_dm.txt; do
 		method=$(basename $dm _dm.txt)
@@ -540,6 +598,7 @@ echo "Running DB-RDA tests."
 		done
 	done
 	wait
+	echo "" >> $log
 
 	for line in `cat $catlist`; do
 		for dm in $outdir/bdiv_normalized/*_dm.txt; do
@@ -550,10 +609,12 @@ echo "Running DB-RDA tests."
 		echo "" >> $outdir/bdiv_normalized/dbrda_results_collated.txt
 		done
 	done
+	wait
 	fi
 
 	if [[ ! -f $outdir/bdiv_normalized/adonis_results_collated.txt ]]; then
 echo "Running Adonis tests."
+echo "Adonis:" >> $log
 	for line in `cat $catlist`; do
 		for dm in $outdir/bdiv_normalized/*_dm.txt; do
 		method=$(basename $dm _dm.txt)
@@ -565,6 +626,7 @@ echo "Running Adonis tests."
 		done
 	done
 	wait
+	echo "" >> $log
 
 	for line in `cat $catlist`; do
 		for dm in $outdir/bdiv_normalized/*_dm.txt; do
@@ -575,10 +637,33 @@ echo "Running Adonis tests."
 		echo "" >> $outdir/bdiv_normalized/adonis_results_collated.txt
 		done
 	done
+	wait
 	fi
 
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist
+
+## Distance boxplots for each category
+
+	boxplotscount=`ls $outdir/bdiv_normalized/*_boxplots 2>/dev/null | wc -l`
+	if [[ $boxplotscount == 0 ]]; then
+	echo "
+Make distance boxplots commands:" >> $log
+	echo "
+Generating distance boxplots."
+	for line in `cat $catlist`; do
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+		for dm in $outdir/bdiv_normalized/*_dm.txt; do
+		dmbase=$( basename $dm _dm.txt )
+		echo "	make_distance_boxplots.py -d $outdir/bdiv_normalized/$dmbase\_dm.txt -f $line -o $outdir/bdiv_normalized/$dmbase\_boxplots/ -m $mapfile -n 999" >> $log
+		( make_distance_boxplots.py -d $outdir/bdiv_normalized/$dmbase\_dm.txt -f $line -o $outdir/bdiv_normalized/$dmbase\_boxplots/ -m $mapfile -n 999 >/dev/null 2>&1 || true ) &
+		done
+	done
+	fi
+	wait
+	echo "" >> $log
 
 done
 
