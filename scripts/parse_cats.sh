@@ -18,12 +18,11 @@ trap finish EXIT
 ## Define variables
 	stdout="$1"
 	stderr="$2"
-	log="$3"
-	mapfile="$4"
-	cats="$5"
-	catlist="$6"
-	randcode="$7"
-	tempdir="$8"
+	mapfile="$3"
+	cats="$4"
+	catlist="$5"
+	randcode="$6"
+	tempdir="$7"
 
 	mapcatstemp="$tempdir/${randcode}_mapping_categories.temp"
 	filtertemp="$tempdir/${randcode}_cats_filter.temp"

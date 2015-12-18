@@ -210,7 +210,7 @@ echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Alpha Diversity Results </td></tr>
 <tr><td> Alpha rarefaction plots </td><td> <a href=\"./arare_max$depth/alpha_rarefaction_plots/rarefaction_plots.html\" target=\"_blank\"> rarefaction_plots.html </a></td></tr>" >> $outdir/index.html
 
-	for category in `cat cdiv_temp/categories.tempfile`; do
+	for category in `cat $catlist`; do
 	for metric in `cat cdiv_temp/alpha_metrics.tempfile`; do
 echo "<tr><td> Alpha diversity statistics ($category, $metric, parametric) </td><td> <a href=\"./arare_max$depth/compare_${metric}_parametric/${category}_stats.txt\" target=\"_blank\"> ${category}_stats.txt </a></td></tr>
 <tr><td> Alpha diversity boxplots ($category, $metric, parametric) </td><td> <a href=\"./arare_max$depth/compare_${metric}_parametric/${category}_boxplots.pdf\" target=\"_blank\"> ${category}_boxplots.pdf </a></td></tr>
@@ -225,11 +225,14 @@ echo "<tr><td> Alpha diversity statistics ($category, $metric, parametric) </td>
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Beta Diversity Results -- NORMALIZED DATA </td></tr>
 <tr><td> Anosim results (normalized) </td><td> <a href=\"./bdiv_normalized/anosim_results_collated.txt\" target=\"_blank\"> anosim_results_collated.txt -- NORMALIZED DATA </a></td></tr>
-<tr><td> Permanova results (normalized) </td><td> <a href=\"./bdiv_normalized/permanova_results_collated.txt\" target=\"_blank\"> permanova_results_collated.txt -- NORMALIZED DATA </a></td></tr>" >> $outdir/index.html
+<tr><td> Adonis results (normalized) </td><td> <a href=\"./bdiv_normalized/adonis_results_collated.txt\" target=\"_blank\"> adonis_results_collated.txt -- NORMALIZED DATA </a></td></tr>
+<tr><td> DB-RDA results (normalized) </td><td> <a href=\"./bdiv_normalized/dbrda_results_collated.txt\" target=\"_blank\"> dbrda_results_collated.txt -- NORMALIZED DATA </a></td></tr>
+<tr><td> Permanova results (normalized) </td><td> <a href=\"./bdiv_normalized/permanova_results_collated.txt\" target=\"_blank\"> permanova_results_collated.txt -- NORMALIZED DATA </a></td></tr>
+<tr><td> Permdisp results (normalized) </td><td> <a href=\"./bdiv_normalized/permdisp_results_collated.txt\" target=\"_blank\"> permdisp_results_collated.txt -- NORMALIZED DATA </a></td></tr>" >> $outdir/index.html
 
 	for dm in $outdir/bdiv_normalized/*_dm.txt; do
 	dmbase=`basename $dm _dm.txt`
-	for line in `cat cdiv_temp/categories.tempfile`; do
+	for line in `cat $catlist`; do
 
 echo "<tr><td> Distance boxplots (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_boxplots/${line}_Distances.pdf\" target=\"_blank\"> ${line}_Distances.pdf </a></td></tr>
 <tr><td> Distance boxplots statistics (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_boxplots/${line}_Stats.txt\" target=\"_blank\"> ${line}_Stats.txt </a></td></tr>" >> $outdir/index.html
@@ -240,7 +243,8 @@ echo "<tr><td> Distance boxplots (${dmbase}) </td><td> <a href=\"./bdiv_normaliz
 
 echo "<tr><td> 3D PCoA plot (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_emperor_pcoa_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
 <tr><td> 2D PCoA plot (${dmbase}) </td><td> <a href=\"./bdiv_normalized/2D_bdiv_plots/${dmbase}_pc_2D_PCoA_plots.html\" target=\"_blank\"> index.html </a></td></tr>
-<tr><td> 3D NMDS plot (${dmbase}, stress = $nmsstress) </td><td> <a href=\"./bdiv_normalized/${dmbase}_emperor_nmds_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>" >> $outdir/index.html
+<tr><td> 3D NMDS plot (${dmbase}, stress = $nmsstress) </td><td> <a href=\"./bdiv_normalized/${dmbase}_emperor_nmds_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
+<tr><td> DB-RDA plot (${dmbase}) </td><td> <a href=\"./bdiv_normalized/dbrda_out/${line}/${dmbase}/dbrda_plot.pdf\" target=\"_blank\"> dbrda_plot.pdf </a></td></tr>" >> $outdir/index.html
 echo "<tr><td> Distance matrix (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_dm.txt\" target=\"_blank\"> ${dmbase}_dm.txt </a></td></tr>
 <tr><td> Principal coordinate matrix (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_pc.txt\" target=\"_blank\"> ${dmbase}_pc.txt </a></td></tr>
 <tr><td> NMDS coordinates (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_nmds.txt\" target=\"_blank\"> ${dmbase}_nmds.txt </a></td></tr>" >> $outdir/index.html
@@ -258,7 +262,7 @@ echo "
 
 	for dm in $outdir/bdiv/*_dm.txt; do
 	dmbase=`basename $dm _dm.txt`
-	for line in `cat cdiv_temp/categories.tempfile`; do
+	for line in `cat $catlist`; do
 
 echo "<tr><td> Distance boxplots (${dmbase}) </td><td> <a href=\"./bdiv/${dmbase}_boxplots/${line}_Distances.pdf\" target=\"_blank\"> ${line}_Distances.pdf </a></td></tr>
 <tr><td> Distance boxplots statistics (${dmbase}) </td><td> <a href=\"./bdiv/${dmbase}_boxplots/${line}_Stats.txt\" target=\"_blank\"> ${line}_Stats.txt </a></td></tr>" >> $outdir/index.html
@@ -291,7 +295,7 @@ echo "
 	if [[ -d $outdir/bdiv_normalized/SupervisedLearning ]]; then
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Supervised Learning (out of bag) -- NORMALIZED DATA </td></tr>" >> $outdir/index.html
-	for category in `cat cdiv_temp/categories.tempfile`; do
+	for category in `cat $catlist`; do
 echo "<tr><td> Summary (${category}) </td><td> <a href=\"bdiv_normalized/SupervisedLearning/${category}/summary.txt\" target=\"_blank\"> summary.txt </a></td></tr>
 <tr><td> Mislabeling (${category}) </td><td> <a href=\"bdiv_normalized/SupervisedLearning/${category}/mislabeling.txt\" target=\"_blank\"> mislabeling.txt </a></td></tr>
 <tr><td> Confusion Matrix (${category}) </td><td> <a href=\"bdiv_normalized/SupervisedLearning/${category}/confusion_matrix.txt\" target=\"_blank\"> confusion_matrix.txt </a></td></tr>
@@ -304,7 +308,7 @@ echo "<tr><td> Summary (${category}) </td><td> <a href=\"bdiv_normalized/Supervi
 	if [[ -d $outdir/SupervisedLearning ]]; then
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Supervised Learning (out of bag) -- RAREFIED DATA </td></tr>" >> $outdir/index.html
-	for category in `cat cdiv_temp/categories.tempfile`; do
+	for category in `cat $catlist`; do
 echo "<tr><td> Summary (${category}) </td><td> <a href=\"SupervisedLearning/${category}/summary.txt\" target=\"_blank\"> summary.txt </a></td></tr>
 <tr><td> Mislabeling (${category}) </td><td> <a href=\"SupervisedLearning/${category}/mislabeling.txt\" target=\"_blank\"> mislabeling.txt </a></td></tr>
 <tr><td> Confusion Matrix (${category}) </td><td> <a href=\"SupervisedLearning/${category}/confusion_matrix.txt\" target=\"_blank\"> confusion_matrix.txt </a></td></tr>
