@@ -72,6 +72,7 @@ trap finish EXIT
 	cdivtemp="$tempdir/${randcode}_cdiv.temp"
 	tablelist="$tempdir/${randcode}_cdiv_tablelist.temp"
 	catlist="$tempdir/${randcode}_cdiv_categories.temp"
+	alphatemp="$tempdir/${randcode}_alphametrics.temp"
 
 ## If incorrect number of arguments supplied, display usage 
 	if [[ "$#" -ne 8 ]]; then 
@@ -206,7 +207,6 @@ INITIAL TABLE PROCESSING STARTS HERE
 		fi
 
 		## Make alpha metrics temp file
-		alphatemp="$tempdir/${randcode}_alphametrics.temp"
 		echo > $alphatemp
 		IN=$alphametrics
 		OIFS=$IFS
@@ -245,7 +245,7 @@ Rarefaction depth: $depth" >> $log
 Single rarefaction command:
 	single_rarefaction.py -i $intable -o $raretable -d $depth" >> $log
 		single_rarefaction.py -i $intable -o $raretable -d $depth 1> $stdout 2> $stderr
-		mv $tabledir/table_even$depth.biom $tabledir/rarefied_table.biom
+		wait
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 		fi
 
@@ -329,9 +329,9 @@ Normalizing sample-filtered table with CSS transformation:
 		if [[ "$phylogenetic" == "YES" ]]; then
 		echo "
 Analysis will be ${bold}phylogenetic${normal}.
-Alpha diversity metrics: $alphametrics
-Beta diversity metrics: $metrics
-Tree file: $tree"
+${bold}Alpha diversity metrics:${normal} $alphametrics
+${bold}Beta diversity metrics:${normal} $metrics
+${bold}Tree file:${normal} $tree"
 		echo "
 Analysis will be phylogenetic.
 Alpha diversity metrics: $alphametrics
@@ -340,9 +340,9 @@ Tree file: $tree" >> $log
 		elif [[ "$phylogenetic" == "NO" ]]; then
 		echo "
 Analysis will be nonphylogenetic.
-Alpha diversity metrics: $alphametrics
-Beta diversity metrics: $metrics
-Tree file: None found"
+${bold}Alpha diversity metrics:${normal} $alphametrics
+${bold}Beta diversity metrics:${normal} $metrics
+${bold}Tree file:${normal} None found"
 		echo "
 Analysis will be nonphylogenetic.
 Alpha diversity metrics: $alphametrics
@@ -793,13 +793,35 @@ Running supervised learning analysis."
 		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
 		sleep 1
 		done
-		echo "	supervised_learning.py -i $table -m $mapfile -c $category -o $outdir/bdiv_normalized/SupervisedLearning/$category --ntree 1000" >> $log
-		( supervised_learning.py -i $table -m $mapfile -c $category -o $outdir/bdiv_normalized/SupervisedLearning/$category --ntree 1000 >/dev/null 2>&1 || true ) &
+		echo "	supervised_learning.py -i $CSSsort -m $mapfile -c $category -o $outdir/bdiv_normalized/SupervisedLearning/$category --ntree 1000" >> $log
+		( supervised_learning.py -i $CSSsort -m $mapfile -c $category -o $outdir/bdiv_normalized/SupervisedLearning/$category --ntree 1000 >/dev/null 2>&1 || true ) &
 	done
 	else
 	echo "
 Supervised Learning already present." >> $log
 	fi
+
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+
+## Make rank abundance plots (normalized)
+	if [[ ! -d $outdir/bdiv_normalized/RankAbundance ]]; then
+	mkdir $outdir/bdiv_normalized/RankAbundance
+	echo "
+Rank abundance plot commands:" >> $log
+	echo "
+Generating rank abundance plots."
+	echo "	plot_rank_abundance_graph.py -i $CSSsort -o $outdir/bdiv_normalized/RankAbundance/rankabund_xlog-ylog.pdf -s "*" -n
+	plot_rank_abundance_graph.py -i $CSSsort -o $outdir/bdiv_normalized/RankAbundance/rankabund_xlinear-ylog.pdf -s "*" -n -x
+	plot_rank_abundance_graph.py -i $CSSsort -o $outdir/bdiv_normalized/RankAbundance/rankabund_xlog-ylinear.pdf -s "*" -n -y
+	plot_rank_abundance_graph.py -i $CSSsort -o $outdir/bdiv_normalized/RankAbundance/rankabund_xlinear-ylinear.pdf -s "*" -n -x -y
+	" >> $log
+	( plot_rank_abundance_graph.py -i $CSSsort -o $outdir/bdiv_normalized/RankAbundance/rankabund_xlog-ylog.pdf -s "*" -n ) &
+	( plot_rank_abundance_graph.py -i $CSSsort -o $outdir/bdiv_normalized/RankAbundance/rankabund_xlinear-ylog.pdf -s "*" -n -x ) &
+	( plot_rank_abundance_graph.py -i $CSSsort -o $outdir/bdiv_normalized/RankAbundance/rankabund_xlog-ylinear.pdf -s "*" -n -y ) &
+	( plot_rank_abundance_graph.py -i $CSSsort -o $outdir/bdiv_normalized/RankAbundance/rankabund_xlinear-ylinear.pdf -s "*" -n -x -y ) &
+	fi
+wait
 
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
@@ -1266,6 +1288,28 @@ Supervised Learning already present." >> $log
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
+## Make rank abundance plots (rarefied)
+	if [[ ! -d $outdir/bdiv_rarefied/RankAbundance ]]; then
+	mkdir $outdir/bdiv_rarefied/RankAbundance
+	echo "
+Rank abundance plot commands:" >> $log
+	echo "
+Generating rank abundance plots."
+	echo "	plot_rank_abundance_graph.py -i $raresort -o $outdir/bdiv_rarefied/RankAbundance/rankabund_xlog-ylog.pdf -s "*" -n
+	plot_rank_abundance_graph.py -i $raresort -o $outdir/bdiv_rarefied/RankAbundance/rankabund_xlinear-ylog.pdf -s "*" -n -x
+	plot_rank_abundance_graph.py -i $raresort -o $outdir/bdiv_rarefied/RankAbundance/rankabund_xlog-ylinear.pdf -s "*" -n -y
+	plot_rank_abundance_graph.py -i $raresort -o $outdir/bdiv_rarefied/RankAbundance/rankabund_xlinear-ylinear.pdf -s "*" -n -x -y
+	" >> $log
+	( plot_rank_abundance_graph.py -i $raresort -o $outdir/bdiv_rarefied/RankAbundance/rankabund_xlog-ylog.pdf -s "*" -n ) &
+	( plot_rank_abundance_graph.py -i $raresort -o $outdir/bdiv_rarefied/RankAbundance/rankabund_xlinear-ylog.pdf -s "*" -n -x ) &
+	( plot_rank_abundance_graph.py -i $raresort -o $outdir/bdiv_rarefied/RankAbundance/rankabund_xlog-ylinear.pdf -s "*" -n -y ) &
+	( plot_rank_abundance_graph.py -i $raresort -o $outdir/bdiv_rarefied/RankAbundance/rankabund_xlinear-ylinear.pdf -s "*" -n -x -y ) &
+	fi
+wait
+
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+
 ###################################
 ## Start of alpha diversity steps
 
@@ -1391,11 +1435,228 @@ Summarize taxa commands by category \"$line\":
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
+## Run supervised learning on data using supplied categories
+	if [[ ! -d $outdir/bdiv_rarefied/SupervisedLearning ]]; then
+	mkdir -p $outdir/bdiv_rarefied/SupervisedLearning
+	echo "Running supervised learning analysis.
+	"
+	for category in `cat $catlist`; do
+	supervised_learning.py -i $raresort-m $mapfile -c $category -o $outdir/bdiv_rarefied/SupervisedLearning/$category --ntree 1000 >/dev/null 2>&1 || true
+	done
+	fi
+
+
+############################
+## Group comparison steps
+
+## Group significance for each category (Kruskal-Wallis and nonparametric Ttest)
+
+	## Kruskal-Wallis
+	kwtestcount=$(ls $outdir/KruskalWallis/kruskalwallis_* 2> /dev/null | wc -l)
+	if [[ $kwtestcount == 0 ]]; then
+	echo "
+Group significance commands:" >> $log
+	if [[ ! -d $outdir/KruskalWallis ]]; then
+	mkdir $outdir/KruskalWallis
+	fi
+	raresortrel="$outdir/OTU_tables/rarefied_table_sorted_relativized.biom"
+	if [[ ! -f $raresortrel ]]; then
+	echo "
+Relativizing OTU table:
+	relativize_otu_table.py -i $raresort" >> $log
+	relativize_otu_table.py -i $raresort >/dev/null 2>&1 || true
+	fi
+	echo "
+Calculating Kruskal-Wallis test statistics when possible."
+for line in `cat $catlist`; do
+	if [[ ! -f $outdir/KruskalWallis/kruskalwallis_${line}_OTU.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $raresortrel -m $mapfile -c $line -o $outdir/KruskalWallis/kruskalwallis_${line}_OTU.txt -s kruskal_wallis" >> $log
+	( group_significance.py -i $raresortrel -m $mapfile -c $line -o $outdir/KruskalWallis/kruskalwallis_${line}_OTU.txt -s kruskal_wallis ) >/dev/null 2>&1 || true &
+	fi
+done
+wait
+for line in `cat $catlist`; do
+	if [[ ! -f $outdir/KruskalWallis/kruskalwallis_$line\_L2.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L2.biom -m $mapfile -c $line -o $outdir/KruskalWallis/kruskalwallis_${line}_L2.txt -s kruskal_wallis" >> $log
+	( group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L2.biom -m $mapfile -c $line -o $outdir/KruskalWallis/kruskalwallis_${line}_L2.txt -s kruskal_wallis ) >/dev/null 2>&1 || true &
+	fi
+done
+wait
+for line in `cat $catlist`; do
+	if [[ ! -f $outdir/KruskalWallis/kruskalwallis_$line\_L3.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L3.biom -m $mapfile -c $line -o $outdir/KruskalWallis/kruskalwallis_${line}_L3.txt -s kruskal_wallis" >> $log
+	( group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L3.biom -m $mapfile -c $line -o $outdir/KruskalWallis/kruskalwallis_${line}_L3.txt -s kruskal_wallis ) >/dev/null 2>&1 || true &
+	fi
+done
+wait
+for line in `cat $catlist`; do
+	if [[ ! -f $outdir/KruskalWallis/kruskalwallis_$line\_L4.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L4.biom -m $mapfile -c $line -o $outdir/KruskalWallis/kruskalwallis_${line}_L4.txt -s kruskal_wallis" >> $log
+	( group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L4.biom -m $mapfile -c $line -o $outdir/KruskalWallis/kruskalwallis_${line}_L4.txt -s kruskal_wallis ) >/dev/null 2>&1 || true &
+	fi
+done
+wait
+for line in `cat $catlist`; do
+	if [[ ! -f $outdir/KruskalWallis/kruskalwallis_$line\_L5.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L5.biom -m $mapfile -c $line -o $outdir/KruskalWallis/kruskalwallis_${line}_L5.txt -s kruskal_wallis" >> $log
+	( group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L5.biom -m $mapfile -c $line -o $outdir/KruskalWallis/kruskalwallis_${line}_L5.txt -s kruskal_wallis ) >/dev/null 2>&1 || true &
+	fi
+done
+wait
+for line in `cat $catlist`; do
+	if [[ ! -f $outdir/KruskalWallis/kruskalwallis_$line\_L6.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L6.biom -m $mapfile -c $line -o $outdir/KruskalWallis/kruskalwallis_${line}_L6.txt -s kruskal_wallis" >> $log
+	( group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L6.biom -m $mapfile -c $line -o $outdir/KruskalWallis/kruskalwallis_${line}_L6.txt -s kruskal_wallis ) >/dev/null 2>&1 || true &
+	fi
+done
+wait
+for line in `cat $catlist`; do
+	if [[ ! -f $outdir/KruskalWallis/kruskalwallis_$line\_L7.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L7.biom -m $mapfile -c $line -o $outdir/KruskalWallis/kruskalwallis_${line}_L7.txt -s kruskal_wallis" >> $log
+	( group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L7.biom -m $mapfile -c $line -o $outdir/KruskalWallis/kruskalwallis_${line}_L7.txt -s kruskal_wallis ) >/dev/null 2>&1 || true &
+	fi
+done
+fi
+wait
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+
+	## Nonparametric T-test
+	if [[ ! -d $outdir/Nonparametric_ttest ]]; then
+	mkdir $outdir/Nonparametric_ttest
+	raresortrel="$outdir/OTU_tables/rarefied_table_sorted_relativized.biom"
+	if [[ ! -f $raresortrel ]]; then
+	echo "
+Relativizing OTU table:
+	relativize_otu_table.py -i $raresort" >> $log
+	relativize_otu_table.py -i $raresort >/dev/null 2>&1 || true
+	fi
+	echo "
+Calculating nonparametric T-test statistics when possible."
+for line in `cat $catlist`; do
+	if [[ ! -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_OTU.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $raresortrel -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_OTU.txt -s nonparametric_t_test" >> $log
+	( group_significance.py -i $raresortrel -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_OTU.txt -s nonparametric_t_test ) >/dev/null 2>&1 || true &
+	fi
+done
+wait
+for line in `cat $catlist`; do
+	if [[ ! -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L2.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L2.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L2.txt -s nonparametric_t_test" >> $log
+	( group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L2.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L2.txt -s nonparametric_t_test ) >/dev/null 2>&1 || true &
+	fi
+done
+wait
+for line in `cat $catlist`; do
+	if [[ ! -f $outdir/Nonparametric_ttest/nonparametric_ttest_$line\_L3.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L3.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L3.txt -s nonparametric_t_test" >> $log
+	( group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L3.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L3.txt -s nonparametric_t_test ) >/dev/null 2>&1 || true &
+	fi
+done
+wait
+for line in `cat $catlist`; do
+	if [[ ! -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L4.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L4.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L4.txt -s nonparametric_t_test" >> $log
+	( group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L4.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L4.txt -s nonparametric_t_test ) >/dev/null 2>&1 || true &
+	fi
+done
+wait
+for line in `cat $catlist`; do
+	if [[ ! -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L5.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L5.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L5.txt -s nonparametric_t_test" >> $log
+	( group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L5.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L5.txt -s nonparametric_t_test ) >/dev/null 2>&1 || true &
+	fi
+done
+wait
+for line in `cat $catlist`; do
+	if [[ ! -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L6.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L6.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L6.txt -s nonparametric_t_test" >> $log
+	( group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L6.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L6.txt -s nonparametric_t_test ) >/dev/null 2>&1 || true &
+	fi
+done
+wait
+for line in `cat $catlist`; do
+	if [[ ! -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L7.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L7.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L7.txt -s nonparametric_t_test" >> $log
+	( group_significance.py -i $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L7.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L7.txt -s nonparametric_t_test ) >/dev/null 2>&1 || true &
+	fi
+done
+fi
+wait
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+
+## Run match_reads_to_taxonomy if rep set present
+## Automatically find merged_rep_set.fna file from existing akutils workflows
+if [[ ! -d $outdir/Representative_sequences ]]; then
+	rep_set="$inputdirup1/merged_rep_set.fna"
+	mkdir -p $outdir/Representative_sequences/
+	cp $rep_set $outdir/Representative_sequences/
+
+	if [[ -f $outdir/Representative_sequences/merged_rep_set.fna ]]; then
+	repseqs="$outdir/Representative_sequences/merged_rep_set.fna"
+	echo "
+Extracting sequencing data for each taxon and performing mafft alignments.
+	"
+echo "
+Extracting sequences command:
+	bash $scriptdir/match_reads_to_taxonomy.sh $intable $threads $repseqs" >> $log
+	bash $scriptdir/match_reads_to_taxonomy.sh $intable $threads $repseqs 1> $stdout 2> $stderr || true
+	wait
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+
+	fi
+fi
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
 
 done
+################################################################################
+## End of for loop for multiple tables processing
 
 ## Log end of workflow and exit
-
 res1=$(date +%s.%N)
 dt=$(echo "$res1 - $res0" | bc)
 dd=$(echo "$dt/86400" | bc)

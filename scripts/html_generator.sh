@@ -21,8 +21,8 @@ echo "<html>
 <p><h3> Sequences by taxonomy </h3><p>
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Unaligned sequences </td></tr>" > $outdir/Representative_sequences/sequences_by_taxonomy.html
 
-	for taxonid in `cat $outdir/Representative_sequences/L7_taxa_list.txt | cut -f1`; do
-	otu_count=`grep -Fw "$taxonid" $outdir/Representative_sequences/L7_taxa_list.txt | cut -f2`
+	for taxonid in `cat $outdir/Representative_sequences/L7_taxa_list.txt 2>/dev/null | cut -f1`; do
+	otu_count=`grep -Fw "$taxonid" $outdir/Representative_sequences/L7_taxa_list.txt 2>/dev/null | cut -f2`
 
 	if [[ -f $outdir/Representative_sequences/L7_sequences_by_taxon/${taxonid}.fasta ]]; then
 echo "<tr><td><font size="1"><a href=\"./L7_sequences_by_taxon/${taxonid}.fasta\" target=\"_blank\"> ${taxonid} </a></font></td><td> $otu_count OTUs </td></tr>" >> $outdir/Representative_sequences/sequences_by_taxonomy.html
@@ -31,8 +31,8 @@ echo "<tr><td><font size="1"><a href=\"./L7_sequences_by_taxon/${taxonid}.fasta\
 
 echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Aligned sequences (MAFFT L-INS-i) </td></tr>" >> $outdir/Representative_sequences/sequences_by_taxonomy.html
 
-	for taxonid in `cat $outdir/Representative_sequences/L7_taxa_list.txt | cut -f1`; do
-	otu_count=`grep -Fw "$taxonid" $outdir/Representative_sequences/L7_taxa_list.txt | cut -f2`
+	for taxonid in `cat $outdir/Representative_sequences/L7_taxa_list.txt 2>/dev/null | cut -f1`; do
+	otu_count=`grep -Fw "$taxonid" $outdir/Representative_sequences/L7_taxa_list.txt 2>/dev/null | cut -f2`
 
 	if [[ -f $outdir/Representative_sequences/L7_sequences_by_taxon_alignments/${taxonid}/${taxonid}_aligned.aln ]]; then
 echo "<tr><td><font size="1"><a href=\"./L7_sequences_by_taxon_alignments/${taxonid}/${taxonid}_aligned.aln\" target=\"_blank\"> ${taxonid} </a></font></td><td> $otu_count OTUs </td></tr>" >> $outdir/Representative_sequences/sequences_by_taxonomy.html
@@ -74,8 +74,8 @@ fi
 
 ## Representative sequences summary and link
 	if [[ -f $outdir/Representative_sequences/L7_taxa_list.txt ]] && [[ -f $outdir/Representative_sequences/otus_per_taxon_summary.txt ]]; then
-	tablename=`basename $table .biom`
-	Total_OTUs=`cat $outdir/OTU_tables/$tablename.txt | grep -v "#" | wc -l`
+#	tablename=`basename $table .biom`
+	Total_OTUs=`cat $outdir/OTU_tables/$inputbase.txt | grep -v "#" | wc -l`
 	Total_taxa=`cat $outdir/Representative_sequences/L7_taxa_list.txt | wc -l`
 	Mean_OTUs=`grep mean $outdir/Representative_sequences/otus_per_taxon_summary.txt | cut -f2`
 	Median_OTUs=`grep median $outdir/Representative_sequences/otus_per_taxon_summary.txt | cut -f2`
@@ -244,7 +244,7 @@ echo "<tr><td> Distance boxplots (${dmbase}) </td><td> <a href=\"./bdiv_normaliz
 
 echo "<tr><td> 3D PCoA plot (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_emperor_pcoa_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
 <tr><td> 2D PCoA plot (${dmbase}) </td><td> <a href=\"./bdiv_normalized/2D_bdiv_plots/${dmbase}_pc_2D_PCoA_plots.html\" target=\"_blank\"> index.html </a></td></tr>
-<tr><td> 3D NMDS plot (${dmbase}, stress = $nmsstress) </td><td> <a href=\"./bdiv_normalized/${dmbase}_emperor_nmds_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
+<tr><td> 3D NMDS plot (${dmbase}, $nmsstress) </td><td> <a href=\"./bdiv_normalized/${dmbase}_emperor_nmds_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
 <tr><td> DB-RDA plot (${dmbase}) </td><td> <a href=\"./bdiv_normalized/dbrda_out/${line}/${dmbase}/dbrda_plot.pdf\" target=\"_blank\"> dbrda_plot.pdf </a></td></tr>" >> $outdir/index.html
 echo "<tr><td> Distance matrix (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_dm.txt\" target=\"_blank\"> ${dmbase}_dm.txt </a></td></tr>
 <tr><td> Principal coordinate matrix (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_pc.txt\" target=\"_blank\"> ${dmbase}_pc.txt </a></td></tr>
@@ -277,7 +277,7 @@ echo "<tr><td> Distance boxplots (${dmbase}) </td><td> <a href=\"./bdiv_rarefied
 
 echo "<tr><td> 3D PCoA plot (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_emperor_pcoa_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
 <tr><td> 2D PCoA plot (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/2D_PCoA_bdiv_plots/${dmbase}_pc_2D_PCoA_plots.html\" target=\"_blank\"> index.html </a></td></tr>
-<tr><td> 3D NMDS plot (${dmbase}, stress = $nmsstress) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_emperor_nmds_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>" >> $outdir/index.html
+<tr><td> 3D NMDS plot (${dmbase}, $nmsstress) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_emperor_nmds_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>" >> $outdir/index.html
 echo "<tr><td> Distance matrix (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_dm.txt\" target=\"_blank\"> ${dmbase}_dm.txt </a></td></tr>
 <tr><td> Principal coordinate matrix (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_pc.txt\" target=\"_blank\"> ${dmbase}_pc.txt </a></td></tr>
 <tr><td> NMDS coordinates (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_nmds.txt\" target=\"_blank\"> ${dmbase}_nmds.txt </a></td></tr>" >> $outdir/index.html
@@ -285,10 +285,20 @@ echo "<tr><td> Distance matrix (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/$
 	done
 	fi
 
-## Rank abundance plots
+## Rank abundance plots (normalized)
+	if [[ -d $outdir/bdiv_normalized/RankAbundance ]]; then
+echo "
+<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Rank Abundance Plots (relative abundances) -- NORMALIZED DATA </td></tr> 
+<tr><td> Rank abundance (xlog-ylog) </td><td> <a href=\"./bdiv_normalized/RankAbundance/rankabund_xlog-ylog.pdf\" target=\"_blank\"> rankabund_xlog-ylog.pdf </a></td></tr>
+<tr><td> Rank abundance (xlinear-ylog) </td><td> <a href=\"./bdiv_normalized/RankAbundance/rankabund_xlinear-ylog.pdf\" target=\"_blank\"> rankabund_xlinear-ylog.pdf </a></td></tr>
+<tr><td> Rank abundance (xlog-ylinear) </td><td> <a href=\"./bdiv_normalized/RankAbundance/rankabund_xlog-ylinear.pdf\" target=\"_blank\"> rankabund_xlog-ylinear.pdf </a></td></tr>
+<tr><td> Rank abundance (xlinear-ylinear) </td><td> <a href=\"./bdiv_normalized/RankAbundance/rankabund_xlinear-ylinear.pdf\" target=\"_blank\"> rankabund_xlinear-ylinear.pdf </a></td></tr>" >> $outdir/index.html
+	fi
+
+## Rank abundance plots (rarefied)
 	if [[ -d $outdir/bdiv_rarefied/RankAbundance ]]; then
 echo "
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Rank Abundance Plots (relative abundances) </td></tr> 
+<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Rank Abundance Plots (relative abundances) -- RAREFIED DATA </td></tr> 
 <tr><td> Rank abundance (xlog-ylog) </td><td> <a href=\"./bdiv_rarefied/RankAbundance/rankabund_xlog-ylog.pdf\" target=\"_blank\"> rankabund_xlog-ylog.pdf </a></td></tr>
 <tr><td> Rank abundance (xlinear-ylog) </td><td> <a href=\"./bdiv_rarefied/RankAbundance/rankabund_xlinear-ylog.pdf\" target=\"_blank\"> rankabund_xlinear-ylog.pdf </a></td></tr>
 <tr><td> Rank abundance (xlog-ylinear) </td><td> <a href=\"./bdiv_rarefied/RankAbundance/rankabund_xlog-ylinear.pdf\" target=\"_blank\"> rankabund_xlog-ylinear.pdf </a></td></tr>
@@ -309,7 +319,7 @@ echo "<tr><td> Summary (${category}) </td><td> <a href=\"./bdiv_normalized/Super
 	fi
 
 ## Supervised learning (rarefied)
-	if [[ -d $outdir/SupervisedLearning ]]; then
+	if [[ -d $outdir/bdiv_rarefied/SupervisedLearning ]]; then
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Supervised Learning (out of bag) -- RAREFIED DATA </td></tr>" >> $outdir/index.html
 	for category in `cat $catlist`; do
