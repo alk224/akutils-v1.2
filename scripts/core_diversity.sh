@@ -801,7 +801,7 @@ Running supervised learning analysis."
 		sleep 1
 		done
 		echo "	supervised_learning.py -i $CSSsort -m $mapfile -c $category -o $outdir/bdiv_normalized/SupervisedLearning/$category --ntree 1000" >> $log
-		( supervised_learning.py -i $CSSsort -m $mapfile -c $category -o $outdir/bdiv_normalized/SupervisedLearning/$category --ntree 1000 >/dev/null 2>&1 || true ) &
+		( supervised_learning.py -i $CSSsort -m $mapfile -c $category -o $outdir/bdiv_normalized/SupervisedLearning/$category --ntree 1000 &>/dev/null 2>&1 || true ) &
 	done
 	else
 	echo "
@@ -1285,7 +1285,7 @@ Running supervised learning analysis."
 		sleep 1
 		done
 		echo "	supervised_learning.py -i $raresort -m $mapfile -c $category -o $outdir/bdiv_rarefied/SupervisedLearning/$category --ntree 1000" >> $log
-		( supervised_learning.py -i $raresort -m $mapfile -c $category -o $outdir/bdiv_rarefied/SupervisedLearning/$category --ntree 1000 >/dev/null 2>&1 || true ) &
+		( supervised_learning.py -i $raresort -m $mapfile -c $category -o $outdir/bdiv_rarefied/SupervisedLearning/$category --ntree 1000 &>/dev/null 2>&1 || true ) &
 	done
 	else
 	echo "
@@ -1316,6 +1316,12 @@ wait
 
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+
+	## Remove pointless log.txt file output by supervised learning
+	sllogtest=$(grep "confusion.matrix" ./log.txt 2>/dev/null)
+	if [[ ! -z "$sllogtest" ]]; then
+		rm log.txt
+	fi
 
 ###################################
 ## Start of alpha diversity steps
