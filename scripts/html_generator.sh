@@ -72,6 +72,18 @@ if [[ -f $outdir/OTU_tables/CSS_table.summary ]]; then
 echo "<tr><td> CSS-normalized BIOM table statistics </td><td> <a href=\"./OTU_tables/CSS_table.summary\" target=\"_blank\"> CSS_table.summary </a></td></tr>" >> $outdir/index.html
 fi
 
+## Tables used in analysis (biom and .txt versions)
+if [[ -f $outdir/OTU_tables/rarefied_table_sorted.txt && -f $outdir/OTU_tables/CSS_table_sorted.txt ]]; then
+echo "
+<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> OTU tables </td></tr>" >> $outdir/index.html
+if [[ -f $outdir/OTU_tables/CSS_table_sorted.txt ]]; then
+
+
+
+if [[ -f $outdir/OTU_tables/rarefied_table_sorted.txt
+
+fi
+
 ## Representative sequences summary and link
 	if [[ -f $outdir/Representative_sequences/L7_taxa_list.txt ]] && [[ -f $outdir/Representative_sequences/otus_per_taxon_summary.txt ]]; then
 #	tablename=`basename $table .biom`
@@ -235,8 +247,8 @@ echo "
 	dmbase=`basename $dm _dm.txt`
 	for line in `cat $catlist`; do
 
-echo "<tr><td> Distance boxplots (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_boxplots/${line}_Distances.pdf\" target=\"_blank\"> ${line}_Distances.pdf </a></td></tr>
-<tr><td> Distance boxplots statistics (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_boxplots/${line}_Stats.txt\" target=\"_blank\"> ${line}_Stats.txt </a></td></tr>" >> $outdir/index.html
+echo "<tr><td> Distance boxplots (${line}, ${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_boxplots/${line}_Distances.pdf\" target=\"_blank\"> ${line}_Distances.pdf </a></td></tr>
+<tr><td> Distance boxplots statistics (${line}, ${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_boxplots/${line}_Stats.txt\" target=\"_blank\"> ${line}_Stats.txt </a></td></tr>" >> $outdir/index.html
 
 	done
 
@@ -245,7 +257,7 @@ echo "<tr><td> Distance boxplots (${dmbase}) </td><td> <a href=\"./bdiv_normaliz
 echo "<tr><td> 3D PCoA plot (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_emperor_pcoa_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
 <tr><td> 2D PCoA plot (${dmbase}) </td><td> <a href=\"./bdiv_normalized/2D_bdiv_plots/${dmbase}_pc_2D_PCoA_plots.html\" target=\"_blank\"> index.html </a></td></tr>
 <tr><td> 3D NMDS plot (${dmbase}, $nmsstress) </td><td> <a href=\"./bdiv_normalized/${dmbase}_emperor_nmds_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
-<tr><td> DB-RDA plot (${dmbase}) </td><td> <a href=\"./bdiv_normalized/dbrda_out/${line}/${dmbase}/dbrda_plot.pdf\" target=\"_blank\"> dbrda_plot.pdf </a></td></tr>" >> $outdir/index.html
+<tr><td> DB-RDA plot (${dmbase}) </td><td> <a href=\"./bdiv_normalized/dbrda_out/\" target=\"_blank\"> dbrda_plot.pdf </a></td></tr>" >> $outdir/index.html
 echo "<tr><td> Distance matrix (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_dm.txt\" target=\"_blank\"> ${dmbase}_dm.txt </a></td></tr>
 <tr><td> Principal coordinate matrix (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_pc.txt\" target=\"_blank\"> ${dmbase}_pc.txt </a></td></tr>
 <tr><td> NMDS coordinates (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_nmds.txt\" target=\"_blank\"> ${dmbase}_nmds.txt </a></td></tr>" >> $outdir/index.html
@@ -277,7 +289,8 @@ echo "<tr><td> Distance boxplots (${dmbase}) </td><td> <a href=\"./bdiv_rarefied
 
 echo "<tr><td> 3D PCoA plot (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_emperor_pcoa_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
 <tr><td> 2D PCoA plot (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/2D_PCoA_bdiv_plots/${dmbase}_pc_2D_PCoA_plots.html\" target=\"_blank\"> index.html </a></td></tr>
-<tr><td> 3D NMDS plot (${dmbase}, $nmsstress) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_emperor_nmds_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>" >> $outdir/index.html
+<tr><td> 3D NMDS plot (${dmbase}, $nmsstress) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_emperor_nmds_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
+<tr><td> DB-RDA plot (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/dbrda_out/\" target=\"_blank\"> dbrda_plot.pdf </a></td></tr>" >> $outdir/index.html
 echo "<tr><td> Distance matrix (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_dm.txt\" target=\"_blank\"> ${dmbase}_dm.txt </a></td></tr>
 <tr><td> Principal coordinate matrix (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_pc.txt\" target=\"_blank\"> ${dmbase}_pc.txt </a></td></tr>
 <tr><td> NMDS coordinates (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_nmds.txt\" target=\"_blank\"> ${dmbase}_nmds.txt </a></td></tr>" >> $outdir/index.html

@@ -82,7 +82,6 @@ trap finish EXIT
 
 ## Read in variables from config file
 	tree=(`grep "Tree" $config | grep -v "#" | cut -f 2`)
-	cores=(`grep "CPU_cores" $config | grep -v "#" | cut -f 2`)
 	adepth=(`grep "Rarefaction_depth" $config | grep -v "#" | cut -f 2`)
 	threads=$(($cores+1))
 
@@ -356,6 +355,19 @@ Alpha diversity metrics: $alphametrics
 Beta diversity metrics: $metrics
 Tree file: None found" >> $log
 		fi
+
+		## Make .txt versions of sorted analysis tables (CSSsort and raresort)
+		CCSsorttxt="$outdir/OTU_tables/CSS_table_sorted.txt"
+		raresorttxt="$outdir/OTU_tables/rarefied_table_sorted.txt"
+		if [[ ! -f $CSSsorttxt ]]; then
+		biomtotxt.sh $CSSsort &>/dev/null
+		sed -i '/# Constructed from biom file/d' $CSSsorttxt 2>/dev/null || true
+		fi
+		if [[ ! -f $raresorttxt ]]; then
+		biomtotxt.sh $raresort &>/dev/null
+		sed -i '/# Constructed from biom file/d' $raresorttxt 2>/dev/null || true
+		fi
+		
 
 ################################################################################
 ## START OF NORMALIZED ANALYSIS HERE
