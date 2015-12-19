@@ -62,8 +62,8 @@ echo "<html>
 if [[ -f $outdir/OTU_tables/${inputbase}.summary ]]; then
 echo "<tr><td> Input BIOM table statistics </td><td> <a href=\"./OTU_tables/${inputbase}.summary\" target=\"_blank\"> ${inputbase}.summary </a></td></tr>" >> $outdir/index.html
 fi
-if [[ -f $outdir/OTU_tables/table_even${depth}.summary ]]; then
-echo "<tr><td> Rarefied BIOM table statistics (depth = $depth) </td><td> <a href=\"./OTU_tables/table_even${depth}.summary\" target=\"_blank\"> table_even${depth}.summary </a></td></tr>" >> $outdir/index.html
+if [[ -f $outdir/OTU_tables/rarefied_table.summary ]]; then
+echo "<tr><td> Rarefied BIOM table statistics (depth = $depth) </td><td> <a href=\"./OTU_tables/rarefied_table.summary\" target=\"_blank\"> rarefied_table.summary </a></td></tr>" >> $outdir/index.html
 fi
 if [[ -f $outdir/OTU_tables/sample_filtered_table.summary ]]; then
 echo "<tr><td> Sample-filtered BIOM table statistics </td><td> <a href=\"./OTU_tables/sample_filtered_table.summary\" target=\"_blank\"> sample_filtered_table.summary </a></td></tr>" >> $outdir/index.html

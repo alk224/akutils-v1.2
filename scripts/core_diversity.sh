@@ -135,18 +135,25 @@ Parsing input categories."
 
 for table in `cat $tablelist`; do
 
+		## Define initial variables
+		workdir=$(pwd)
+		inputdir=$(dirname $table)
+		inputdirup1=$(dirname $inputdir)
+		inputbase=$(basename $table .biom)
+
+		## Summarize any tables in input directory
+		biom-summarize_folder.sh $inputdir &>/dev/null
+		wait
+
 		## Determine rarefaction depth
 		if [[ $adepth =~ ^[0-9]+$ ]]; then
 		depth=($adepth)
 		else
-		depth=`awk '/Counts\/sample detail:/ {for(i=1; i<=1; i++) {getline; print $NF}}' $tabledir/$inputbase.summary | awk -F. '{print $1}'`
+		depth=`awk '/Counts\/sample detail:/ {for(i=1; i<=1; i++) {getline; print $NF}}' $inputdir/$inputbase.summary | awk -F. '{print $1}'`
 		fi
 
-		## Define table-specific variables, make output directory if necessary
+		## Define remaining variables, make output directory if necessary
 		## and move table there for normalizing, rarefaction, and filtering
-		inputdir=$(dirname $table)
-		inputdirup1=$(dirname $inputdir)
-		inputbase=$(basename $table .biom)
 		outdir="$inputdir/core_diversity/${inputbase}_depth${depth}"
 		tabledir="$outdir/OTU_tables"
 		if [[ ! -d $outdir ]]; then
@@ -729,11 +736,11 @@ Make distance boxplots commands:" >> $log
 	echo "
 Generating distance boxplots."
 	for line in `cat $catlist`; do
-	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
-	sleep 1
-	done
 		for dm in $outdir/bdiv_normalized/*_dm.txt; do
 		dmbase=$(basename $dm _dm.txt)
+		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+		sleep 1
+		done
 		echo "	make_distance_boxplots.py -d $outdir/bdiv_normalized/${dmbase}_dm.txt -f $line -o $outdir/bdiv_normalized/${dmbase}_boxplots/ -m $mapfile -n 999" >> $log
 		( make_distance_boxplots.py -d $outdir/bdiv_normalized/${dmbase}_dm.txt -f $line -o $outdir/bdiv_normalized/${dmbase}_boxplots/ -m $mapfile -n 999 >/dev/null 2>&1 || true ) &
 		done
@@ -1213,11 +1220,11 @@ Make distance boxplots commands:" >> $log
 	echo "
 Generating distance boxplots."
 	for line in `cat $catlist`; do
-	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
-	sleep 1
-	done
 		for dm in $outdir/bdiv_rarefied/*_dm.txt; do
 		dmbase=$(basename $dm _dm.txt)
+		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+		sleep 1
+		done
 		echo "	make_distance_boxplots.py -d $outdir/bdiv_rarefied/${dmbase}_dm.txt -f $line -o $outdir/bdiv_rarefied/${dmbase}_boxplots/ -m $mapfile -n 999" >> $log
 		( make_distance_boxplots.py -d $outdir/bdiv_rarefied/${dmbase}_dm.txt -f $line -o $outdir/bdiv_rarefied/${dmbase}_boxplots/ -m $mapfile -n 999 >/dev/null 2>&1 || true ) &
 		done
@@ -1420,15 +1427,19 @@ Summarize taxa commands by category \"$line\":
 	collapse_samples.py -m ${mapfile} -b ${raresort} --output_biom_fp ${outdir}/taxa_plots_${line}/${line}_otu_table.biom --output_mapping_fp ${outdir}/taxa_plots_${line}/${line}_map.txt --collapse_fields $line 1> $stdout 2> $stderr || true
 	wait
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
+		wait
 	sort_otu_table.py -i ${outdir}/taxa_plots_${line}/${line}_otu_table.biom -o ${outdir}/taxa_plots_${line}/${line}_otu_table_sorted.biom 1> $stdout 2> $stderr || true
 	wait
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
+		wait
 	summarize_taxa.py -i ${outdir}/taxa_plots_${line}/${line}_otu_table_sorted.biom -o ${outdir}/taxa_plots_${line}/  -L 2,3,4,5,6,7 -a 1> $stdout 2> $stderr || true
 	wait
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
+		wait
 	plot_taxa_summary.py -i ${outdir}/taxa_plots_${line}/${line}_otu_table_sorted_L2.txt,${outdir}/taxa_plots_${line}/${line}_otu_table_sorted_L3.txt,${outdir}/taxa_plots_${line}/${line}_otu_table_sorted_L4.txt,${outdir}/taxa_plots_${line}/${line}_otu_table_sorted_L5.txt,${outdir}/taxa_plots_${line}/${line}_otu_table_sorted_L6.txt,${outdir}/taxa_plots_${line}/${line}_otu_table_sorted_L7.txt -o ${outdir}/taxa_plots_${line}/taxa_summary_plots/ -c bar,pie 1> $stdout 2> $stderr || true
 	wait
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
+		wait
 		fi
 	done
 
