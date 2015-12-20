@@ -1116,6 +1116,7 @@ Compare categories commands:" >> $log
 	echo "
 Calculating one-way statsitics from distance matrices."
 	if [[ ! -f $outdir/bdiv_rarefied/permanova_results_collated.txt ]]; then
+echo > $outdir/bdiv_rarefied/permanova_results_collated.txt
 echo "Running PERMANOVA tests."
 echo "PERMANOVA:" >> $log
 	for line in `cat $catlist`; do
@@ -1144,6 +1145,7 @@ echo "PERMANOVA:" >> $log
 	fi
 
 	if [[ ! -f $outdir/bdiv_rarefied/permdisp_results_collated.txt ]]; then
+echo > $outdir/bdiv_rarefied/permdisp_results_collated.txt
 echo "Running PERMDISP tests."
 echo "PERMDISP:" >> $log
 	for line in `cat $catlist`; do
@@ -1172,6 +1174,7 @@ echo "PERMDISP:" >> $log
 	fi
 
 	if [[ ! -f $outdir/bdiv_rarefied/anosim_results_collated.txt ]]; then
+echo > $outdir/bdiv_rarefied/anosim_results_collated.txt
 echo "Running ANOSIM tests."
 echo "ANOSIM:" >> $log
 	for line in `cat $catlist`; do
@@ -1200,6 +1203,7 @@ echo "ANOSIM:" >> $log
 	fi
 
 	if [[ ! -f $outdir/bdiv_rarefied/dbrda_results_collated.txt ]]; then
+echo > $outdir/bdiv_rarefied/dbrda_results_collated.txt
 echo "Running DB-RDA tests."
 echo "DB-RDA:" >> $log
 	for line in `cat $catlist`; do
@@ -1228,6 +1232,7 @@ echo "DB-RDA:" >> $log
 	fi
 
 	if [[ ! -f $outdir/bdiv_rarefied/adonis_results_collated.txt ]]; then
+echo > $outdir/bdiv_rarefied/adonis_results_collated.txt
 echo "Running Adonis tests."
 echo "Adonis:" >> $log
 	for line in `cat $catlist`; do

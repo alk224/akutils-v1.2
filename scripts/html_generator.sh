@@ -45,7 +45,7 @@ echo "<tr><td><font size="1"><a href=\"./L7_sequences_by_taxon_alignments/${taxo
 ## Master HTML output below here
 
 ## Page header and log file
-log=`ls $outdir/log_core_diversity*`
+log=`ls $outdir/log_core_diversity* 2>/dev/null`
 logfile=$(basename $log)
 
 echo "<html>
@@ -118,12 +118,12 @@ fi
 ## Representative sequences summary and link
 	if [[ -f $outdir/Representative_sequences/L7_taxa_list.txt ]] && [[ -f $outdir/Representative_sequences/otus_per_taxon_summary.txt ]]; then
 #	tablename=`basename $table .biom`
-	Total_OTUs=`cat $outdir/OTU_tables/$inputbase.txt | grep -v "#" | wc -l`
-	Total_taxa=`cat $outdir/Representative_sequences/L7_taxa_list.txt | wc -l`
-	Mean_OTUs=`grep mean $outdir/Representative_sequences/otus_per_taxon_summary.txt | cut -f2`
-	Median_OTUs=`grep median $outdir/Representative_sequences/otus_per_taxon_summary.txt | cut -f2`
-	Max_OTUs=`grep max $outdir/Representative_sequences/otus_per_taxon_summary.txt | cut -f2`
-	Min_OTUs=`grep min $outdir/Representative_sequences/otus_per_taxon_summary.txt | cut -f2`
+	Total_OTUs=`cat $outdir/OTU_tables/$inputbase.txt 2>/dev/null | grep -v "#" 2>/dev/null | wc -l`
+	Total_taxa=`cat $outdir/Representative_sequences/L7_taxa_list.txt 2>/dev/null | wc -l`
+	Mean_OTUs=`grep mean $outdir/Representative_sequences/otus_per_taxon_summary.txt 2>/dev/null | cut -f2`
+	Median_OTUs=`grep median $outdir/Representative_sequences/otus_per_taxon_summary.txt 2>/dev/null | cut -f2`
+	Max_OTUs=`grep max $outdir/Representative_sequences/otus_per_taxon_summary.txt 2>/dev/null | cut -f2`
+	Min_OTUs=`grep min $outdir/Representative_sequences/otus_per_taxon_summary.txt 2>/dev/null | cut -f2`
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Sequencing data by L7 taxon </td></tr>
 <tr><td> Total OTU count </td><td align=center> $Total_OTUs </td></tr>
@@ -316,7 +316,7 @@ echo "<tr><td> Distance boxplots (${dmbase}) </td><td> <a href=\"./bdiv_rarefied
 
 	done
 
-	nmsstress=`grep -e "^stress\s" $outdir/bdiv_rarefied/${dmbase}_nmds.txt | cut -f2` 2>/dev/null || true
+	nmsstress=`grep -e "^stress\s" $outdir/bdiv_rarefied/${dmbase}_nmds.txt 2>/dev/null | cut -f2` || true
 
 echo "<tr><td> 3D PCoA plot (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_emperor_pcoa_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
 <tr><td> 2D PCoA plot (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/2D_PCoA_bdiv_plots/${dmbase}_pc_2D_PCoA_plots.html\" target=\"_blank\"> index.html </a></td></tr>
