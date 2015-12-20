@@ -60,27 +60,58 @@ echo "<html>
 
 ## Biom summary files
 if [[ -f $outdir/OTU_tables/${inputbase}.summary ]]; then
-echo "<tr><td> Input BIOM table statistics </td><td> <a href=\"./OTU_tables/${inputbase}.summary\" target=\"_blank\"> ${inputbase}.summary </a></td></tr>" >> $outdir/index.html
+echo "<tr><td> Input OTU table statistics </td><td> <a href=\"./OTU_tables/${inputbase}.summary\" target=\"_blank\"> ${inputbase}.summary </a></td></tr>" >> $outdir/index.html
 fi
 if [[ -f $outdir/OTU_tables/rarefied_table.summary ]]; then
-echo "<tr><td> Rarefied BIOM table statistics (depth = $depth) </td><td> <a href=\"./OTU_tables/rarefied_table.summary\" target=\"_blank\"> rarefied_table.summary </a></td></tr>" >> $outdir/index.html
+echo "<tr><td> Rarefied OTU table statistics (depth = $depth) </td><td> <a href=\"./OTU_tables/rarefied_table.summary\" target=\"_blank\"> rarefied_table.summary </a></td></tr>" >> $outdir/index.html
 fi
 if [[ -f $outdir/OTU_tables/sample_filtered_table.summary ]]; then
-echo "<tr><td> Sample-filtered BIOM table statistics </td><td> <a href=\"./OTU_tables/sample_filtered_table.summary\" target=\"_blank\"> sample_filtered_table.summary </a></td></tr>" >> $outdir/index.html
+echo "<tr><td> Sample-filtered OTU table statistics </td><td> <a href=\"./OTU_tables/sample_filtered_table.summary\" target=\"_blank\"> sample_filtered_table.summary </a></td></tr>" >> $outdir/index.html
 fi
 if [[ -f $outdir/OTU_tables/CSS_table.summary ]]; then
-echo "<tr><td> CSS-normalized BIOM table statistics </td><td> <a href=\"./OTU_tables/CSS_table.summary\" target=\"_blank\"> CSS_table.summary </a></td></tr>" >> $outdir/index.html
+echo "<tr><td> CSS-normalized OTU table statistics </td><td> <a href=\"./OTU_tables/CSS_table.summary\" target=\"_blank\"> CSS_table.summary </a></td></tr>" >> $outdir/index.html
 fi
 
 ## Tables used in analysis (biom and .txt versions)
 if [[ -f $outdir/OTU_tables/rarefied_table_sorted.txt && -f $outdir/OTU_tables/CSS_table_sorted.txt ]]; then
 echo "
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> OTU tables </td></tr>" >> $outdir/index.html
+if [[ -f $outdir/OTU_tables/${inputbase}.biom ]]; then
+echo "<tr><td> Input OTU table (BIOM format) </td><td> <a href=\"./OTU_tables/${inputbase}.biom\" target=\"_blank\"> ${inputbase}.biom </a></td></tr>" >> $outdir/index.html
+fi
+if [[ -f $outdir/OTU_tables/${inputbase}.txt ]]; then
+echo "<tr><td> Input OTU table (tab-delimited format) </td><td> <a href=\"./OTU_tables/${inputbase}.txt\" target=\"_blank\"> ${inputbase}.txt </a></td></tr>" >> $outdir/index.html
+fi
+if [[ -f $outdir/OTU_tables/rarefied_table_sorted.biom ]]; then
+echo "<tr><td> Rarefied OTU table (BIOM format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted.biom\" target=\"_blank\"> rarefied_table_sorted.biom </a></td></tr>" >> $outdir/index.html
+fi
+if [[ -f $outdir/OTU_tables/rarefied_table_sorted.txt ]]; then
+echo "<tr><td> Rarefied OTU table (tab-delimited format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted.txt\" target=\"_blank\"> rarefied_table_sorted.txt </a></td></tr>" >> $outdir/index.html
+fi
+if [[ -f $outdir/OTU_tables/rarefied_table_sorted_relativized.biom ]]; then
+echo "<tr><td> Rarefied OTU table, relativized (BIOM format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted_relativized.biom\" target=\"_blank\"> rarefied_table_sorted_relativized.biom </a></td></tr>" >> $outdir/index.html
+fi
+if [[ -f $outdir/OTU_tables/rarefied_table_sorted_relativized.txt ]]; then
+echo "<tr><td> Rarefied OTU table, relativized (tab-delimited format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted_relativized.txt\" target=\"_blank\"> rarefied_table_sorted_relativized.txt </a></td></tr>" >> $outdir/index.html
+fi
+if [[ -f $outdir/OTU_tables/sample_filtered_table.biom ]]; then
+echo "<tr><td> Sample-filtered table (input for normzliation, BIOM format) </td><td> <a href=\"./OTU_tables/sample_filtered_table.biom\" target=\"_blank\"> sample_filtered_table.biom </a></td></tr>" >> $outdir/index.html
+fi
+if [[ -f $outdir/OTU_tables/sample_filtered_table.txt ]]; then
+echo "<tr><td> Sample-filtered table (input for normzliation, tab-delimited format) </td><td> <a href=\"./OTU_tables/sample_filtered_table.txt\" target=\"_blank\"> sample_filtered_table.txt </a></td></tr>" >> $outdir/index.html
+fi
+if [[ -f $outdir/OTU_tables/CSS_table_sorted.biom ]]; then
+echo "<tr><td> Normalized OTU table (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted.biom\" target=\"_blank\"> CSS_table_sorted.biom </a></td></tr>" >> $outdir/index.html
+fi
 if [[ -f $outdir/OTU_tables/CSS_table_sorted.txt ]]; then
-
-
-
-if [[ -f $outdir/OTU_tables/rarefied_table_sorted.txt
+echo "<tr><td> Normalized OTU table (tab-delimited format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted.txt\" target=\"_blank\"> CSS_table_sorted.txt </a></td></tr>" >> $outdir/index.html
+fi
+if [[ -f $outdir/OTU_tables/CSS_table_sorted_relativized.biom ]]; then
+echo "<tr><td> Normalized OTU table, relativized (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_relativized.biom\" target=\"_blank\"> CSS_table_sorted_relativized.biom </a></td></tr>" >> $outdir/index.html
+fi
+if [[ -f $outdir/OTU_tables/CSS_table_sorted_relativized.txt ]]; then
+echo "<tr><td> Normalized OTU table, relativized (tab-delimited format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_relativized.txt\" target=\"_blank\"> CSS_table_sorted_relativized.txt </a></td></tr>" >> $outdir/index.html
+fi
 
 fi
 

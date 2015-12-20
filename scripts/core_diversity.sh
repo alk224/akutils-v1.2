@@ -324,12 +324,30 @@ Normalizing sample-filtered table with CSS transformation:
 
 		## Sort OTU tables
 		CSSsort="$outdir/OTU_tables/CSS_table_sorted.biom"
+		raresort="$outdir/OTU_tables/rarefied_table_sorted.biom"
 		if [[ ! -f $CSSsort ]]; then
 		sort_otu_table.py -i $CSStable -o $CSSsort
+		echo "
+		sort_otu_table.py -i $CSStable -o $CSSsort" >> $log
 		fi
-		raresort="$outdir/OTU_tables/rarefied_table_sorted.biom"
 		if [[ ! -f $raresort ]]; then
 		sort_otu_table.py -i $raretable -o $raresort
+		echo "
+		sort_otu_table.py -i $raretable -o $raresort" >> $log
+		fi
+
+		## Relativize rarefied and CSS tables
+		raresortrel="$outdir/OTU_tables/rarefied_table_sorted_relativized.biom"
+		CSSsortrel="$outdir/OTU_tables/CSS_table_sorted_relativized.biom"
+		if [[ ! -f $raresortrel ]]; then
+		relativize_otu_table.py -i $raresort >/dev/null 2>&1 || true
+		echo "
+		relativize_otu_table.py -i $raresort" >> $log
+		fi
+		if [[ ! -f $CSSsortrel ]]; then
+		relativize_otu_table.py -i $CSSsort >/dev/null 2>&1 || true
+		echo "
+		relativize_otu_table.py -i $CSSsort" >> $log
 		fi
 
 		if [[ "$phylogenetic" == "YES" ]]; then
@@ -356,9 +374,13 @@ Beta diversity metrics: $metrics
 Tree file: None found" >> $log
 		fi
 
-		## Make .txt versions of sorted analysis tables (CSSsort and raresort)
+		## Make .txt versions of analysis tables
 		CCSsorttxt="$outdir/OTU_tables/CSS_table_sorted.txt"
 		raresorttxt="$outdir/OTU_tables/rarefied_table_sorted.txt"
+		intabletxt="$outdir/OTU_tables/$inputbase.txt"
+		filtertabletxt="$outdir/OTU_tables/sample_filtered_table.txt"
+		raresortreltxt="$outdir/OTU_tables/rarefied_table_sorted_relativized.txt"
+		CSSsortreltxt="$outdir/OTU_tables/CSS_table_sorted_relativized.txt"
 		if [[ ! -f $CSSsorttxt ]]; then
 		biomtotxt.sh $CSSsort &>/dev/null
 		sed -i '/# Constructed from biom file/d' $CSSsorttxt 2>/dev/null || true
@@ -367,7 +389,22 @@ Tree file: None found" >> $log
 		biomtotxt.sh $raresort &>/dev/null
 		sed -i '/# Constructed from biom file/d' $raresorttxt 2>/dev/null || true
 		fi
-		
+		if [[ ! -f $intabletxt ]]; then
+		biomtotxt.sh $intable &>/dev/null
+		sed -i '/# Constructed from biom file/d' $intabletxt 2>/dev/null || true
+		fi
+		if [[ ! -f $filtertabletxt ]]; then
+		biomtotxt.sh $filtertable &>/dev/null
+		sed -i '/# Constructed from biom file/d' $filtertabletxt 2>/dev/null || true
+		fi
+		if [[ ! -f $raresortreltxt ]]; then
+		biomtotxt.sh $raresortrel &>/dev/null
+		sed -i '/# Constructed from biom file/d' $raresortreltxt 2>/dev/null || true
+		fi
+		if [[ ! -f $CSSsortreltxt ]]; then
+		biomtotxt.sh $CSSsortrel &>/dev/null
+		sed -i '/# Constructed from biom file/d' $CSSsortreltxt 2>/dev/null || true
+		fi
 
 ################################################################################
 ## START OF NORMALIZED ANALYSIS HERE
@@ -1495,6 +1532,11 @@ Relativizing OTU table:
 	relativize_otu_table.py -i $raresort" >> $log
 	relativize_otu_table.py -i $raresort >/dev/null 2>&1 || true
 	fi
+		raresortreltxt="$outdir/OTU_tables/rarefied_table_sorted_relativized.txt"
+		if [[ ! -f $raresortreltxt ]]; then
+		biomtotxt.sh $raresortrel &>/dev/null
+		sed -i '/# Constructed from biom file/d' $raresortreltxt 2>/dev/null || true
+		fi
 	echo "
 Calculating Kruskal-Wallis test statistics when possible."
 for line in `cat $catlist`; do
