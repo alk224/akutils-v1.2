@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>akutils core diversity output</title>
+    <link rel="stylesheet" href=".html/akutils.css">
+    <meta name="viewport" content="width=device-width">
+    <script>document.documentElement.className = "js";</script>
+    <script src=".html/jquery-1.9.1.js"></script>
+    <script src=".html/json2.js"></script>
+    <script src=".html/jquery.collapse.js"></script>
+
+  </head>
+  <body>
+<br>
+<a href="http://www.qiime.org" target="_blank"><img src=".html/qiimelogo.png" alt="www.qiime.org""/></a><p>
+<hr>
+    <h1>akutils core diversity output</h1>
+    <div class="col c1">
+
+
+      <h2>Click on a heading to expand or collapse results:</h2>
+      <div id="default-example" data-collapse>
+        <h3>Normalized analysis</h3>
+        <div>No results loaded</div>
+        <h3>Rarefied analysis</h3>
+        <div>No results loaded</div>
+      </div>
+
+
+
+      <script>
+        new jQueryCollapse($("#custom-show-hide-example"), {
+          open: function() {
+            this.slideDown(150);
+          },
+          close: function() {
+            this.slideUp(150);
+          }
+        });
+      </script>
+    </div>
+  </body>
+</html>
