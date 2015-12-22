@@ -254,6 +254,24 @@ echo "</table>" >> $anchor06temp
 
 
 ## Build anchor11temp (rarefied taxa plots)
+## Taxa plots by sample
+	if [[ -d $outdir/Rarefied_output/taxa_plots ]]; then
+echo "<table class=\"center\" border=1>" > $anchor11temp
+echo "<tr><td> Taxa summary bar plots (by sample) </td><td> <a href=\"./Rarefied_output/taxa_plots/taxa_summary_plots/bar_charts.html\" target=\"_blank\"> bar_charts.html </a></td></tr>" >> $anchor11temp
+
+## Taxa plots by category
+	for line in `cat $catlist`; do
+	if [[ -d $outdir/Rarefied_output/taxa_plots_${line} ]]; then
+echo "<tr><td> Taxa summary bar plots (${line}) </td><td> <a href=\"./Rarefied_output/taxa_plots_${line}/taxa_summary_plots/bar_charts.html\" target=\"_blank\"> bar_charts.html </a></td></tr>
+<tr><td> Taxa summary pie plots (${line}) </td><td> <a href=\"./Rarefied_output/taxa_plots_$line/taxa_summary_plots/pie_charts.html\" target=\"_blank\"> pie_charts.html </a></td></tr>" >> $anchor11temp
+	fi
+	done
+echo "</table>" >> $anchor11temp
+	fi
+
+	## Find anchor in template and send data
+	linenum=`sed -n "/anchor11/=" $outdir/index.html`
+	sed -i "${linenum}r $anchor11temp" $outdir/index.html
 
 
 ## Build anchor12temp (rarefied alpha diversity)
@@ -278,7 +296,6 @@ echo "</table>" >> $anchor06temp
 
 
 	if [[ -d $outdir/Representative_sequences ]]; then
-
 ## Build anchor18temp (unaligned sequences)
 echo "<table class=\"center\" border=1>" > $anchor18temp
 
@@ -317,22 +334,7 @@ echo "</table>" >> $anchor19temp
 
 exit 0
 
-## Taxa plots by sample
-	if [[ -d $outdir/taxa_plots ]]; then
-echo "
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Taxonomic Summary Results (by sample) </td></tr>
-<tr><td> Taxa summary bar plots </td><td> <a href=\"./taxa_plots/taxa_summary_plots/bar_charts.html\" target=\"_blank\"> bar_charts.html </a></td></tr>" >> $outdir/index.html
-	fi
 
-## Taxa plots by category
-	for line in `cat $catlist`; do
-	if [[ -d $outdir/taxa_plots_${line} ]]; then
-echo "
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Taxonomic summary results (by $line) </td></tr>
-<tr><td> Taxa summary bar plots </td><td> <a href=\"./taxa_plots_$line/taxa_summary_plots/bar_charts.html\" target=\"_blank\"> bar_charts.html </a></td></tr>
-<tr><td> Taxa summary pie plots </td><td> <a href=\"./taxa_plots_$line/taxa_summary_plots/pie_charts.html\" target=\"_blank\"> pie_charts.html </a></td></tr>" >> $outdir/index.html
-	fi
-	done
 
 ## Kruskal-Wallis results
 	if [[ -d $outdir/KruskalWallis ]]; then
