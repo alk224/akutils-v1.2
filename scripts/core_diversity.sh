@@ -422,13 +422,13 @@ Processing normalized table."
 Processing normalized table." >> $log
 
 ## Summarize taxa (yields relative abundance tables)
-	if [[ ! -d $outdir/bdiv_normalized/summarized_tables ]]; then
+	if [[ ! -d $outdir/Normalized_output/summarized_tables ]]; then
 	echo "
 Summarize taxa command:
-	summarize_taxa.py -i $CSSsort -o $outdir/bdiv_normalized/summarized_tables -L 2,3,4,5,6,7" >> $log
+	summarize_taxa.py -i $CSSsort -o $outdir/Normalized_output/summarized_tables -L 2,3,4,5,6,7" >> $log
 	echo "
 Summarizing taxonomy by sample and building plots."
-	summarize_taxa.py -i $CSSsort -o $outdir/bdiv_normalized/summarized_tables -L 2,3,4,5,6,7 1> $stdout 2> $stderr
+	summarize_taxa.py -i $CSSsort -o $outdir/Normalized_output/summarized_tables -L 2,3,4,5,6,7 1> $stdout 2> $stderr
 	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	
 	else
@@ -439,23 +439,23 @@ Relative abundance tables already present." >> $log
 
 ## Beta diversity
 	if [[ "$phylogenetic" == "YES" ]]; then
-	if [[ ! -f $outdir/bdiv_normalized/bray_curtis_dm.txt && ! -f $outdir/bdiv_normalized/chord_dm.txt && ! -f $outdir/bdiv_normalized/hellinger_dm.txt && ! -f $outdir/bdiv_normalized/kulczynski_dm.txt && ! -f $outdir/bdiv_normalized/unweighted_unifrac_dm.txt && ! -f $outdir/bdiv_normalized/weighted_unifrac_dm.txt ]]; then
+	if [[ ! -f $outdir/Normalized_output/beta_diversity/bray_curtis_dm.txt && ! -f $outdir/Normalized_output/beta_diversity/chord_dm.txt && ! -f $outdir/Normalized_output/beta_diversity/hellinger_dm.txt && ! -f $outdir/Normalized_output/beta_diversity/kulczynski_dm.txt && ! -f $outdir/Normalized_output/beta_diversity/unweighted_unifrac_dm.txt && ! -f $outdir/Normalized_output/beta_diversity/weighted_unifrac_dm.txt ]]; then
 	echo "
 Parallel beta diversity command:
-	parallel_beta_diversity.py -i $CSSsort -o $outdir/bdiv_normalized/ --metrics $metrics -T  -t $tree --jobs_to_start $cores" >> $log
+	parallel_beta_diversity.py -i $CSSsort -o $outdir/Normalized_output/beta_diversity/ --metrics $metrics -T  -t $tree --jobs_to_start $cores" >> $log
 	echo "
 Calculating beta diversity distance matrices."
-	parallel_beta_diversity.py -i $CSSsort -o $outdir/bdiv_normalized/ --metrics $metrics -T  -t $tree --jobs_to_start $cores 1> $stdout 2> $stderr
+	parallel_beta_diversity.py -i $CSSsort -o $outdir/Normalized_output/beta_diversity/ --metrics $metrics -T  -t $tree --jobs_to_start $cores 1> $stdout 2> $stderr
 	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	fi
 	elif [[ "$phylogenetic" == "NO" ]]; then
-	if [[ ! -f $outdir/bdiv_normalized/bray_curtis_dm.txt && ! -f $outdir/bdiv_normalized/chord_dm.txt && ! -f $outdir/bdiv_normalized/hellinger_dm.txt && ! -f $outdir/bdiv_normalized/kulczynski_dm.txt ]]; then
+	if [[ ! -f $outdir/Normalized_output/beta_diversity/bray_curtis_dm.txt && ! -f $outdir/Normalized_output/beta_diversity/chord_dm.txt && ! -f $outdir/Normalized_output/beta_diversity/hellinger_dm.txt && ! -f $outdir/Normalized_output/beta_diversity/kulczynski_dm.txt ]]; then
 	echo "
 Parallel beta diversity command:
-	parallel_beta_diversity.py -i $CSSsort -o $outdir/bdiv_normalized/ --metrics $metrics -T --jobs_to_start $cores" >> $log
+	parallel_beta_diversity.py -i $CSSsort -o $outdir/Normalized_output/beta_diversity/ --metrics $metrics -T --jobs_to_start $cores" >> $log
 	echo "
 Calculating beta diversity distance matrices."
-	parallel_beta_diversity.py -i $CSSsort -o $outdir/bdiv_normalized/ --metrics $metrics -T --jobs_to_start $cores 1> $stdout 2> $stderr
+	parallel_beta_diversity.py -i $CSSsort -o $outdir/Normalized_output/beta_diversity/ --metrics $metrics -T --jobs_to_start $cores 1> $stdout 2> $stderr
 	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	fi
 	else
@@ -465,35 +465,35 @@ Beta diversity matrices already present." >> $log
 	wait
 
 ## Rename output files
-	if [[ ! -f $outdir/bdiv_normalized/bray_curtis_dm.txt ]]; then
-	bcdm=$(ls $outdir/bdiv_normalized/bray_curtis_*.txt)
-	mv $bcdm $outdir/bdiv_normalized/bray_curtis_dm.txt 2>/dev/null
+	if [[ ! -f $outdir/Normalized_output/beta_diversity/bray_curtis_dm.txt ]]; then
+	bcdm=$(ls $outdir/Normalized_output/beta_diversity/bray_curtis_*.txt)
+	mv $bcdm $outdir/Normalized_output/beta_diversity/bray_curtis_dm.txt 2>/dev/null
 	fi
 	wait
-	if [[ ! -f $outdir/bdiv_normalized/chord_dm.txt ]]; then
-	cdm=$(ls $outdir/bdiv_normalized/chord_*.txt)
-	mv $cdm $outdir/bdiv_normalized/chord_dm.txt 2>/dev/null
+	if [[ ! -f $outdir/Normalized_output/beta_diversity/chord_dm.txt ]]; then
+	cdm=$(ls $outdir/Normalized_output/beta_diversity/chord_*.txt)
+	mv $cdm $outdir/Normalized_output/beta_diversity/chord_dm.txt 2>/dev/null
 	fi
 	wait
-	if [[ ! -f $outdir/bdiv_normalized/hellinger_dm.txt ]]; then
-	hdm=$(ls $outdir/bdiv_normalized/hellinger_*.txt)
-	mv $hdm $outdir/bdiv_normalized/hellinger_dm.txt 2>/dev/null
+	if [[ ! -f $outdir/Normalized_output/beta_diversity/hellinger_dm.txt ]]; then
+	hdm=$(ls $outdir/Normalized_output/beta_diversity/hellinger_*.txt)
+	mv $hdm $outdir/Normalized_output/beta_diversity/hellinger_dm.txt 2>/dev/null
 	fi
 	wait
-	if [[ ! -f $outdir/bdiv_normalized/kulczynski_dm.txt ]]; then
-	kdm=$(ls $outdir/bdiv_normalized/kulczynski_*.txt)
-	mv $kdm $outdir/bdiv_normalized/kulczynski_dm.txt 2>/dev/null
+	if [[ ! -f $outdir/Normalized_output/beta_diversity/kulczynski_dm.txt ]]; then
+	kdm=$(ls $outdir/Normalized_output/beta_diversity/kulczynski_*.txt)
+	mv $kdm $outdir/Normalized_output/beta_diversity/kulczynski_dm.txt 2>/dev/null
 	fi
 	wait
 	if [[ "$phylogenetic" == "YES" ]]; then
-	if [[ ! -f $outdir/bdiv_normalized/unweighted_unifrac_dm.txt ]]; then
-	uudm=$(ls $outdir/bdiv_normalized/unweighted_unifrac_*.txt)
-	mv $uudm $outdir/bdiv_normalized/unweighted_unifrac_dm.txt 2>/dev/null
+	if [[ ! -f $outdir/Normalized_output/beta_diversity/unweighted_unifrac_dm.txt ]]; then
+	uudm=$(ls $outdir/Normalized_output/beta_diversity/unweighted_unifrac_*.txt)
+	mv $uudm $outdir/Normalized_output/beta_diversity/unweighted_unifrac_dm.txt 2>/dev/null
 	fi
 	wait
-	if [[ ! -f $outdir/bdiv_normalized/weighted_unifrac_dm.txt ]]; then
-	wudm=$(ls $outdir/bdiv_normalized/weighted_unifrac_*.txt)
-	mv $wudm $outdir/bdiv_normalized/weighted_unifrac_dm.txt 2>/dev/null
+	if [[ ! -f $outdir/Normalized_output/beta_diversity/weighted_unifrac_dm.txt ]]; then
+	wudm=$(ls $outdir/Normalized_output/beta_diversity/weighted_unifrac_*.txt)
+	mv $wudm $outdir/Normalized_output/beta_diversity/weighted_unifrac_dm.txt 2>/dev/null
 	fi
 	wait
 	fi
