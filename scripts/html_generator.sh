@@ -290,7 +290,35 @@ echo "</table>" >> $anchor11temp
 
 
 ## Build anchor13temp (rarefied beta diversity)
+## Rarefied beta diversity results
+	if [[ -d $outdir/Rarefied_output/beta_diversity ]]; then
+echo "<table class=\"center\" border=1>" > $anchor13temp
+echo "<tr><td> Anosim results (rarefied) </td><td> <a href=\"./Rarefied_output/beta_diversity/anosim_results_collated.txt\" target=\"_blank\"> anosim_results_collated.txt -- RAREFIED DATA </a></td></tr>
+<tr><td> Adonis results (rarefied) </td><td> <a href=\"./Rarefied_output/beta_diversity/adonis_results_collated.txt\" target=\"_blank\"> adonis_results_collated.txt -- RAREFIED DATA </a></td></tr>
+<tr><td> DB-RDA results (rarefied) </td><td> <a href=\"./Rarefied_output/beta_diversity/dbrda_results_collated.txt\" target=\"_blank\"> dbrda_results_collated.txt -- RAREFIED DATA </a></td></tr>
+<tr><td> Permanova results (rarefied) </td><td> <a href=\"./Rarefied_output/beta_diversity/permanova_results_collated.txt\" target=\"_blank\"> permanova_results_collated.txt -- RAREFIED DATA </a></td></tr>
+<tr><td> Permdisp results (rarefied) </td><td> <a href=\"./Rarefied_output/beta_diversity/permdisp_results_collated.txt\" target=\"_blank\"> permdisp_results_collated.txt -- RAREFIED DATA </a></td></tr>" >> $anchor13temp
+	for dm in $outdir/Rarefied_output/beta_diversity/*_dm.txt; do
+	dmbase=`basename $dm _dm.txt`
+	for line in `cat $catlist`; do
+echo "<tr><td> Distance boxplots (${dmbase}) </td><td> <a href=\"./Rarefied_output/beta_diversity/${dmbase}_boxplots/${line}_Distances.pdf\" target=\"_blank\"> ${line}_Distances.pdf </a></td></tr>
+<tr><td> Distance boxplots statistics (${dmbase}) </td><td> <a href=\"./Rarefied_output/beta_diversity/${dmbase}_boxplots/${line}_Stats.txt\" target=\"_blank\"> ${line}_Stats.txt </a></td></tr>" >> $anchor13temp
+	done
+	nmsstress=`grep -e "^stress\s" $outdir/Rarefied_output/beta_diversity/${dmbase}_nmds.txt 2>/dev/null | cut -f2` || true
+echo "<tr><td> 3D PCoA plot (${dmbase}) </td><td> <a href=\"./Rarefied_output/beta_diversity/${dmbase}_emperor_pcoa_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
+<tr><td> 2D PCoA plot (${dmbase}) </td><td> <a href=\"./Rarefied_output/beta_diversity/2D_PCoA_bdiv_plots/${dmbase}_pc_2D_PCoA_plots.html\" target=\"_blank\"> index.html </a></td></tr>
+<tr><td> 3D NMDS plot (${dmbase}, $nmsstress) </td><td> <a href=\"./Rarefied_output/beta_diversity/${dmbase}_emperor_nmds_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
+<tr><td> DB-RDA plot (${dmbase}) </td><td> <a href=\"./Rarefied_output/beta_diversity/dbrda_out/\" target=\"_blank\"> dbrda_plot.pdf </a></td></tr>" >> $anchor13temp
+echo "<tr><td> Distance matrix (${dmbase}) </td><td> <a href=\"./Rarefied_output/beta_diversity/${dmbase}_dm.txt\" target=\"_blank\"> ${dmbase}_dm.txt </a></td></tr>
+<tr><td> Principal coordinate matrix (${dmbase}) </td><td> <a href=\"./Rarefied_output/beta_diversity/${dmbase}_pc.txt\" target=\"_blank\"> ${dmbase}_pc.txt </a></td></tr>
+<tr><td> NMDS coordinates (${dmbase}) </td><td> <a href=\"./Rarefied_output/beta_diversity/${dmbase}_nmds.txt\" target=\"_blank\"> ${dmbase}_nmds.txt </a></td></tr>" >> $anchor13temp
+	done
+echo "</table>" >> $anchor13temp
+	fi
 
+	## Find anchor in template and send data
+	linenum=`sed -n "/anchor13/=" $outdir/index.html`
+	sed -i "${linenum}r $anchor13temp" $outdir/index.html
 
 ## Build anchor14temp (rarefied group significance)
 
@@ -537,17 +565,6 @@ echo "<tr><td> Distance matrix (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/$
 	done
 	fi
 
-
-
-## Rank abundance plots (rarefied)
-	if [[ -d $outdir/bdiv_rarefied/RankAbundance ]]; then
-echo "
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Rank Abundance Plots (relative abundances) -- RAREFIED DATA </td></tr> 
-<tr><td> Rank abundance (xlog-ylog) </td><td> <a href=\"./bdiv_rarefied/RankAbundance/rankabund_xlog-ylog.pdf\" target=\"_blank\"> rankabund_xlog-ylog.pdf </a></td></tr>
-<tr><td> Rank abundance (xlinear-ylog) </td><td> <a href=\"./bdiv_rarefied/RankAbundance/rankabund_xlinear-ylog.pdf\" target=\"_blank\"> rankabund_xlinear-ylog.pdf </a></td></tr>
-<tr><td> Rank abundance (xlog-ylinear) </td><td> <a href=\"./bdiv_rarefied/RankAbundance/rankabund_xlog-ylinear.pdf\" target=\"_blank\"> rankabund_xlog-ylinear.pdf </a></td></tr>
-<tr><td> Rank abundance (xlinear-ylinear) </td><td> <a href=\"./bdiv_rarefied/RankAbundance/rankabund_xlinear-ylinear.pdf\" target=\"_blank\"> rankabund_xlinear-ylinear.pdf </a></td></tr>" >> $outdir/index.html
-	fi
 
 ## Supervised learning (normalized)
 	if [[ -d $outdir/bdiv_normalized/SupervisedLearning ]]; then
