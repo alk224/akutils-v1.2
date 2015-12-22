@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<!-- akutils2.0 -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Sequencing data by L7 taxon</title>
+    <link rel="stylesheet" href=".html/akutils.css">
+    <meta name="viewport" content="width=device-width">
+    <script>document.documentElement.className = "js";</script>
+    <script src=".html/jquery-1.9.1.js"></script>
+    <script src=".html/json2.js"></script>
+    <script src=".html/jquery.collapse.js"></script>
+
+  </head>
+  <body>
+<br>
+<a href="http://www.qiime.org" target="_blank"><img src=".html/qiimelogo.png" alt="www.qiime.org""/></a><p>
+<hr>
+    <h1><a STYLE="text-decoration:none" href="https://github.com/alk224/akutils" target="_blank">akutils core diversity output (v2.0)</a></h1>
+    <div class="col c1">
+
+      <h2>Sequencing data:</h2>
+      <div id="result1" data-collapse="persist">
+        <h3>Unaligned sequences (fasta format)</h3>
+        <div>
+        <!-- anchor18 -->
+        </div>
+        <h3>Alignments of multi-sequence OTUs (clustal format)</h3>
+        <div>
+        <!-- anchor19 -->
+        </div>
+      </div>
+      <script>
+        new jQueryCollapse($("#result1"), {
+          open: function() {
+            this.slideDown(100);
+          },
+          close: function() {
+            this.slideUp(100);
+          }
+        });
+      </script>
+    </div>
+  </body>
+</html>
