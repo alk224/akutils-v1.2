@@ -260,7 +260,22 @@ echo "
 	sed -i "${linenum}r $anchor08temp" $outdir/index.html
 
 ## Build anchor09temp (normalized supervised learning)
+## Supervised learning (normalized)
+	if [[ -d $outdir/Normalized_output/SupervisedLearning ]]; then
+echo "<table class=\"center\" border=1>" > $anchor09temp
+	for category in `cat $catlist`; do
+echo "<tr><td> Summary (${category}) </td><td> <a href=\"./Normalized_output/SupervisedLearning/${category}/summary.txt\" target=\"_blank\"> summary.txt </a></td></tr>
+<tr><td> Mislabeling (${category}) </td><td> <a href=\"./Normalized_output/SupervisedLearning/${category}/mislabeling.txt\" target=\"_blank\"> mislabeling.txt </a></td></tr>
+<tr><td> Confusion Matrix (${category}) </td><td> <a href=\"./Normalized_output/SupervisedLearning/${category}/confusion_matrix.txt\" target=\"_blank\"> confusion_matrix.txt </a></td></tr>
+<tr><td> CV Probabilities (${category}) </td><td> <a href=\"./Normalized_output/SupervisedLearning/${category}/cv_probabilities.txt\" target=\"_blank\"> cv_probabilities.txt </a></td></tr>
+<tr><td> Feature Importance Scores (${category}) </td><td> <a href=\"./Normalized_output/SupervisedLearning/${category}/feature_importance_scores.txt\" target=\"_blank\"> feature_importance_scores.txt </a></td></tr>" >> $anchor09temp
+	done
+echo "</table>" >> $anchor09temp
+	fi
 
+	## Find anchor in template and send data
+	linenum=`sed -n "/anchor09/=" $outdir/index.html`
+	sed -i "${linenum}r $anchor09temp" $outdir/index.html
 
 ## Build anchor10temp (normalized biplots)
 
@@ -287,7 +302,25 @@ echo "</table>" >> $anchor11temp
 
 
 ## Build anchor12temp (rarefied alpha diversity)
+## Alpha diversity results
+	if [[ -d $outdir/Alpha_diversity_max${depth} ]]; then
+echo "<table class=\"center\" border=1>" > $anchor12temp
+echo "<tr><td> Alpha rarefaction plots </td><td> <a href=\"./Alpha_diversity_max$depth/alpha_rarefaction_plots/rarefaction_plots.html\" target=\"_blank\"> rarefaction_plots.html </a></td></tr>" >> $anchor12temp
 
+	for category in `cat $catlist`; do
+	for metric in `cat $alphatemp`; do
+echo "<tr><td> Alpha diversity statistics ($category, $metric, parametric) </td><td> <a href=\"./Alpha_diversity_max$depth/compare_${metric}_parametric/${category}_stats.txt\" target=\"_blank\"> ${category}_stats.txt </a></td></tr>
+<tr><td> Alpha diversity boxplots ($category, $metric, parametric) </td><td> <a href=\"./Alpha_diversity_max$depth/compare_${metric}_parametric/${category}_boxplots.pdf\" target=\"_blank\"> ${category}_boxplots.pdf </a></td></tr>
+<tr><td> Alpha diversity statistics ($category, $metric, nonparametric) </td><td> <a href=\"./Alpha_diversity_max$depth/compare_${metric}_nonparametric/${category}_stats.txt\" target=\"_blank\"> ${category}_stats.txt </a></td></tr>
+<tr><td> Alpha diversity boxplots ($category, $metric, nonparametric) </td><td> <a href=\"./Alpha_diversity_max$depth/compare_${metric}_nonparametric/${category}_boxplots.pdf\" target=\"_blank\"> ${category}_boxplots.pdf </a></td></tr>" >> $anchor12temp
+	done
+	done
+echo "</table>" >> $anchor12temp
+	fi
+
+	## Find anchor in template and send data
+	linenum=`sed -n "/anchor12/=" $outdir/index.html`
+	sed -i "${linenum}r $anchor12temp" $outdir/index.html
 
 ## Build anchor13temp (rarefied beta diversity)
 ## Rarefied beta diversity results
@@ -483,88 +516,6 @@ echo "<tr><td> Nonparametric T-test results - ${line} - phylum level (L2) </td><
 	fi
 	done
 	fi
-
-## Alpha diversity results
-	if [[ -d $outdir/arare_max${depth} ]]; then
-echo "
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Alpha Diversity Results </td></tr>
-<tr><td> Alpha rarefaction plots </td><td> <a href=\"./arare_max$depth/alpha_rarefaction_plots/rarefaction_plots.html\" target=\"_blank\"> rarefaction_plots.html </a></td></tr>" >> $outdir/index.html
-
-	for category in `cat $catlist`; do
-	for metric in `cat $alphatemp`; do
-echo "<tr><td> Alpha diversity statistics ($category, $metric, parametric) </td><td> <a href=\"./arare_max$depth/compare_${metric}_parametric/${category}_stats.txt\" target=\"_blank\"> ${category}_stats.txt </a></td></tr>
-<tr><td> Alpha diversity boxplots ($category, $metric, parametric) </td><td> <a href=\"./arare_max$depth/compare_${metric}_parametric/${category}_boxplots.pdf\" target=\"_blank\"> ${category}_boxplots.pdf </a></td></tr>
-<tr><td> Alpha diversity statistics ($category, $metric, nonparametric) </td><td> <a href=\"./arare_max$depth/compare_${metric}_nonparametric/${category}_stats.txt\" target=\"_blank\"> ${category}_stats.txt </a></td></tr>
-<tr><td> Alpha diversity boxplots ($category, $metric, nonparametric) </td><td> <a href=\"./arare_max$depth/compare_${metric}_nonparametric/${category}_boxplots.pdf\" target=\"_blank\"> ${category}_boxplots.pdf </a></td></tr>" >> $outdir/index.html
-	done
-	done
-	fi
-
-## Normalized beta diversity results
-	if [[ -d $outdir/bdiv_normalized ]]; then
-echo "
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Beta Diversity Results -- NORMALIZED DATA </td></tr>
-<tr><td> Anosim results (normalized) </td><td> <a href=\"./bdiv_normalized/anosim_results_collated.txt\" target=\"_blank\"> anosim_results_collated.txt -- NORMALIZED DATA </a></td></tr>
-<tr><td> Adonis results (normalized) </td><td> <a href=\"./bdiv_normalized/adonis_results_collated.txt\" target=\"_blank\"> adonis_results_collated.txt -- NORMALIZED DATA </a></td></tr>
-<tr><td> DB-RDA results (normalized) </td><td> <a href=\"./bdiv_normalized/dbrda_results_collated.txt\" target=\"_blank\"> dbrda_results_collated.txt -- NORMALIZED DATA </a></td></tr>
-<tr><td> Permanova results (normalized) </td><td> <a href=\"./bdiv_normalized/permanova_results_collated.txt\" target=\"_blank\"> permanova_results_collated.txt -- NORMALIZED DATA </a></td></tr>
-<tr><td> Permdisp results (normalized) </td><td> <a href=\"./bdiv_normalized/permdisp_results_collated.txt\" target=\"_blank\"> permdisp_results_collated.txt -- NORMALIZED DATA </a></td></tr>" >> $outdir/index.html
-
-	for dm in $outdir/bdiv_normalized/*_dm.txt; do
-	dmbase=`basename $dm _dm.txt`
-	for line in `cat $catlist`; do
-
-echo "<tr><td> Distance boxplots (${line}, ${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_boxplots/${line}_Distances.pdf\" target=\"_blank\"> ${line}_Distances.pdf </a></td></tr>
-<tr><td> Distance boxplots statistics (${line}, ${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_boxplots/${line}_Stats.txt\" target=\"_blank\"> ${line}_Stats.txt </a></td></tr>" >> $outdir/index.html
-
-	done
-
-	nmsstress=`grep -e "^stress\s" $outdir/bdiv_normalized/${dmbase}_nmds.txt 2>/dev/null || true | cut -f2`
-
-echo "<tr><td> 3D PCoA plot (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_emperor_pcoa_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
-<tr><td> 2D PCoA plot (${dmbase}) </td><td> <a href=\"./bdiv_normalized/2D_bdiv_plots/${dmbase}_pc_2D_PCoA_plots.html\" target=\"_blank\"> index.html </a></td></tr>
-<tr><td> 3D NMDS plot (${dmbase}, $nmsstress) </td><td> <a href=\"./bdiv_normalized/${dmbase}_emperor_nmds_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
-<tr><td> DB-RDA plot (${dmbase}) </td><td> <a href=\"./bdiv_normalized/dbrda_out/\" target=\"_blank\"> dbrda_plot.pdf </a></td></tr>" >> $outdir/index.html
-echo "<tr><td> Distance matrix (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_dm.txt\" target=\"_blank\"> ${dmbase}_dm.txt </a></td></tr>
-<tr><td> Principal coordinate matrix (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_pc.txt\" target=\"_blank\"> ${dmbase}_pc.txt </a></td></tr>
-<tr><td> NMDS coordinates (${dmbase}) </td><td> <a href=\"./bdiv_normalized/${dmbase}_nmds.txt\" target=\"_blank\"> ${dmbase}_nmds.txt </a></td></tr>" >> $outdir/index.html
-
-	done
-
-	fi
-
-## Rarefied beta diversity results
-	if [[ -d $outdir/bdiv_rarefied ]]; then
-echo "
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Beta Diversity Results -- RAREFIED DATA </td></tr>
-<tr><td> Anosim results (rarefied) </td><td> <a href=\"./bdiv_rarefied/anosim_results_collated.txt\" target=\"_blank\"> anosim_results_collated.txt -- RAREFIED DATA </a></td></tr>
-<tr><td> Adonis results (rarefied) </td><td> <a href=\"./bdiv_rarefied/adonis_results_collated.txt\" target=\"_blank\"> adonis_results_collated.txt -- RAREFIED DATA </a></td></tr>
-<tr><td> DB-RDA results (rarefied) </td><td> <a href=\"./bdiv_rarefied/dbrda_results_collated.txt\" target=\"_blank\"> dbrda_results_collated.txt -- RAREFIED DATA </a></td></tr>
-<tr><td> Permanova results (rarefied) </td><td> <a href=\"./bdiv_rarefied/permanova_results_collated.txt\" target=\"_blank\"> permanova_results_collated.txt -- RAREFIED DATA </a></td></tr>
-<tr><td> Permdisp results (rarefied) </td><td> <a href=\"./bdiv_rarefied/permdisp_results_collated.txt\" target=\"_blank\"> permdisp_results_collated.txt -- RAREFIED DATA </a></td></tr>" >> $outdir/index.html
-
-	for dm in $outdir/bdiv_rarefied/*_dm.txt; do
-	dmbase=`basename $dm _dm.txt`
-	for line in `cat $catlist`; do
-
-echo "<tr><td> Distance boxplots (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_boxplots/${line}_Distances.pdf\" target=\"_blank\"> ${line}_Distances.pdf </a></td></tr>
-<tr><td> Distance boxplots statistics (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_boxplots/${line}_Stats.txt\" target=\"_blank\"> ${line}_Stats.txt </a></td></tr>" >> $outdir/index.html
-
-	done
-
-	nmsstress=`grep -e "^stress\s" $outdir/bdiv_rarefied/${dmbase}_nmds.txt 2>/dev/null | cut -f2` || true
-
-echo "<tr><td> 3D PCoA plot (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_emperor_pcoa_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
-<tr><td> 2D PCoA plot (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/2D_PCoA_bdiv_plots/${dmbase}_pc_2D_PCoA_plots.html\" target=\"_blank\"> index.html </a></td></tr>
-<tr><td> 3D NMDS plot (${dmbase}, $nmsstress) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_emperor_nmds_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
-<tr><td> DB-RDA plot (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/dbrda_out/\" target=\"_blank\"> dbrda_plot.pdf </a></td></tr>" >> $outdir/index.html
-echo "<tr><td> Distance matrix (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_dm.txt\" target=\"_blank\"> ${dmbase}_dm.txt </a></td></tr>
-<tr><td> Principal coordinate matrix (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_pc.txt\" target=\"_blank\"> ${dmbase}_pc.txt </a></td></tr>
-<tr><td> NMDS coordinates (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/${dmbase}_nmds.txt\" target=\"_blank\"> ${dmbase}_nmds.txt </a></td></tr>" >> $outdir/index.html
-
-	done
-	fi
-
 
 ## Supervised learning (normalized)
 	if [[ -d $outdir/bdiv_normalized/SupervisedLearning ]]; then
