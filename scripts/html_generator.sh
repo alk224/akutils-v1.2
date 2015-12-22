@@ -245,7 +245,19 @@ echo "</table>" >> $anchor06temp
 
 
 ## Build anchor08temp (normalized rank abundance)
+	if [[ -d $outdir/Normalized_output/RankAbundance ]]; then
+echo "<table class=\"center\" border=1>" > $anchor08temp
+echo "
+<tr><td> Rank abundance (xlog-ylog) </td><td> <a href=\"./Normalized_output/RankAbundance/rankabund_xlog-ylog.pdf\" target=\"_blank\"> rankabund_xlog-ylog.pdf </a></td></tr>
+<tr><td> Rank abundance (xlinear-ylog) </td><td> <a href=\"./Normalized_output/RankAbundance/rankabund_xlinear-ylog.pdf\" target=\"_blank\"> rankabund_xlinear-ylog.pdf </a></td></tr>
+<tr><td> Rank abundance (xlog-ylinear) </td><td> <a href=\"./Normalized_output/RankAbundance/rankabund_xlog-ylinear.pdf\" target=\"_blank\"> rankabund_xlog-ylinear.pdf </a></td></tr>
+<tr><td> Rank abundance (xlinear-ylinear) </td><td> <a href=\"./Normalized_output/RankAbundance/rankabund_xlinear-ylinear.pdf\" target=\"_blank\"> rankabund_xlinear-ylinear.pdf </a></td></tr>
+</table>" >> $anchor08temp
+	fi
 
+	## Find anchor in template and send data
+	linenum=`sed -n "/anchor08/=" $outdir/index.html`
+	sed -i "${linenum}r $anchor08temp" $outdir/index.html
 
 ## Build anchor09temp (normalized supervised learning)
 
@@ -284,7 +296,19 @@ echo "</table>" >> $anchor11temp
 
 
 ## Build anchor15temp (rarefied rank abundance)
+## Rank abundance plots (rarefied)
+	if [[ -d $outdir/Rarefied_output/RankAbundance ]]; then
+echo "<table class=\"center\" border=1>" > $anchor15temp
+echo "<tr><td> Rank abundance (xlog-ylog) </td><td> <a href=\"./Rarefied_output/RankAbundance/rankabund_xlog-ylog.pdf\" target=\"_blank\"> rankabund_xlog-ylog.pdf </a></td></tr>
+<tr><td> Rank abundance (xlinear-ylog) </td><td> <a href=\"./Rarefied_output/RankAbundance/rankabund_xlinear-ylog.pdf\" target=\"_blank\"> rankabund_xlinear-ylog.pdf </a></td></tr>
+<tr><td> Rank abundance (xlog-ylinear) </td><td> <a href=\"./Rarefied_output/RankAbundance/rankabund_xlog-ylinear.pdf\" target=\"_blank\"> rankabund_xlog-ylinear.pdf </a></td></tr>
+<tr><td> Rank abundance (xlinear-ylinear) </td><td> <a href=\"./Rarefied_output/RankAbundance/rankabund_xlinear-ylinear.pdf\" target=\"_blank\"> rankabund_xlinear-ylinear.pdf </a></td></tr>
+</table>" >> $anchor15temp
+	fi
 
+	## Find anchor in template and send data
+	linenum=`sed -n "/anchor15/=" $outdir/index.html`
+	sed -i "${linenum}r $anchor15temp" $outdir/index.html
 
 ## Build anchor16temp (rarefied supervised learning)
 
@@ -513,15 +537,7 @@ echo "<tr><td> Distance matrix (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/$
 	done
 	fi
 
-## Rank abundance plots (normalized)
-	if [[ -d $outdir/bdiv_normalized/RankAbundance ]]; then
-echo "
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Rank Abundance Plots (relative abundances) -- NORMALIZED DATA </td></tr> 
-<tr><td> Rank abundance (xlog-ylog) </td><td> <a href=\"./bdiv_normalized/RankAbundance/rankabund_xlog-ylog.pdf\" target=\"_blank\"> rankabund_xlog-ylog.pdf </a></td></tr>
-<tr><td> Rank abundance (xlinear-ylog) </td><td> <a href=\"./bdiv_normalized/RankAbundance/rankabund_xlinear-ylog.pdf\" target=\"_blank\"> rankabund_xlinear-ylog.pdf </a></td></tr>
-<tr><td> Rank abundance (xlog-ylinear) </td><td> <a href=\"./bdiv_normalized/RankAbundance/rankabund_xlog-ylinear.pdf\" target=\"_blank\"> rankabund_xlog-ylinear.pdf </a></td></tr>
-<tr><td> Rank abundance (xlinear-ylinear) </td><td> <a href=\"./bdiv_normalized/RankAbundance/rankabund_xlinear-ylinear.pdf\" target=\"_blank\"> rankabund_xlinear-ylinear.pdf </a></td></tr>" >> $outdir/index.html
-	fi
+
 
 ## Rank abundance plots (rarefied)
 	if [[ -d $outdir/bdiv_rarefied/RankAbundance ]]; then
