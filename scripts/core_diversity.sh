@@ -224,18 +224,6 @@ INITIAL TABLE PROCESSING STARTS HERE
 		IFS=$OIFS
 		sed -i '/^\s*$/d' $alphatemp
 
-		## Initiate html output
-#		if [[ ! -f $outdir/index.html ]]; then
-#			cp -r $repodir/akutils_resources/html_template/ $outdir
-#		else
-#			akutils2test=$(head -2 $outdir/index.html | grep "akutils2.0" | wc -l)
-#			if [[ "$akutils2test" == 0 ]]; then
-#				cp -r $repodir/akutils_resources/html_template/.html $outdir
-#				cp -r $repodir/akutils_resources/html_template/index.html $outdir
-#			fi
-#		fi
-#		wait
-
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 		## Summarize input table
@@ -1380,7 +1368,7 @@ Generating rank abundance plots."
 wait
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 	## Remove pointless log.txt file output by supervised learning
 	sllogtest=$(grep "confusion.matrix" ./log.txt 2>/dev/null)
@@ -1462,7 +1450,7 @@ Calculating alpha diversity statistics."
 	echo "
 Alpha diversity analysis already completed." >> $log
 	fi
-	
+
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
@@ -1526,7 +1514,6 @@ Summarize taxa commands by category \"$line\":
 	supervised_learning.py -i $raresort-m $mapfile -c $category -o $outdir/bdiv_rarefied/SupervisedLearning/$category --ntree 1000 >/dev/null 2>&1 || true
 	done
 	fi
-
 
 ############################
 ## Group comparison steps
@@ -1735,14 +1722,7 @@ Extracting sequences command:
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 
 	fi
-		if [[ ! -f $outdir/Representative_sequences/sequences_by_taxonomy.html ]]; then
-			cp -r $repodir/akutils_resources/html_template/sequences_by_taxonomy.html $outdir/Representative_sequences/
-		else
-			akutils2test=$(head -2 $outdir/Representative_sequences/sequences_by_taxonomy.html | grep "akutils2.0" | wc -l)
-			if [[ "$akutils2test" == 0 ]]; then
-				cp -r $repodir/akutils_resources/html_template/sequences_by_taxonomy.html $outdir/Representative_sequences/
-			fi
-		fi
+
 fi
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
