@@ -262,7 +262,8 @@ echo "
 ## Build anchor09temp (normalized supervised learning)
 ## Supervised learning (normalized)
 	if [[ -d $outdir/Normalized_output/SupervisedLearning ]]; then
-echo "<table class=\"center\" border=1>" > $anchor09temp
+echo "<table class=\"center\" border=1>
+<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Supervised learning results <br><br> Out-of-bag analysis (oob) </td></tr>" > $anchor09temp
 	for category in `cat $catlist`; do
 echo "<tr><td> Summary (${category}) </td><td> <a href=\"./Normalized_output/SupervisedLearning/${category}/summary.txt\" target=\"_blank\"> summary.txt </a></td></tr>
 <tr><td> Mislabeling (${category}) </td><td> <a href=\"./Normalized_output/SupervisedLearning/${category}/mislabeling.txt\" target=\"_blank\"> mislabeling.txt </a></td></tr>
@@ -278,7 +279,28 @@ echo "</table>" >> $anchor09temp
 	sed -i "${linenum}r $anchor09temp" $outdir/index.html
 
 ## Build anchor10temp (normalized biplots)
+## Biplots (normalized)
+	if [[ -d $outdir/Normalized_output/beta_diversity/biplots ]]; then
+echo "<table class=\"center\" border=1>
+<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Biplots -- NORMALIZED DATA </td></tr>" > $anchor10temp
 
+	for dm in $outdir/Normalized_output/beta_diversity/*_dm.txt; do
+	dmbase=`basename $dm _dm.txt`
+	for level in $outdir/Normalized_output/beta_diversity/biplots/${dmbase}/CSS_table_sorted_*/; do
+	lev=`basename $level`
+	Lev=`echo $lev | sed 's/CSS_table_sorted_//'`
+	Level=`echo $Lev | sed 's/L/Level /'`
+
+echo "<tr><td> PCoA biplot, ${Level} (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/biplots/${dmbase}/${lev}/index.html\" target=\"_blank\"> index.html </a></td></tr>" >> $anchor10temp
+
+	done
+	done
+echo "</table>" >> $anchor10temp
+	fi
+
+	## Find anchor in template and send data
+	linenum=`sed -n "/anchor10/=" $outdir/index.html`
+	sed -i "${linenum}r $anchor10temp" $outdir/index.html
 
 ## Build anchor11temp (rarefied taxa plots)
 ## Taxa plots by sample
@@ -305,7 +327,8 @@ echo "</table>" >> $anchor11temp
 ## Alpha diversity results
 	if [[ -d $outdir/Alpha_diversity_max${depth} ]]; then
 echo "<table class=\"center\" border=1>" > $anchor12temp
-echo "<tr><td> Alpha rarefaction plots </td><td> <a href=\"./Alpha_diversity_max$depth/alpha_rarefaction_plots/rarefaction_plots.html\" target=\"_blank\"> rarefaction_plots.html </a></td></tr>" >> $anchor12temp
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Alpha diversity results <br><br> Rarefaction depth: ${depth} </td></tr>
+<tr><td> Alpha rarefaction plots </td><td> <a href=\"./Alpha_diversity_max$depth/alpha_rarefaction_plots/rarefaction_plots.html\" target=\"_blank\"> rarefaction_plots.html </a></td></tr>" >> $anchor12temp
 
 	for category in `cat $catlist`; do
 	for metric in `cat $alphatemp`; do
@@ -358,43 +381,36 @@ echo "</table>" >> $anchor13temp
 	if [[ -d $outdir/Rarefied_output/KruskalWallis ]]; then
 echo "<table class=\"center\" border=1>" > $anchor14temp
 echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Group Significance Results (Kruskal-Wallis - nonparametric ANOVA) <br><br> All mean values are percent of total counts by sample (relative OTU abundances) </td></tr>" >> $anchor14temp
-
 	for line in `cat $catlist`; do
 	if [[ -f $outdir/Rarefied_output/KruskalWallis/kruskalwallis_${line}_OTU.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - OTU level </td><td> <a href=\"./Rarefied_output/KruskalWallis/kruskalwallis_${line}_OTU.txt\" target=\"_blank\"> kruskalwallis_${line}_OTU.txt </a></td></tr>" >> $anchor14temp
 	fi
 	done
-
 	for line in `cat $catlist`; do
 	if [[ -f $outdir/Rarefied_output/KruskalWallis/kruskalwallis_${line}_L7.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - species level (L7) </td><td> <a href=\"./Rarefied_output/KruskalWallis/kruskalwallis_${line}_L7.txt\" target=\"_blank\"> kruskalwallis_${line}_L7.txt </a></td></tr>" >> $anchor14temp
 	fi
 	done
-
 	for line in `cat $catlist`; do
 	if [[ -f $outdir/Rarefied_output/KruskalWallis/kruskalwallis_${line}_L6.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - genus level (L6) </td><td> <a href=\"./Rarefied_output/KruskalWallis/kruskalwallis_${line}_L6.txt\" target=\"_blank\"> kruskalwallis_${line}_L6.txt </a></td></tr>" >> $anchor14temp
 	fi
 	done
-
 	for line in `cat $catlist`; do
 	if [[ -f $outdir/Rarefied_output/KruskalWallis/kruskalwallis_${line}_L5.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - family level (L5) </td><td> <a href=\"./Rarefied_output/KruskalWallis/kruskalwallis_${line}_L5.txt\" target=\"_blank\"> kruskalwallis_${line}_L5.txt </a></td></tr>" >> $anchor14temp
 	fi
 	done
-
 	for line in `cat $catlist`; do
 	if [[ -f $outdir/Rarefied_output/KruskalWallis/kruskalwallis_${line}_L4.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - order level (L4) </td><td> <a href=\"./Rarefied_output/KruskalWallis/kruskalwallis_${line}_L4.txt\" target=\"_blank\"> kruskalwallis_${line}_L4.txt </a></td></tr>" >> $anchor14temp
 	fi
 	done
-
 	for line in `cat $catlist`; do
 	if [[ -f $outdir/Rarefied_output/KruskalWallis/kruskalwallis_${line}_L3.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - class level (L3) </td><td> <a href=\"./Rarefied_output/KruskalWallis/kruskalwallis_${line}_L3.txt\" target=\"_blank\"> kruskalwallis_${line}_L3.txt </a></td></tr>" >> $anchor14temp
 	fi
 	done
-
 	for line in `cat $catlist`; do
 	if [[ -f $outdir/Rarefied_output/KruskalWallis/kruskalwallis_${line}_L2.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - phylum level (L2) </td><td> <a href=\"./Rarefied_output/KruskalWallis/kruskalwallis_${line}_L2.txt\" target=\"_blank\"> kruskalwallis_${line}_L2.txt </a></td></tr>" >> $anchor14temp
@@ -425,7 +441,8 @@ echo "<tr><td> Rank abundance (xlog-ylog) </td><td> <a href=\"./Rarefied_output/
 ## Build anchor16temp (rarefied supervised learning)
 ## Supervised learning (rarefied)
 	if [[ -d $outdir/Rarefied_output/SupervisedLearning ]]; then
-echo "<table class=\"center\" border=1>" > $anchor16temp
+echo "<table class=\"center\" border=1>
+<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Supervised learning results <br><br> Out-of-bag analysis (oob) </td></tr>" > $anchor16temp
 	for category in `cat $catlist`; do
 echo "<tr><td> Summary (${category}) </td><td> <a href=\"./Rarefied_output/SupervisedLearning/${category}/summary.txt\" target=\"_blank\"> summary.txt </a></td></tr>
 <tr><td> Mislabeling (${category}) </td><td> <a href=\"./Rarefied_output/SupervisedLearning/${category}/mislabeling.txt\" target=\"_blank\"> mislabeling.txt </a></td></tr>
@@ -441,9 +458,28 @@ echo "</table>" >> $anchor16temp
 	sed -i "${linenum}r $anchor16temp" $outdir/index.html
 
 ## Build anchor17temp (rarefied biplots)
+## Biplots (rarefied)
+	if [[ -d $outdir/Rarefied_output/beta_diversity/biplots ]]; then
+echo "<table class=\"center\" border=1>
+<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Biplots -- RAREFIED DATA </td></tr>" >> $anchor17temp
 
+	for dm in $outdir/Rarefied_output/beta_diversity/*_dm.txt; do
+	dmbase=`basename $dm _dm.txt`
+	for level in $outdir/Rarefied_output/beta_diversity/biplots/$dmbase/rarefied_table_sorted_*/; do
+	lev=`basename $level`
+	Lev=`echo $lev | sed 's/rarefied_table_sorted_//'`
+	Level=`echo $Lev | sed 's/L/Level /'`
 
+echo "<tr><td> PCoA biplot, ${Level} (${dmbase}) </td><td> <a href=\"./Rarefied_output/beta_diversity/biplots/${dmbase}/rarefied_table_sorted_${Lev}/index.html\" target=\"_blank\"> index.html </a></td></tr>" >> $anchor17temp
 
+	done
+	done
+echo "</table>" >> $anchor17temp
+	fi
+
+	## Find anchor in template and send data
+	linenum=`sed -n "/anchor17/=" $outdir/index.html`
+	sed -i "${linenum}r $anchor17temp" $outdir/index.html
 
 
 	if [[ -d $outdir/Representative_sequences ]]; then
@@ -487,53 +523,6 @@ exit 0
 
 
 
-## Kruskal-Wallis results
-	if [[ -d $outdir/KruskalWallis ]]; then
-echo "
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Group Significance Results (Kruskal-Wallis - nonparametric ANOVA) <br><br> All mean values are percent of total counts by sample (relative OTU abundances) </td></tr>" >> $outdir/index.html
-
-	for line in `cat $catlist`; do
-	if [[ -f $outdir/KruskalWallis/kruskalwallis_${line}_OTU.txt ]]; then
-echo "<tr><td> Kruskal-Wallis results - ${line} - OTU level </td><td> <a href=\"./KruskalWallis/kruskalwallis_${line}_OTU.txt\" target=\"_blank\"> kruskalwallis_${line}_OTU.txt </a></td></tr>" >> $outdir/index.html
-	fi
-	done
-
-	for line in `cat $catlist`; do
-	if [[ -f $outdir/KruskalWallis/kruskalwallis_${line}_L7.txt ]]; then
-echo "<tr><td> Kruskal-Wallis results - ${line} - species level (L7) </td><td> <a href=\"./KruskalWallis/kruskalwallis_${line}_L7.txt\" target=\"_blank\"> kruskalwallis_${line}_L7.txt </a></td></tr>" >> $outdir/index.html
-	fi
-	done
-
-	for line in `cat $catlist`; do
-	if [[ -f $outdir/KruskalWallis/kruskalwallis_${line}_L6.txt ]]; then
-echo "<tr><td> Kruskal-Wallis results - ${line} - genus level (L6) </td><td> <a href=\"./KruskalWallis/kruskalwallis_${line}_L6.txt\" target=\"_blank\"> kruskalwallis_${line}_L6.txt </a></td></tr>" >> $outdir/index.html
-	fi
-	done
-
-	for line in `cat $catlist`; do
-	if [[ -f $outdir/KruskalWallis/kruskalwallis_${line}_L5.txt ]]; then
-echo "<tr><td> Kruskal-Wallis results - ${line} - family level (L5) </td><td> <a href=\"./KruskalWallis/kruskalwallis_${line}_L5.txt\" target=\"_blank\"> kruskalwallis_${line}_L5.txt </a></td></tr>" >> $outdir/index.html
-	fi
-	done
-
-	for line in `cat $catlist`; do
-	if [[ -f $outdir/KruskalWallis/kruskalwallis_${line}_L4.txt ]]; then
-echo "<tr><td> Kruskal-Wallis results - ${line} - order level (L4) </td><td> <a href=\"./KruskalWallis/kruskalwallis_${line}_L4.txt\" target=\"_blank\"> kruskalwallis_${line}_L4.txt </a></td></tr>" >> $outdir/index.html
-	fi
-	done
-
-	for line in `cat $catlist`; do
-	if [[ -f $outdir/KruskalWallis/kruskalwallis_${line}_L3.txt ]]; then
-echo "<tr><td> Kruskal-Wallis results - ${line} - class level (L3) </td><td> <a href=\"./KruskalWallis/kruskalwallis_${line}_L3.txt\" target=\"_blank\"> kruskalwallis_${line}_L3.txt </a></td></tr>" >> $outdir/index.html
-	fi
-	done
-
-	for line in `cat $catlist`; do
-	if [[ -f $outdir/KruskalWallis/kruskalwallis_${line}_L2.txt ]]; then
-echo "<tr><td> Kruskal-Wallis results - ${line} - phylum level (L2) </td><td> <a href=\"./KruskalWallis/kruskalwallis_${line}_L2.txt\" target=\"_blank\"> kruskalwallis_${line}_L2.txt </a></td></tr>" >> $outdir/index.html
-	fi
-	done
-	fi
 
 ## Nonparametric T-test results
 	if [[ -d $outdir/Nonparametric_ttest ]]; then
@@ -586,53 +575,7 @@ echo "<tr><td> Nonparametric T-test results - ${line} - phylum level (L2) </td><
 
 
 
-## Supervised learning (rarefied)
-	if [[ -d $outdir/bdiv_rarefied/SupervisedLearning ]]; then
-echo "
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Supervised Learning (out of bag) -- RAREFIED DATA </td></tr>" >> $outdir/index.html
-	for category in `cat $catlist`; do
-echo "<tr><td> Summary (${category}) </td><td> <a href=\"./bdiv_rarefied/SupervisedLearning/${category}/summary.txt\" target=\"_blank\"> summary.txt </a></td></tr>
-<tr><td> Mislabeling (${category}) </td><td> <a href=\"./bdiv_rarefied/SupervisedLearning/${category}/mislabeling.txt\" target=\"_blank\"> mislabeling.txt </a></td></tr>
-<tr><td> Confusion Matrix (${category}) </td><td> <a href=\"./bdiv_rarefied/SupervisedLearning/${category}/confusion_matrix.txt\" target=\"_blank\"> confusion_matrix.txt </a></td></tr>
-<tr><td> CV Probabilities (${category}) </td><td> <a href=\"./bdiv_rarefied/SupervisedLearning/${category}/cv_probabilities.txt\" target=\"_blank\"> cv_probabilities.txt </a></td></tr>
-<tr><td> Feature Importance Scores (${category}) </td><td> <a href=\"./bdiv_rarefied/SupervisedLearning/${category}/feature_importance_scores.txt\" target=\"_blank\"> feature_importance_scores.txt </a></td></tr>" >> $outdir/index.html
-	done
-	fi
 
-## Biplots (normalized)
-	if [[ -d $outdir/bdiv_normalized/biplots ]]; then
-echo "
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Biplots -- NORMALIZED DATA </td></tr>" >> $outdir/index.html
 
-	for dm in $outdir/bdiv_normalized/*_dm.txt; do
-	dmbase=`basename $dm _dm.txt`
-	for level in $outdir/bdiv_normalized/biplots/${dmbase}/CSS_table_sorted_*/; do
-	lev=`basename $level`
-	Lev=`echo $lev | sed 's/CSS_table_sorted_//'`
-	Level=`echo $Lev | sed 's/L/Level /'`
-
-echo "<tr><td> PCoA biplot, ${Level} (${dmbase}) </td><td> <a href=\"./bdiv_normalized/biplots/${dmbase}/${lev}/index.html\" target=\"_blank\"> index.html </a></td></tr>" >> $outdir/index.html
-
-	done
-	done
-	fi
-
-## Biplots (rarefied)
-	if [[ -d $outdir/bdiv_rarefied/biplots ]]; then
-echo "
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Biplots -- RAREFIED DATA </td></tr>" >> $outdir/index.html
-
-	for dm in $outdir/bdiv_rarefied/*_dm.txt; do
-	dmbase=`basename $dm _dm.txt`
-	for level in $outdir/bdiv_rarefied/biplots/$dmbase/rarefied_table_sorted_*/; do
-	lev=`basename $level`
-	Lev=`echo $lev | sed 's/rarefied_table_sorted_//'`
-	Level=`echo $Lev | sed 's/L/Level /'`
-
-echo "<tr><td> PCoA biplot, ${Level} (${dmbase}) </td><td> <a href=\"./bdiv_rarefied/biplots/${dmbase}/rarefied_table_sorted_${Lev}/index.html\" target=\"_blank\"> index.html </a></td></tr>" >> $outdir/index.html
-
-	done
-	done
-	fi
 
 exit 0

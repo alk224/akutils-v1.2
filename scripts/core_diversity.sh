@@ -412,13 +412,13 @@ Processing normalized table."
 Processing normalized table." >> $log
 
 ## Summarize taxa (yields relative abundance tables)
-	if [[ ! -d $outdir/Normalized_output/summarized_tables ]]; then
+	if [[ ! -d $outdir/Normalized_output/beta_diversity/summarized_tables ]]; then
 	echo "
 Summarize taxa command:
-	summarize_taxa.py -i $CSSsort -o $outdir/Normalized_output/summarized_tables -L 2,3,4,5,6,7" >> $log
+	summarize_taxa.py -i $CSSsort -o $outdir/Normalized_output/beta_diversity/summarized_tables -L 2,3,4,5,6,7" >> $log
 	echo "
 Summarizing taxonomy by sample and building plots."
-	summarize_taxa.py -i $CSSsort -o $outdir/Normalized_output/summarized_tables -L 2,3,4,5,6,7 1> $stdout 2> $stderr
+	summarize_taxa.py -i $CSSsort -o $outdir/Normalized_output/beta_diversity/summarized_tables -L 2,3,4,5,6,7 1> $stdout 2> $stderr
 	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	
 	else
@@ -798,7 +798,7 @@ Boxplots already present." >> $log
 	echo "
 Make biplots commands:" >> $log
 	echo "
-Generating PCoA biplots:"
+Generating PCoA biplots."
 	mkdir $outdir/Normalized_output/beta_diversity/biplots
 	for pc in $outdir/Normalized_output/beta_diversity/*_pc.txt; do
 	pcmethod=$(basename $pc _pc.txt)
@@ -1287,7 +1287,7 @@ Boxplots already present." >> $log
 	echo "
 Make biplots commands:" >> $log
 	echo "
-Generating PCoA biplots:"
+Generating PCoA biplots."
 	mkdir $outdir/Rarefied_output/beta_diversity/biplots
 	for pc in $outdir/Rarefied_output/beta_diversity/*_pc.txt; do
 	pcmethod=$(basename $pc _pc.txt)
