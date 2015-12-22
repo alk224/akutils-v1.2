@@ -67,7 +67,7 @@ done
 sed -i -e "s/\[//g" -e "s/\]//g" -e "s/'//g" $outdir/Representative_sequences/${tablename}_rep_sequences.fasta
 
 ## Build taxonomy list from L7 table and L7 table with matching taxonomy strings
-cp $outdir/bdiv_rarefied/summarized_tables/rarefied_table_sorted_L7.txt $outdir/Representative_sequences/L7_table0.txt
+cp $outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L7.txt $outdir/Representative_sequences/L7_table0.txt
 grep "#OTU ID" $outdir/Representative_sequences/L7_table0.txt > $outdir/Representative_sequences/L7_table.txt
 grep -v "#" $outdir/Representative_sequences/L7_table0.txt | sed "s/;/__/g" | sed "s/ /_/g" >> $outdir/Representative_sequences/L7_table.txt
 rm $outdir/Representative_sequences/L7_table0.txt

@@ -100,6 +100,7 @@ anchor19temp="${tempdir}/${randcode}_anchor19.temp"
 	cp -r $repodir/akutils_resources/html_template/.html $outdir
 	if [[ -d $outdir/Representative_sequences ]]; then
 		cp -r $repodir/akutils_resources/html_template/sequences_by_taxonomy.html $outdir/Representative_sequences/
+		cp -r $repodir/akutils_resources/html_template/.html $outdir/Representative_sequences/
 	fi
 
 ####################################
@@ -273,49 +274,48 @@ echo "</table>" >> $anchor06temp
 ## Build anchor17temp (rarefied biplots)
 
 
-## Build anchor18temp (unaligned sequences)
 
 
-## Build anchor19temp (aligned sequences)
-
-
-
-exit 0
-
-## Make html files
-	##sequences and alignments html
 
 	if [[ -d $outdir/Representative_sequences ]]; then
-echo "<html>
-<head><title>QIIME results - sequences</title></head>
-<body>
-<p><h2> akutils core diversity workflow for normalized and non-normalized OTU tables </h2><p>
-<a href=\"https://github.com/alk224/akutils\" target=\_blank\"><h2> https://github.com/alk224/akutils </h2></a><p>
-<table border=1>
-<p><h3> Sequences by taxonomy </h3><p>
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Unaligned sequences </td></tr>" > $outdir/Representative_sequences/sequences_by_taxonomy.html
+
+## Build anchor18temp (unaligned sequences)
+echo "<table class=\"center\" border=1>" > $anchor18temp
 
 	for taxonid in `cat $outdir/Representative_sequences/L7_taxa_list.txt 2>/dev/null | cut -f1`; do
 	otu_count=`grep -Fw "$taxonid" $outdir/Representative_sequences/L7_taxa_list.txt 2>/dev/null | cut -f2`
 
 	if [[ -f $outdir/Representative_sequences/L7_sequences_by_taxon/${taxonid}.fasta ]]; then
-echo "<tr><td><font size="1"><a href=\"./L7_sequences_by_taxon/${taxonid}.fasta\" target=\"_blank\"> ${taxonid} </a></font></td><td> $otu_count OTUs </td></tr>" >> $outdir/Representative_sequences/sequences_by_taxonomy.html
+echo "<tr><td><font size="1"><a href=\"./L7_sequences_by_taxon/${taxonid}.fasta\" target=\"_blank\"> ${taxonid} </a></font></td><td> $otu_count OTUs </td></tr>" >> $anchor18temp
 	fi
 	done
 
-echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Aligned sequences (MAFFT L-INS-i) </td></tr>" >> $outdir/Representative_sequences/sequences_by_taxonomy.html
+echo "</table>" >> $anchor18temp
+
+	## Find anchor in template and send data
+	linenum=`sed -n "/anchor18/=" $outdir/Representative_sequences/sequences_by_taxonomy.html`
+	sed -i "${linenum}r $anchor18temp" $outdir/Representative_sequences/sequences_by_taxonomy.html
+
+## Build anchor19temp (aligned sequences)
+echo "<table class=\"center\" border=1>" > $anchor19temp
 
 	for taxonid in `cat $outdir/Representative_sequences/L7_taxa_list.txt 2>/dev/null | cut -f1`; do
 	otu_count=`grep -Fw "$taxonid" $outdir/Representative_sequences/L7_taxa_list.txt 2>/dev/null | cut -f2`
 
 	if [[ -f $outdir/Representative_sequences/L7_sequences_by_taxon_alignments/${taxonid}/${taxonid}_aligned.aln ]]; then
-echo "<tr><td><font size="1"><a href=\"./L7_sequences_by_taxon_alignments/${taxonid}/${taxonid}_aligned.aln\" target=\"_blank\"> ${taxonid} </a></font></td><td> $otu_count OTUs </td></tr>" >> $outdir/Representative_sequences/sequences_by_taxonomy.html
+echo "<tr><td><font size="1"><a href=\"./L7_sequences_by_taxon_alignments/${taxonid}/${taxonid}_aligned.aln\" target=\"_blank\"> ${taxonid} </a></font></td><td> $otu_count OTUs </td></tr>" >> $anchor19temp
 	fi
 	done
 
+echo "</table>" >> $anchor19temp
+
+	## Find anchor in template and send data
+	linenum=`sed -n "/anchor19/=" $outdir/Representative_sequences/sequences_by_taxonomy.html`
+	sed -i "${linenum}r $anchor19temp" $outdir/Representative_sequences/sequences_by_taxonomy.html
+
 	fi
 
-
+exit 0
 
 ## Taxa plots by sample
 	if [[ -d $outdir/taxa_plots ]]; then
