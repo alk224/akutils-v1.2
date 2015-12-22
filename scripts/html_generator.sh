@@ -13,16 +13,54 @@ fi
 if [[ -f $anchor03temp ]]; then
 	rm $anchor03temp
 fi
-if [[ -f $insamples ]]; then
-	rm $insamples
+if [[ -f $anchor04temp ]]; then
+	rm $anchor04temp
 fi
-if [[ -f $raresamples ]]; then
-	rm $raresamples
+if [[ -f $anchor05temp ]]; then
+	rm $anchor05temp
 fi
-if [[ -f $alphatemp ]]; then
-	rm $alphatemp
+if [[ -f $anchor06temp ]]; then
+	rm $anchor06temp
 fi
-
+if [[ -f $anchor07temp ]]; then
+	rm $anchor07temp
+fi
+if [[ -f $anchor08temp ]]; then
+	rm $anchor08temp
+fi
+if [[ -f $anchor09temp ]]; then
+	rm $anchor09temp
+fi
+if [[ -f $anchor10temp ]]; then
+	rm $anchor10temp
+fi
+if [[ -f $anchor11temp ]]; then
+	rm $anchor11temp
+fi
+if [[ -f $anchor12temp ]]; then
+	rm $anchor12temp
+fi
+if [[ -f $anchor13temp ]]; then
+	rm $anchor13temp
+fi
+if [[ -f $anchor14temp ]]; then
+	rm $anchor14temp
+fi
+if [[ -f $anchor15temp ]]; then
+	rm $anchor15temp
+fi
+if [[ -f $anchor16temp ]]; then
+	rm $anchor16temp
+fi
+if [[ -f $anchor17temp ]]; then
+	rm $anchor17temp
+fi
+if [[ -f $anchor18temp ]]; then
+	rm $anchor18temp
+fi
+if [[ -f $anchor19temp ]]; then
+	rm $anchor19temp
+fi
 }
 trap finish EXIT
 
@@ -40,6 +78,22 @@ repodir="$8"
 anchor01temp="${tempdir}/${randcode}_anchor01.temp"
 anchor02temp="${tempdir}/${randcode}_anchor02.temp"
 anchor03temp="${tempdir}/${randcode}_anchor03.temp"
+anchor04temp="${tempdir}/${randcode}_anchor04.temp"
+anchor05temp="${tempdir}/${randcode}_anchor05.temp"
+anchor06temp="${tempdir}/${randcode}_anchor06.temp"
+anchor07temp="${tempdir}/${randcode}_anchor07.temp"
+anchor08temp="${tempdir}/${randcode}_anchor08.temp"
+anchor09temp="${tempdir}/${randcode}_anchor09.temp"
+anchor10temp="${tempdir}/${randcode}_anchor10.temp"
+anchor11temp="${tempdir}/${randcode}_anchor11.temp"
+anchor12temp="${tempdir}/${randcode}_anchor12.temp"
+anchor13temp="${tempdir}/${randcode}_anchor13.temp"
+anchor14temp="${tempdir}/${randcode}_anchor14.temp"
+anchor15temp="${tempdir}/${randcode}_anchor15.temp"
+anchor16temp="${tempdir}/${randcode}_anchor16.temp"
+anchor17temp="${tempdir}/${randcode}_anchor17.temp"
+anchor18temp="${tempdir}/${randcode}_anchor18.temp"
+anchor19temp="${tempdir}/${randcode}_anchor19.temp"
 
 ## Copy blank outputs:
 	cp $repodir/akutils_resources/html_template/index.html $outdir
