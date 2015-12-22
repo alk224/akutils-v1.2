@@ -354,7 +354,58 @@ echo "</table>" >> $anchor13temp
 	sed -i "${linenum}r $anchor13temp" $outdir/index.html
 
 ## Build anchor14temp (rarefied group significance)
+## Kruskal-Wallis results
+	if [[ -d $outdir/Rarefied_output/KruskalWallis ]]; then
+echo "<table class=\"center\" border=1>" > $anchor14temp
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Group Significance Results (Kruskal-Wallis - nonparametric ANOVA) <br><br> All mean values are percent of total counts by sample (relative OTU abundances) </td></tr>" >> $anchor14temp
 
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/Rarefied_output/KruskalWallis/kruskalwallis_${line}_OTU.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - OTU level </td><td> <a href=\"./Rarefied_output/KruskalWallis/kruskalwallis_${line}_OTU.txt\" target=\"_blank\"> kruskalwallis_${line}_OTU.txt </a></td></tr>" >> $anchor14temp
+	fi
+	done
+
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/Rarefied_output/KruskalWallis/kruskalwallis_${line}_L7.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - species level (L7) </td><td> <a href=\"./Rarefied_output/KruskalWallis/kruskalwallis_${line}_L7.txt\" target=\"_blank\"> kruskalwallis_${line}_L7.txt </a></td></tr>" >> $anchor14temp
+	fi
+	done
+
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/Rarefied_output/KruskalWallis/kruskalwallis_${line}_L6.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - genus level (L6) </td><td> <a href=\"./Rarefied_output/KruskalWallis/kruskalwallis_${line}_L6.txt\" target=\"_blank\"> kruskalwallis_${line}_L6.txt </a></td></tr>" >> $anchor14temp
+	fi
+	done
+
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/Rarefied_output/KruskalWallis/kruskalwallis_${line}_L5.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - family level (L5) </td><td> <a href=\"./Rarefied_output/KruskalWallis/kruskalwallis_${line}_L5.txt\" target=\"_blank\"> kruskalwallis_${line}_L5.txt </a></td></tr>" >> $anchor14temp
+	fi
+	done
+
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/Rarefied_output/KruskalWallis/kruskalwallis_${line}_L4.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - order level (L4) </td><td> <a href=\"./Rarefied_output/KruskalWallis/kruskalwallis_${line}_L4.txt\" target=\"_blank\"> kruskalwallis_${line}_L4.txt </a></td></tr>" >> $anchor14temp
+	fi
+	done
+
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/Rarefied_output/KruskalWallis/kruskalwallis_${line}_L3.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - class level (L3) </td><td> <a href=\"./Rarefied_output/KruskalWallis/kruskalwallis_${line}_L3.txt\" target=\"_blank\"> kruskalwallis_${line}_L3.txt </a></td></tr>" >> $anchor14temp
+	fi
+	done
+
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/Rarefied_output/KruskalWallis/kruskalwallis_${line}_L2.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - phylum level (L2) </td><td> <a href=\"./Rarefied_output/KruskalWallis/kruskalwallis_${line}_L2.txt\" target=\"_blank\"> kruskalwallis_${line}_L2.txt </a></td></tr>" >> $anchor14temp
+	fi
+	done
+echo "</table>" >> $anchor14temp
+	fi
+
+	## Find anchor in template and send data
+	linenum=`sed -n "/anchor14/=" $outdir/index.html`
+	sed -i "${linenum}r $anchor14temp" $outdir/index.html
 
 ## Build anchor15temp (rarefied rank abundance)
 ## Rank abundance plots (rarefied)
