@@ -208,6 +208,36 @@ echo "<table class=\"center\" border=1>
 
 
 ## Build anchor06temp (normalized beta diversity)
+## Normalized beta diversity results
+	if [[ -d $outdir/Normalized_output/beta_diversity ]]; then
+echo "<table class=\"center\" border=1>" > $anchor06temp
+echo "<tr><td> Anosim results (normalized) </td><td> <a href=\"./Normalized_output/beta_diversity/anosim_results_collated.txt\" target=\"_blank\"> anosim_results_collated.txt -- NORMALIZED DATA </a></td></tr>
+<tr><td> Adonis results (normalized) </td><td> <a href=\"./Normalized_output/beta_diversity/adonis_results_collated.txt\" target=\"_blank\"> adonis_results_collated.txt -- NORMALIZED DATA </a></td></tr>
+<tr><td> DB-RDA results (normalized) </td><td> <a href=\"./Normalized_output/beta_diversity/dbrda_results_collated.txt\" target=\"_blank\"> dbrda_results_collated.txt -- NORMALIZED DATA </a></td></tr>
+<tr><td> Permanova results (normalized) </td><td> <a href=\"./Normalized_output/beta_diversity/permanova_results_collated.txt\" target=\"_blank\"> permanova_results_collated.txt -- NORMALIZED DATA </a></td></tr>
+<tr><td> Permdisp results (normalized) </td><td> <a href=\"./Normalized_output/beta_diversity/permdisp_results_collated.txt\" target=\"_blank\"> permdisp_results_collated.txt -- NORMALIZED DATA </a></td></tr>" >> $anchor06temp
+	for dm in $outdir/Normalized_output/beta_diversity/*_dm.txt; do
+	dmbase=`basename $dm _dm.txt`
+	for line in `cat $catlist`; do
+echo "<tr><td> Distance boxplots (${line}, ${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/${dmbase}_boxplots/${line}_Distances.pdf\" target=\"_blank\"> ${line}_Distances.pdf </a></td></tr>
+<tr><td> Distance boxplots statistics (${line}, ${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/${dmbase}_boxplots/${line}_Stats.txt\" target=\"_blank\"> ${line}_Stats.txt </a></td></tr>" >> $anchor06temp
+
+	done
+	nmsstress=`grep -e "^stress\s" $outdir/Normalized_output/beta_diversity/${dmbase}_nmds.txt 2>/dev/null || true | cut -f2`
+echo "<tr><td> 3D PCoA plot (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/${dmbase}_emperor_pcoa_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
+<tr><td> 2D PCoA plot (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/2D_bdiv_plots/${dmbase}_pc_2D_PCoA_plots.html\" target=\"_blank\"> index.html </a></td></tr>
+<tr><td> 3D NMDS plot (${dmbase}, $nmsstress) </td><td> <a href=\"./Normalized_output/beta_diversity/${dmbase}_emperor_nmds_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
+<tr><td> DB-RDA plot (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/dbrda_out/\" target=\"_blank\"> dbrda_plot_directory </a></td></tr>" >> $anchor06temp
+echo "<tr><td> Distance matrix (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/${dmbase}_dm.txt\" target=\"_blank\"> ${dmbase}_dm.txt </a></td></tr>
+<tr><td> Principal coordinate matrix (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/${dmbase}_pc.txt\" target=\"_blank\"> ${dmbase}_pc.txt </a></td></tr>
+<tr><td> NMDS coordinates (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/${dmbase}_nmds.txt\" target=\"_blank\"> ${dmbase}_nmds.txt </a></td></tr>" >> $anchor06temp
+	done
+	fi
+echo "</table>" >> $anchor06temp
+
+	## Find anchor in template and send data
+	linenum=`sed -n "/anchor06/=" $outdir/index.html`
+	sed -i "${linenum}r $anchor06temp" $outdir/index.html
 
 
 ## Build anchor07temp (normalized group significance)
