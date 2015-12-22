@@ -1317,8 +1317,8 @@ Biplots already present." >> $log
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 ## Run supervised learning on data using supplied categories
-	if [[ ! -d $outdir/Rarefied_outpu/SupervisedLearning ]]; then
-	mkdir $outdir/Rarefied_output/SupervisedLearning
+	if [[ ! -d $outdir/Rarefied_output/SupervisedLearning ]]; then
+	mkdir -p $outdir/Rarefied_output/SupervisedLearning
 	echo "
 Supervised learning commands:" >> $log
 	echo "
@@ -1497,16 +1497,6 @@ Summarize taxa commands by category \"$line\":
 
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
-
-## Run supervised learning on data using supplied categories
-	if [[ ! -d $outdir/Rarefied_output/SupervisedLearning ]]; then
-	mkdir -p $outdir/Rarefied_output/SupervisedLearning
-	echo "Running supervised learning analysis.
-	"
-	for category in `cat $catlist`; do
-	supervised_learning.py -i $raresort-m $mapfile -c $category -o $outdir/Rarefied_output/SupervisedLearning/$category --ntree 1000 >/dev/null 2>&1 || true
-	done
-	fi
 
 ############################
 ## Group comparison steps

@@ -372,7 +372,22 @@ echo "<tr><td> Rank abundance (xlog-ylog) </td><td> <a href=\"./Rarefied_output/
 	sed -i "${linenum}r $anchor15temp" $outdir/index.html
 
 ## Build anchor16temp (rarefied supervised learning)
+## Supervised learning (rarefied)
+	if [[ -d $outdir/Rarefied_output/SupervisedLearning ]]; then
+echo "<table class=\"center\" border=1>" > $anchor16temp
+	for category in `cat $catlist`; do
+echo "<tr><td> Summary (${category}) </td><td> <a href=\"./Rarefied_output/SupervisedLearning/${category}/summary.txt\" target=\"_blank\"> summary.txt </a></td></tr>
+<tr><td> Mislabeling (${category}) </td><td> <a href=\"./Rarefied_output/SupervisedLearning/${category}/mislabeling.txt\" target=\"_blank\"> mislabeling.txt </a></td></tr>
+<tr><td> Confusion Matrix (${category}) </td><td> <a href=\"./Rarefied_output/SupervisedLearning/${category}/confusion_matrix.txt\" target=\"_blank\"> confusion_matrix.txt </a></td></tr>
+<tr><td> CV Probabilities (${category}) </td><td> <a href=\"./Rarefied_output/SupervisedLearning/${category}/cv_probabilities.txt\" target=\"_blank\"> cv_probabilities.txt </a></td></tr>
+<tr><td> Feature Importance Scores (${category}) </td><td> <a href=\"./Rarefied_output/SupervisedLearning/${category}/feature_importance_scores.txt\" target=\"_blank\"> feature_importance_scores.txt </a></td></tr>" >> $anchor16temp
+	done
+echo "</table>" >> $anchor16temp
+	fi
 
+	## Find anchor in template and send data
+	linenum=`sed -n "/anchor16/=" $outdir/index.html`
+	sed -i "${linenum}r $anchor16temp" $outdir/index.html
 
 ## Build anchor17temp (rarefied biplots)
 
@@ -517,18 +532,8 @@ echo "<tr><td> Nonparametric T-test results - ${line} - phylum level (L2) </td><
 	done
 	fi
 
-## Supervised learning (normalized)
-	if [[ -d $outdir/bdiv_normalized/SupervisedLearning ]]; then
-echo "
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Supervised Learning (out of bag) -- NORMALIZED DATA </td></tr>" >> $outdir/index.html
-	for category in `cat $catlist`; do
-echo "<tr><td> Summary (${category}) </td><td> <a href=\"./bdiv_normalized/SupervisedLearning/${category}/summary.txt\" target=\"_blank\"> summary.txt </a></td></tr>
-<tr><td> Mislabeling (${category}) </td><td> <a href=\"./bdiv_normalized/SupervisedLearning/${category}/mislabeling.txt\" target=\"_blank\"> mislabeling.txt </a></td></tr>
-<tr><td> Confusion Matrix (${category}) </td><td> <a href=\"./bdiv_normalized/SupervisedLearning/${category}/confusion_matrix.txt\" target=\"_blank\"> confusion_matrix.txt </a></td></tr>
-<tr><td> CV Probabilities (${category}) </td><td> <a href=\"./bdiv_normalized/SupervisedLearning/${category}/cv_probabilities.txt\" target=\"_blank\"> cv_probabilities.txt </a></td></tr>
-<tr><td> Feature Importance Scores (${category}) </td><td> <a href=\"./bdiv_normalized/SupervisedLearning/${category}/feature_importance_scores.txt\" target=\"_blank\"> feature_importance_scores.txt </a></td></tr>" >> $outdir/index.html
-	done
-	fi
+
+
 
 ## Supervised learning (rarefied)
 	if [[ -d $outdir/bdiv_rarefied/SupervisedLearning ]]; then
