@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- akutils2.0 -->
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -15,30 +16,119 @@
 <br>
 <a href="http://www.qiime.org" target="_blank"><img src=".html/qiimelogo.png" alt="www.qiime.org""/></a><p>
 <hr>
-    <h1>akutils core diversity output</h1>
+    <h1><a STYLE="text-decoration:none" href="https://github.com/alk224/akutils" target="_blank">akutils core diversity output (v2.0)</a></h1>
+
+
     <div class="col c1">
 
-
-      <h2>Click on a heading to expand or collapse results:</h2>
-      <div id="default-example" data-collapse>
-        <h3>Normalized analysis</h3>
-        <div>No results loaded</div>
-        <h3>Rarefied analysis</h3>
-        <div>No results loaded</div>
+      <h2>Summary data:</h2>
+      <div id="result1" data-collapse="persist">
+        <h3>Run summary data</h3>
+        <div>
+        <!-- anchor01 -->
+        </div>
+        <h3>OTU tables</h3>
+        <div>
+        <!-- anchor02 -->
+        </div>
+        <h3>Sequencing data by L7 taxon</h3>
+        <div>
+        <!-- anchor03 -->
+        </div>
       </div>
 
+      <h2>Normalized analysis results:</h2>
+      <div id="result2" data-collapse="persist">
+        <h3>Taxonomic plots</h3>
+        <div>
+        <!-- anchor04 -->
+        </div>
+        <h3>Alpha diversity</h3>
+        <div>
+        <!-- anchor05 -->
+        </div>
+        <h3>Beta diversity</h3>
+        <div>
+        <!-- anchor06 -->
+        </div>
+        <h3>Group significance</h3>
+        <div>
+        <!-- anchor07 -->
+        </div>
+        <h3>Rank abundance</h3>
+        <div>
+        <!-- anchor08 -->
+        </div>
+        <h3>Supervised learning</h3>
+        <div>
+        <!-- anchor09 -->
+        </div>
+        <h3>Biplots</h3>
+        <div>
+        <!-- anchor10 -->
+        </div>
+      </div>
 
+      <h2>Rarefied analyis results:</h2>
+      <div id="result3" data-collapse="persist">
+        <h3>Taxonomic plots</h3>
+        <div>
+          <p>No data loaded</p>
+        </div>
+        <h3>Alpha diversity</h3>
+        <div>
+          <p>No data loaded</p>
+        </div>
+        <h3>Beta diversity</h3>
+        <div>
+          <p>No data loaded</p>
+        </div>
+        <h3>Group significance</h3>
+        <div>
+          <p>No data loaded</p>
+        </div>
+        <h3>Rank abundance</h3>
+        <div>
+          <p>No data loaded</p>
+        </div>
+        <h3>Supervised learning</h3>
+        <div>
+          <p>No data loaded</p>
+        </div>
+        <h3>Biplots</h3>
+        <div>
+          <p>No data loaded</p>
+        </div>
+      </div>
 
       <script>
-        new jQueryCollapse($("#custom-show-hide-example"), {
+        new jQueryCollapse($("#result1"), {
           open: function() {
-            this.slideDown(150);
+            this.slideDown(100);
           },
           close: function() {
-            this.slideUp(150);
+            this.slideUp(100);
+          }
+        });
+        new jQueryCollapse($("#result2"), {
+          open: function() {
+            this.slideDown(100);
+          },
+          close: function() {
+            this.slideUp(100);
+          }
+        });
+        new jQueryCollapse($("#result3"), {
+          open: function() {
+            this.slideDown(100);
+          },
+          close: function() {
+            this.slideUp(100);
           }
         });
       </script>
+
+
     </div>
   </body>
 </html>

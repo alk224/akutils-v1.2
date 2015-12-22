@@ -225,13 +225,24 @@ INITIAL TABLE PROCESSING STARTS HERE
 		sed -i '/^\s*$/d' $alphatemp
 
 		## Initiate html output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+#		if [[ ! -f $outdir/index.html ]]; then
+#			cp -r $repodir/akutils_resources/html_template/ $outdir
+#		else
+#			akutils2test=$(head -2 $outdir/index.html | grep "akutils2.0" | wc -l)
+#			if [[ "$akutils2test" == 0 ]]; then
+#				cp -r $repodir/akutils_resources/html_template/.html $outdir
+#				cp -r $repodir/akutils_resources/html_template/index.html $outdir
+#			fi
+#		fi
+#		wait
+
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 		## Summarize input table
 		biom-summarize_folder.sh $tabledir &>/dev/null
 
 		## Refresh html output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 		## Rarefy input table according to established depth
 		raretable="$tabledir/rarefied_table.biom"
@@ -259,7 +270,7 @@ Single rarefaction command:
 		rarebase=$(basename $raretable .biom)
 
 		## Refresh html output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 		## Filter any samples removed by rarefying from the original input table
 		inlines0=$(cat $insummary | wc -l)
@@ -320,7 +331,7 @@ Normalizing sample-filtered table with CSS transformation:
 	
 		## Summarize tables one last time and refresh html output
 		biom-summarize_folder.sh $tabledir &>/dev/null
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 		## Sort OTU tables
 		CSSsort="$outdir/OTU_tables/CSS_table_sorted.biom"
@@ -600,7 +611,7 @@ Generating 3D NMDS plots."
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 ## Make 2D plots
 	if [[ ! -d $outdir/bdiv_normalized/2D_PCoA_bdiv_plots ]]; then
@@ -623,7 +634,7 @@ Generating 2D PCoA plots."
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 ## Comparing categories statistics
 if [[ ! -f $outdir/bdiv_normalized/permanova_results_collated.txt && ! -f $outdir/bdiv_normalized/permdisp_results_collated.txt && ! -f $outdir/bdiv_normalized/anosim_results_collated.txt && ! -f $outdir/bdiv_normalized/dbrda_results_collated.txt && ! -f $outdir/bdiv_normalized/adonis_results_collated.txt ]]; then
@@ -775,7 +786,7 @@ echo "
 Categorical comparisons already present." >> $log
 fi
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 ## Distance boxplots for each category
 	boxplotscount=`ls $outdir/bdiv_normalized/*_boxplots 2>/dev/null | wc -l`
@@ -802,7 +813,7 @@ Boxplots already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 ## Make biplots
 	if [[ ! -d $outdir/bdiv_normalized/biplots ]]; then
@@ -836,7 +847,7 @@ Biplots already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 ## Run supervised learning on data using supplied categories
 	if [[ ! -d $outdir/bdiv_normalized/SupervisedLearning ]]; then
@@ -858,7 +869,7 @@ Supervised Learning already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 ## Make rank abundance plots (normalized)
 	if [[ ! -d $outdir/bdiv_normalized/RankAbundance ]]; then
@@ -880,7 +891,7 @@ Generating rank abundance plots."
 wait
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 echo "
 ********************************************************************************
@@ -1084,7 +1095,7 @@ Generating 3D NMDS plots."
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 ## Make 2D plots
 	if [[ ! -d $outdir/bdiv_rarefied/2D_PCoA_bdiv_plots ]]; then
@@ -1107,7 +1118,7 @@ Generating 2D PCoA plots."
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 ## Comparing categories statistics
 if [[ ! -f $outdir/bdiv_rarefied/permanova_results_collated.txt && ! -f $outdir/bdiv_rarefied/permdisp_results_collated.txt && ! -f $outdir/bdiv_rarefied/anosim_results_collated.txt && ! -f $outdir/bdiv_rarefied/dbrda_results_collated.txt && ! -f $outdir/bdiv_rarefied/adonis_results_collated.txt ]]; then
@@ -1264,7 +1275,7 @@ echo "
 Categorical comparisons already present." >> $log
 fi
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 ## Distance boxplots for each category
 	boxplotscount=`ls $outdir/bdiv_rarefied/*_boxplots 2>/dev/null | wc -l`
@@ -1291,7 +1302,7 @@ Boxplots already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 ## Make biplots
 	if [[ ! -d $outdir/bdiv_rarefied/biplots ]]; then
@@ -1325,7 +1336,7 @@ Biplots already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 ## Run supervised learning on data using supplied categories
 	if [[ ! -d $outdir/bdiv_rarefied/SupervisedLearning ]]; then
@@ -1347,7 +1358,7 @@ Supervised Learning already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 ## Make rank abundance plots (rarefied)
 	if [[ ! -d $outdir/bdiv_rarefied/RankAbundance ]]; then
@@ -1369,7 +1380,7 @@ Generating rank abundance plots."
 wait
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $repodir
 
 	## Remove pointless log.txt file output by supervised learning
 	sllogtest=$(grep "confusion.matrix" ./log.txt 2>/dev/null)
@@ -1453,7 +1464,7 @@ Alpha diversity analysis already completed." >> $log
 	fi
 	
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 #######################################
 ## Start of taxonomy plotting steps
@@ -1504,7 +1515,7 @@ Summarize taxa commands by category \"$line\":
 	done
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 ## Run supervised learning on data using supplied categories
 	if [[ ! -d $outdir/bdiv_rarefied/SupervisedLearning ]]; then
@@ -1616,7 +1627,7 @@ done
 fi
 wait
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 #	## Nonparametric T-test
 #	if [[ ! -d $outdir/Nonparametric_ttest ]]; then
@@ -1702,7 +1713,7 @@ wait
 #fi
 #wait
 	## Update HTML output
-#		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+#		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 ## Run match_reads_to_taxonomy if rep set present
 ## Automatically find merged_rep_set.fna file from existing akutils workflows
@@ -1724,9 +1735,17 @@ Extracting sequences command:
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 
 	fi
+		if [[ ! -f $outdir/Representative_sequences/sequences_by_taxonomy.html ]]; then
+			cp -r $repodir/akutils_resources/html_template/sequences_by_taxonomy.html $outdir/Representative_sequences/
+		else
+			akutils2test=$(head -2 $outdir/Representative_sequences/sequences_by_taxonomy.html | grep "akutils2.0" | wc -l)
+			if [[ "$akutils2test" == 0 ]]; then
+				cp -r $repodir/akutils_resources/html_template/sequences_by_taxonomy.html $outdir/Representative_sequences/
+			fi
+		fi
 fi
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
 
 done
 ################################################################################

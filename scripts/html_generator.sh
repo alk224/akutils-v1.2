@@ -2,11 +2,169 @@
 #
 ## html_generator.sh - HTML generator for akutils core diversity workflow
 
+## Trap function on exit.
+function finish {
+if [[ -f $anchor01temp ]]; then
+	rm $anchor01temp
+fi
+if [[ -f $anchor02temp ]]; then
+	rm $anchor02temp
+fi
+if [[ -f $anchor03temp ]]; then
+	rm $anchor03temp
+fi
+if [[ -f $insamples ]]; then
+	rm $insamples
+fi
+if [[ -f $raresamples ]]; then
+	rm $raresamples
+fi
+if [[ -f $alphatemp ]]; then
+	rm $alphatemp
+fi
+
+}
+trap finish EXIT
+
+## Input variables
 inputbase="$1"
 outdir="$2"
 depth="$3"
 catlist="$4"
 alphatemp="$5"
+randcode="$6"
+tempdir="$7"
+repodir="$8"
+
+## Temp file definitions
+anchor01temp="${tempdir}/${randcode}_anchor01.temp"
+anchor02temp="${tempdir}/${randcode}_anchor02.temp"
+anchor03temp="${tempdir}/${randcode}_anchor03.temp"
+
+## Copy blank outputs:
+	cp $repodir/akutils_resources/html_template/index.html $outdir
+	cp -r $repodir/akutils_resources/html_template/.html $outdir
+	if [[ -d $outdir/Representative_sequences ]]; then
+		cp -r $repodir/akutils_resources/html_template/sequences_by_taxonomy.html $outdir/Representative_sequences/
+	fi
+
+####################################
+## Main html output start here:
+
+## Define log file
+log=`ls $outdir/log_core_diversity* 2>/dev/null`
+logfile=$(basename $log)
+
+## Build anchor01temp (Run summary data)
+	## Master log file
+echo "<table class=\"center\" border=1>
+<tr><td> Master run log </td><td> <a href=\"./$logfile\" target=\"_blank\"> $logfile </a></td></tr>" > $anchor01temp
+
+	## Biom summary files
+if [[ -f $outdir/OTU_tables/${inputbase}.summary ]]; then
+echo "<tr><td> Input OTU table statistics </td><td> <a href=\"./OTU_tables/${inputbase}.summary\" target=\"_blank\"> ${inputbase}.summary </a></td></tr>" >> $anchor01temp
+fi
+if [[ -f $outdir/OTU_tables/rarefied_table.summary ]]; then
+echo "<tr><td> Rarefied OTU table statistics (depth = $depth) </td><td> <a href=\"./OTU_tables/rarefied_table.summary\" target=\"_blank\"> rarefied_table.summary </a></td></tr>" >> $anchor01temp
+fi
+if [[ -f $outdir/OTU_tables/sample_filtered_table.summary ]]; then
+echo "<tr><td> Sample-filtered OTU table statistics </td><td> <a href=\"./OTU_tables/sample_filtered_table.summary\" target=\"_blank\"> sample_filtered_table.summary </a></td></tr>" >> $anchor01temp
+fi
+if [[ -f $outdir/OTU_tables/CSS_table.summary ]]; then
+echo "<tr><td> CSS-normalized OTU table statistics </td><td> <a href=\"./OTU_tables/CSS_table.summary\" target=\"_blank\"> CSS_table.summary </a></td></tr>" >> $anchor01temp
+fi
+echo "</table>" >> $anchor01temp
+
+	## Find anchor in template and send data
+	linenum=`sed -n "/anchor01/=" $outdir/index.html`
+	sed -i "${linenum}r $anchor01temp" $outdir/index.html
+
+## Build anchor02temp (OTU table links)
+	## OTU tables
+## Tables used in analysis (biom and .txt versions)
+echo "<table class=\"center\" border=1>" > $anchor02temp
+if [[ -f $outdir/OTU_tables/${inputbase}.biom ]]; then
+echo "<tr><td> Input OTU table (BIOM format) </td><td> <a href=\"./OTU_tables/${inputbase}.biom\" target=\"_blank\"> ${inputbase}.biom </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/${inputbase}.txt ]]; then
+echo "<tr><td> Input OTU table (tab-delimited format) </td><td> <a href=\"./OTU_tables/${inputbase}.txt\" target=\"_blank\"> ${inputbase}.txt </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/rarefied_table_sorted.biom ]]; then
+echo "<tr><td> Rarefied OTU table (BIOM format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted.biom\" target=\"_blank\"> rarefied_table_sorted.biom </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/rarefied_table_sorted.txt ]]; then
+echo "<tr><td> Rarefied OTU table (tab-delimited format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted.txt\" target=\"_blank\"> rarefied_table_sorted.txt </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/rarefied_table_sorted_relativized.biom ]]; then
+echo "<tr><td> Rarefied OTU table, relativized (BIOM format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted_relativized.biom\" target=\"_blank\"> rarefied_table_sorted_relativized.biom </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/rarefied_table_sorted_relativized.txt ]]; then
+echo "<tr><td> Rarefied OTU table, relativized (tab-delimited format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted_relativized.txt\" target=\"_blank\"> rarefied_table_sorted_relativized.txt </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/sample_filtered_table.biom ]]; then
+echo "<tr><td> Sample-filtered table (input for normzliation, BIOM format) </td><td> <a href=\"./OTU_tables/sample_filtered_table.biom\" target=\"_blank\"> sample_filtered_table.biom </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/sample_filtered_table.txt ]]; then
+echo "<tr><td> Sample-filtered table (input for normzliation, tab-delimited format) </td><td> <a href=\"./OTU_tables/sample_filtered_table.txt\" target=\"_blank\"> sample_filtered_table.txt </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/CSS_table_sorted.biom ]]; then
+echo "<tr><td> Normalized OTU table (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted.biom\" target=\"_blank\"> CSS_table_sorted.biom </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/CSS_table_sorted.txt ]]; then
+echo "<tr><td> Normalized OTU table (tab-delimited format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted.txt\" target=\"_blank\"> CSS_table_sorted.txt </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/CSS_table_sorted_relativized.biom ]]; then
+echo "<tr><td> Normalized OTU table, relativized (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_relativized.biom\" target=\"_blank\"> CSS_table_sorted_relativized.biom </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/CSS_table_sorted_relativized.txt ]]; then
+echo "<tr><td> Normalized OTU table, relativized (tab-delimited format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_relativized.txt\" target=\"_blank\"> CSS_table_sorted_relativized.txt </a></td></tr>" >> $anchor02temp
+fi
+echo "</table>" >> $anchor02temp
+
+	## Find anchor in template and send data
+	linenum=`sed -n "/anchor02/=" $outdir/index.html`
+	sed -i "${linenum}r $anchor02temp" $outdir/index.html
+
+## Build anchor03temp (L7 summary data)
+	## Representative sequences summary and link
+	if [[ -f $outdir/Representative_sequences/L7_taxa_list.txt ]] && [[ -f $outdir/Representative_sequences/otus_per_taxon_summary.txt ]]; then
+#	tablename=`basename $table .biom`
+	Total_OTUs=`cat $outdir/OTU_tables/$inputbase.txt 2>/dev/null | grep -v "#" 2>/dev/null | wc -l`
+	Total_taxa=`cat $outdir/Representative_sequences/L7_taxa_list.txt 2>/dev/null | wc -l`
+	Mean_OTUs=`grep mean $outdir/Representative_sequences/otus_per_taxon_summary.txt 2>/dev/null | cut -f2`
+	Median_OTUs=`grep median $outdir/Representative_sequences/otus_per_taxon_summary.txt 2>/dev/null | cut -f2`
+	Max_OTUs=`grep max $outdir/Representative_sequences/otus_per_taxon_summary.txt 2>/dev/null | cut -f2`
+	Min_OTUs=`grep min $outdir/Representative_sequences/otus_per_taxon_summary.txt 2>/dev/null | cut -f2`
+echo "<table class=\"center\" border=1>
+<tr><td> Total OTU count </td><td align=center> $Total_OTUs </td></tr>
+<tr><td> Total L7 taxa count </td><td align=center> $Total_taxa </td></tr>
+<tr><td> Mean OTUs per L7 taxon </td><td align=center> $Mean_OTUs </td></tr>
+<tr><td> Median OTUs per L7 taxon </td><td align=center> $Median_OTUs </td></tr>
+<tr><td> Maximum OTUs per L7 taxon </td><td align=center> $Max_OTUs </td></tr>
+<tr><td> Minimum OTUs per L7 taxon </td><td align=center> $Min_OTUs </td></tr>
+<tr><td> Aligned and unaligned sequences </td><td> <a href=\"./Representative_sequences/sequences_by_taxonomy.html\" target=\"_blank\"> sequences_by_taxonomy.html </a></td></tr>
+</table>" > $anchor03temp
+	fi
+
+	## Find anchor in template and send data
+	linenum=`sed -n "/anchor03/=" $outdir/index.html`
+	sed -i "${linenum}r $anchor03temp" $outdir/index.html
+
+exit 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Make html files
 	##sequences and alignments html
@@ -41,99 +199,7 @@ echo "<tr><td><font size="1"><a href=\"./L7_sequences_by_taxon_alignments/${taxo
 
 	fi
 
-################################################################################
-## Master HTML output below here
 
-## Page header and log file
-log=`ls $outdir/log_core_diversity* 2>/dev/null`
-logfile=$(basename $log)
-
-echo "<html>
-<head><title>QIIME results</title></head>
-<body>
-<a href=\"http://www.qiime.org\" target=\"_blank\"><img src=\"http://qiime.org/_static/wordpressheader.png\" alt=\"www.qiime.org\"\"/></a><p>
-<h1> akutils core diversity workflow </h1><p>
-<a href=\"https://github.com/alk224/akutils\" target=\_blank\"><h2> https://github.com/alk224/akutils </h2></a><p>
-<table border=1>
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Run Summary Data </td></tr>
-<tr><td> Master run log </td><td> <a href=\" ./$logfile \" target=\"_blank\"> $logfile </a></td></tr>" > $outdir/index.html
-
-## Biom summary files
-if [[ -f $outdir/OTU_tables/${inputbase}.summary ]]; then
-echo "<tr><td> Input OTU table statistics </td><td> <a href=\"./OTU_tables/${inputbase}.summary\" target=\"_blank\"> ${inputbase}.summary </a></td></tr>" >> $outdir/index.html
-fi
-if [[ -f $outdir/OTU_tables/rarefied_table.summary ]]; then
-echo "<tr><td> Rarefied OTU table statistics (depth = $depth) </td><td> <a href=\"./OTU_tables/rarefied_table.summary\" target=\"_blank\"> rarefied_table.summary </a></td></tr>" >> $outdir/index.html
-fi
-if [[ -f $outdir/OTU_tables/sample_filtered_table.summary ]]; then
-echo "<tr><td> Sample-filtered OTU table statistics </td><td> <a href=\"./OTU_tables/sample_filtered_table.summary\" target=\"_blank\"> sample_filtered_table.summary </a></td></tr>" >> $outdir/index.html
-fi
-if [[ -f $outdir/OTU_tables/CSS_table.summary ]]; then
-echo "<tr><td> CSS-normalized OTU table statistics </td><td> <a href=\"./OTU_tables/CSS_table.summary\" target=\"_blank\"> CSS_table.summary </a></td></tr>" >> $outdir/index.html
-fi
-
-## Tables used in analysis (biom and .txt versions)
-if [[ -f $outdir/OTU_tables/rarefied_table_sorted.txt && -f $outdir/OTU_tables/CSS_table_sorted.txt ]]; then
-echo "
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> OTU tables </td></tr>" >> $outdir/index.html
-if [[ -f $outdir/OTU_tables/${inputbase}.biom ]]; then
-echo "<tr><td> Input OTU table (BIOM format) </td><td> <a href=\"./OTU_tables/${inputbase}.biom\" target=\"_blank\"> ${inputbase}.biom </a></td></tr>" >> $outdir/index.html
-fi
-if [[ -f $outdir/OTU_tables/${inputbase}.txt ]]; then
-echo "<tr><td> Input OTU table (tab-delimited format) </td><td> <a href=\"./OTU_tables/${inputbase}.txt\" target=\"_blank\"> ${inputbase}.txt </a></td></tr>" >> $outdir/index.html
-fi
-if [[ -f $outdir/OTU_tables/rarefied_table_sorted.biom ]]; then
-echo "<tr><td> Rarefied OTU table (BIOM format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted.biom\" target=\"_blank\"> rarefied_table_sorted.biom </a></td></tr>" >> $outdir/index.html
-fi
-if [[ -f $outdir/OTU_tables/rarefied_table_sorted.txt ]]; then
-echo "<tr><td> Rarefied OTU table (tab-delimited format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted.txt\" target=\"_blank\"> rarefied_table_sorted.txt </a></td></tr>" >> $outdir/index.html
-fi
-if [[ -f $outdir/OTU_tables/rarefied_table_sorted_relativized.biom ]]; then
-echo "<tr><td> Rarefied OTU table, relativized (BIOM format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted_relativized.biom\" target=\"_blank\"> rarefied_table_sorted_relativized.biom </a></td></tr>" >> $outdir/index.html
-fi
-if [[ -f $outdir/OTU_tables/rarefied_table_sorted_relativized.txt ]]; then
-echo "<tr><td> Rarefied OTU table, relativized (tab-delimited format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted_relativized.txt\" target=\"_blank\"> rarefied_table_sorted_relativized.txt </a></td></tr>" >> $outdir/index.html
-fi
-if [[ -f $outdir/OTU_tables/sample_filtered_table.biom ]]; then
-echo "<tr><td> Sample-filtered table (input for normzliation, BIOM format) </td><td> <a href=\"./OTU_tables/sample_filtered_table.biom\" target=\"_blank\"> sample_filtered_table.biom </a></td></tr>" >> $outdir/index.html
-fi
-if [[ -f $outdir/OTU_tables/sample_filtered_table.txt ]]; then
-echo "<tr><td> Sample-filtered table (input for normzliation, tab-delimited format) </td><td> <a href=\"./OTU_tables/sample_filtered_table.txt\" target=\"_blank\"> sample_filtered_table.txt </a></td></tr>" >> $outdir/index.html
-fi
-if [[ -f $outdir/OTU_tables/CSS_table_sorted.biom ]]; then
-echo "<tr><td> Normalized OTU table (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted.biom\" target=\"_blank\"> CSS_table_sorted.biom </a></td></tr>" >> $outdir/index.html
-fi
-if [[ -f $outdir/OTU_tables/CSS_table_sorted.txt ]]; then
-echo "<tr><td> Normalized OTU table (tab-delimited format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted.txt\" target=\"_blank\"> CSS_table_sorted.txt </a></td></tr>" >> $outdir/index.html
-fi
-if [[ -f $outdir/OTU_tables/CSS_table_sorted_relativized.biom ]]; then
-echo "<tr><td> Normalized OTU table, relativized (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_relativized.biom\" target=\"_blank\"> CSS_table_sorted_relativized.biom </a></td></tr>" >> $outdir/index.html
-fi
-if [[ -f $outdir/OTU_tables/CSS_table_sorted_relativized.txt ]]; then
-echo "<tr><td> Normalized OTU table, relativized (tab-delimited format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_relativized.txt\" target=\"_blank\"> CSS_table_sorted_relativized.txt </a></td></tr>" >> $outdir/index.html
-fi
-
-fi
-
-## Representative sequences summary and link
-	if [[ -f $outdir/Representative_sequences/L7_taxa_list.txt ]] && [[ -f $outdir/Representative_sequences/otus_per_taxon_summary.txt ]]; then
-#	tablename=`basename $table .biom`
-	Total_OTUs=`cat $outdir/OTU_tables/$inputbase.txt 2>/dev/null | grep -v "#" 2>/dev/null | wc -l`
-	Total_taxa=`cat $outdir/Representative_sequences/L7_taxa_list.txt 2>/dev/null | wc -l`
-	Mean_OTUs=`grep mean $outdir/Representative_sequences/otus_per_taxon_summary.txt 2>/dev/null | cut -f2`
-	Median_OTUs=`grep median $outdir/Representative_sequences/otus_per_taxon_summary.txt 2>/dev/null | cut -f2`
-	Max_OTUs=`grep max $outdir/Representative_sequences/otus_per_taxon_summary.txt 2>/dev/null | cut -f2`
-	Min_OTUs=`grep min $outdir/Representative_sequences/otus_per_taxon_summary.txt 2>/dev/null | cut -f2`
-echo "
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Sequencing data by L7 taxon </td></tr>
-<tr><td> Total OTU count </td><td align=center> $Total_OTUs </td></tr>
-<tr><td> Total L7 taxa count </td><td align=center> $Total_taxa </td></tr>
-<tr><td> Mean OTUs per L7 taxon </td><td align=center> $Mean_OTUs </td></tr>
-<tr><td> Median OTUs per L7 taxon </td><td align=center> $Median_OTUs </td></tr>
-<tr><td> Maximum OTUs per L7 taxon </td><td align=center> $Max_OTUs </td></tr>
-<tr><td> Minimum OTUs per L7 taxon </td><td align=center> $Min_OTUs </td></tr>
-<tr><td> Aligned and unaligned sequences </td><td> <a href=\"./Representative_sequences/sequences_by_taxonomy.html\" target=\"_blank\"> sequences_by_taxonomy.html </a></td></tr>" >> $outdir/index.html
-	fi
 
 ## Taxa plots by sample
 	if [[ -d $outdir/taxa_plots ]]; then

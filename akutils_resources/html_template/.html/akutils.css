@@ -1,7 +1,36 @@
+#element
+{
+	-webkit-backface-visibility: hidden;
+	-webkit-transform: scale(1);
+}
+
+table {
+font-family: sans-serif;
+font-size: 12pt;
+color: black;
+background-color: #fff;
+
+border: 1px solid black;
+width: 90%;
+vertical-align: middle;
+text-align: left;
+}
+
+th, td {
+padding: 5px;
+}
+
+tr:hover {background-color: #d9d9d9}
+
+table.center {
+margin-left:auto; 
+margin-right:auto;
+}
+
 body {
   background: #fff;
-  margin: 0 auto;
-  max-width: 1024px;
+  margin: 40 auto;
+  max-width: auto;
   font: normal 14px/1.2 'Helvetica Neue', 'Arial'
 }
 
@@ -13,10 +42,11 @@ body {
 }
 
 .col {
-  width: 1024px;
+  width: 90%;
   float: left;
-  margin-right:32px;
-  margin-bottom: 16px;
+  margin-right: auto;
+  margin-bottom: auto;
+  position: relative;
 }
 .c3 {
   margin-right:0;
@@ -38,7 +68,7 @@ h2 {
 }
 
 h3 {
-  margin: 0;
+  margin: auto;
   background-color: rgb(100,10,85);
   background-image: linear-gradient(bottom, rgb(100,10,85) 14%, rgb(100,36,111) 57%);
   background-image: -o-linear-gradient(bottom, rgb(100,10,85) 14%, rgb(100,36,111) 57%);
@@ -52,7 +82,7 @@ h3 a {
   display: block;
   padding: 10px;
   padding-left: 32px;
-  margin: 0;
+  margin: auto;
   color: #fff;
   text-decoration: none;
   font-weight: normal;
@@ -65,7 +95,7 @@ h3.open a { background-position: 13px -25px; }
 h3 + div { padding: 10px; }
 h2 + div,
 .example {
-  background: #fff;
+  background: #737373;
   overflow: hidden;
   border-radius: 3px;
   -moz-border-radius: 3px;
@@ -88,6 +118,7 @@ h3+div {
   background: #000;
   display: block!important;
   -webkit-transform: translateZ(0);
+  -webkit-perspective: 1000;
   -webkit-transition: all 0.3s ease;
   moz-transition: all 0.3s ease;
   -o-transition: all 0.3s ease;
@@ -100,7 +131,7 @@ h3+div {
 
 #css3-animated-example h3.open + div {
   height: auto;
-  background: #aaffff;
+  background: #dddddd;
 }
 
 /* Event example
