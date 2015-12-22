@@ -204,21 +204,53 @@ echo "<table class=\"center\" border=1>
 	linenum=`sed -n "/anchor03/=" $outdir/index.html`
 	sed -i "${linenum}r $anchor03temp" $outdir/index.html
 
+## Build anchor04temp (normalized taxa plots)
+
+
+## Build anchor06temp (normalized beta diversity)
+
+
+## Build anchor07temp (normalized group significance)
+
+
+## Build anchor08temp (normalized rank abundance)
+
+
+## Build anchor09temp (normalized supervised learning)
+
+
+## Build anchor10temp (normalized biplots)
+
+
+## Build anchor11temp (rarefied taxa plots)
+
+
+## Build anchor12temp (rarefied alpha diversity)
+
+
+## Build anchor13temp (rarefied beta diversity)
+
+
+## Build anchor14temp (rarefied group significance)
+
+
+## Build anchor15temp (rarefied rank abundance)
+
+
+## Build anchor16temp (rarefied supervised learning)
+
+
+## Build anchor17temp (rarefied biplots)
+
+
+## Build anchor18temp (unaligned sequences)
+
+
+## Build anchor19temp (aligned sequences)
+
+
+
 exit 0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ## Make html files
 	##sequences and alignments html
