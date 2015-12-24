@@ -48,13 +48,20 @@ networkout <- plot_network(ig, mergedata, color=factor, label=NULL)
 
 netout <- plot_net(mergedata, maxdist = "0.9", color=factor, distance="bray")
 
-pdf('network.pdf')
+pdf("network.pdf")
 plot(networkout)
 dev.off()
 
-pdf('net.pdf')
-plot(netout)
-dev.off
+## Change pdf resolution like this (doesnt change text size):
+#pdf("network.pdf", height = 12, width = 12)
+
+#png('network.png', height="12")
+#plot(networkout)
+#dev.off()
+
+#pdf('net.pdf')
+#plot(netout)
+#dev.off
 
 
 #d <- read.table(args[1], sep="\t")
