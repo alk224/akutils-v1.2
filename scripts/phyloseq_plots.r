@@ -44,7 +44,17 @@ otus=import_biom(otufile,parseFunction=parse_taxonomy_greengenes)
 mergedata=merge_phyloseq(otus,tree,map)
 
 ig <- make_network(mergedata, type="samples", distance="bray", max.dist = "0.9")
-plot_network(ig, mergedata, color=factor, label=NULL)
+networkout <- plot_network(ig, mergedata, color=factor, label=NULL)
+
+netout <- plot_net(mergedata, maxdist = "0.9", color=factor, distance="bray")
+
+pdf('network.pdf')
+plot(networkout)
+dev.off()
+
+pdf('net.pdf')
+plot(netout)
+dev.off
 
 
 #d <- read.table(args[1], sep="\t")
