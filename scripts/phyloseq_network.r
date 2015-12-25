@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 #
-#  phyloseq_plots.r - generate summary graphs through phyloseq
+#  phyloseq_network.r - R slave to generate network graph through phyloseq
 #
 #  Version 1.0.0 (December 24, 2015)
 #
@@ -34,47 +34,35 @@ args <- commandArgs(TRUE)
 
 otufile=(args[1])
 mapfile=(args[2])
-treefile=(args[3])
-factor=(args[4])
+factor=(args[3])
 
 ## Load data into phyloseq
 map=import_qiime_sample_data(mapfile)
-tree=read_tree(treefile)
 otus=import_biom(otufile,parseFunction=parse_taxonomy_greengenes)
-mergedata=merge_phyloseq(otus,tree,map)
+mergedata=merge_phyloseq(otus,map)
 
-ig <- make_network(mergedata, type="samples", distance="bray", max.dist = "0.9")
+## Make older network (plot_network command)
+ig <- make_network(mergedata, type="samples", distance="bray", max.dist="0.9")
 networkout <- plot_network(ig, mergedata, color=factor, label=NULL)
 
+## Make newer network (plot_net command)
 netout <- plot_net(mergedata, maxdist = "0.9", color=factor, distance="bray")
 
-pdf("network.pdf")
+## Write to output
+pdf(paste0(factor, "_network.pdf"))
 plot(networkout)
 dev.off()
 
 ## Change pdf resolution like this (doesnt change text size):
 #pdf("network.pdf", height = 12, width = 12)
 
+## .png output instead
 #png('network.png', height="12")
 #plot(networkout)
 #dev.off()
 
+## plot_net function.  Odd-looking plots.
 #pdf('net.pdf')
 #plot(netout)
 #dev.off
-
-
-#d <- read.table(args[1], sep="\t")
-
-## extract counts and produce summary stats
-
-#titles <- c("mean", "median", "min", "max")
-#otu_counts <- d[,2]
-#stats <- c(mean(otu_counts), median(otu_counts), min(otu_counts), max(otu_counts))
-
-#result = data.frame(stat = (titles), value = (stats))
-
-## write result to output file
-
-#write.table(result, file = "otus_per_taxon_summary.txt", quote = FALSE, col.names = TRUE, sep = "\t", row.names = FALSE)
 
