@@ -1,0 +1,8 @@
+
+phyloseq_network.sh - produce a network plot via phyloseq from bash command line
+
+Usage:
+	phyloseq_network.sh <input_biom_table> <mapping_file> <factor>
+
+Script will color the plot according to factor provided
+
