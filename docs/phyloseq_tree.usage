@@ -1,0 +1,9 @@
+
+phyloseq_tree.sh - produce a tree plot via phyloseq from bash command line
+
+Usage:
+	phyloseq_tree.sh <input_biom_table> <mapping_file> <input_tree_file> <factor>
+
+	-- script will color the plot according to factor provided
+	-- tree file should be newick-formatted
+
