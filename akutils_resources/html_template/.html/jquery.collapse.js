@@ -21,8 +21,8 @@
       $el: el,
       options : options,
       sections: [],
-      isAccordion : options.accordion || false,
-      db : options.persist ? jQueryCollapseStorage(el.get(0).id) : false
+      isAccordion : options.accordion || true,
+      db : options.persist ? jQueryCollapseStorage(el.get(0).id) : true
     });
 
     // Figure out what sections are open if storage is used
