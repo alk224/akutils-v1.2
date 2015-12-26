@@ -411,6 +411,10 @@ Processing normalized table."
 	echo "
 Processing normalized table." >> $log
 
+## Produce summary plots first through phyloseq (in parallel)
+
+
+
 ## Summarize taxa (yields relative abundance tables)
 	if [[ ! -d $outdir/Normalized_output/beta_diversity/summarized_tables ]]; then
 	echo "
@@ -894,6 +898,10 @@ RAREFIED TABLE PROCESSING STARTS HERE
 Processing rarefied table."
 	echo "
 Processing rarefied table." >> $log
+
+## Produce summary plots first through phyloseq (in parallel)
+
+
 
 ## Summarize taxa (yields relative abundance tables)
 	if [[ ! -d $outdir/Rarefied_output/beta_diversity/summarized_tables ]]; then
