@@ -79,7 +79,7 @@ trap finish EXIT
 	wait
 
 ## Execute R slave to generate network
-	echo "Generating phylogenetic tree plot."
+	echo "Generating ordination plots."
 	Rscript $scriptdir/phyloseq_ordinations.r $table $map $factor &>/dev/null
 	wait
 	sleep 1

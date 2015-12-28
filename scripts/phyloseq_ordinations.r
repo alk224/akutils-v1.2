@@ -36,8 +36,8 @@ args <- commandArgs(TRUE)
 
 otufile=(args[1])
 mapfile=(args[2])
-treefile=(args[3])
-factor=(args[4])
+treefile=(args[4])
+factor=(args[3])
 
 ## Load data into phyloseq
 map=import_qiime_sample_data(mapfile)
@@ -52,7 +52,7 @@ MD1=prune_taxa(md0, MD)
 
 ## Make taxa-only ordination (NMDS)
 MD.ord <- ordinate(MD1, "NMDS", "bray")
-p1 = plot_ordination(MD1, MD.ord, type = "taxa", color = "Class", title = "Taxonomic ordination (NMDS)")
+p1 = plot_ordination(MD1, MD.ord, type = "taxa", color = "Class", title = "Faceted taxonomic ordination (NMDS)")
 ## Output pdf graphic
 pdf(paste0(factor, "_taxa-only_NMDS.pdf"))
 plot(p1)
@@ -73,11 +73,11 @@ plot(p2)
 dev.off()
 
 ## Samples-only ordination with polygon fill
-#p2 + geom_polygon(aes(fill = factor)) + geom_point(size = 5) + ggtitle("Samples ordination with fill (NMDS)")
+#p21 = p2 + geom_polygon(aes(fill = factor)) + geom_point(size = 5) + ggtitle("Samples ordination with fill (NMDS)")
 ## Output pdf graphic
-pdf(paste0(factor, "_samples-only-polygon_NMDS.pdf"))
-plot(p2 + geom_polygon(aes(fill = factor)) + geom_point(size = 5) + ggtitle("Samples ordination with fill (NMDS)"))
-dev.off()
+#pdf(paste0(factor, "_samples-only-polygon_NMDS.pdf"))
+#plot(p21)
+#dev.off()
 
 ## Make biplot
 p3 = plot_ordination(MD1, MD.ord, type = "biplot", color = factor, shape = "Class", title = "Biplot")
@@ -93,15 +93,34 @@ dev.off()
 
 ## Make splitplot
 p4 = plot_ordination(MD1, MD.ord, type = "split", color = "Class", shape = factor, title = "split") + geom_point(size = 5)
-
-
-
-
-
-
 ## Output pdf graphic
-pdf(paste0(factor, "_tree.pdf"))
-plot(treeout)
+pdf(paste0(factor, "_split-biplot_NMDS.pdf"))
+plot(p4)
+dev.off()
+
+## Composite faceted ordination
+dist = "bray"
+ord_meths = c("DCA", "CCA", "RDA", "DPCoA", "NMDS", "MDS", "PCoA")
+plist = llply(as.list(ord_meths), function(i, physeq, dist) {
+    ordi = ordinate(physeq, method = i, distance = dist)
+    plot_ordination(physeq, ordi, "samples", color = factor)
+}, MD1, dist)
+names(plist) <- ord_meths
+pdataframe = ldply(plist, function(x) {
+    df = x$data[, 1:2]
+    colnames(df) = c("Axis_1", "Axis_2")
+    return(cbind(df, x$data))
+})
+names(pdataframe)[1] = "method"
+p5 = ggplot(pdataframe, aes(Axis_1, Axis_2, color = factor, 
+    fill = factor))
+p5 = p5 + geom_point(size = 4) + geom_polygon()
+p5 = p5 + facet_wrap(~method, scales = "free")
+p5 = p5 + scale_fill_brewer(type = "qual", palette = "Set1")
+p5 = p5 + scale_colour_brewer(type = "qual", palette = "Set1")
+## Output pdf graphic
+pdf(paste0(factor, "_composite_ordinations.pdf"))
+plot(p5)
 dev.off()
 
 ## Change pdf resolution like this (doesnt change text size):
