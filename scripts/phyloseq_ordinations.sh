@@ -40,8 +40,9 @@ trap finish EXIT
 
 	input="$1"
 	map="$2"
-	factor="$3"
-	tree="$4"
+	tree="$3" ## Requiring tree in case I want to use phylogenetic metrics in the future
+	factor="$4"
+	cores="$5"
 
 	date0=$(date +%Y%m%d_%I%M%p)
 	res0=$(date +%s.%N)
@@ -60,14 +61,14 @@ trap finish EXIT
 	fi
 
 ## If incorrect number of inputs supplied display usage
-	if [[ "$#" -ne 4 ]]; then
+	if [[ "$#" -ne 5 ]]; then
 		cat $repodir/docs/phyloseq_ordinations.usage
 		exit 0
 	fi
 
-## Test if input is properly formatted
-	hdftest=$(grep "HDF" $input)
-	if [[ ! -z "$hdftest" ]]; then
+## Test if input is properly formatted and correct if necessary
+	hdf5test=$(file $input | grep "Hierarchical Data Format")
+	if [[ ! -z "$hdf5test" ]]; then
 		## convert biom for processing
 		echo "Converting input table (HDF5 format) to JSON for processing."
 		biom convert -i $input -o $jsontemp --to-json
@@ -78,9 +79,9 @@ trap finish EXIT
 	fi
 	wait
 
-## Execute R slave to generate network
+## Execute R slaves to generate network
 	echo "Generating ordination plots."
-	Rscript $scriptdir/phyloseq_ordinations.r $table $map $factor &>/dev/null
+	Rscript $scriptdir/phyloseq_ordinations.r $table $map $tree $factor &>/dev/null
 	wait
 	sleep 1
 	if [[ -f "${factor}_tree.pdf" ]]; then

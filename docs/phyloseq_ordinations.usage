@@ -2,8 +2,9 @@
 phyloseq_ordinations.sh - produce a series of ordinations via phyloseq from bash command line
 
 Usage:
-	phyloseq_ordinations.sh <input_biom_table> <mapping_file> <factor>
+	phyloseq_ordinations.sh <input_biom_table> <mapping_file> <tree_file> <factor> <cores>
 
 	-- script will color the plot according to factor provided
-	If needs tree file -- tree file should be newick-formatted
+	-- tree file should be newick-formatted
+	-- will use a maximum of 6 cores
 

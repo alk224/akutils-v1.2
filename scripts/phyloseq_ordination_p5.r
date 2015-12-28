@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 #
-#  phyloseq_ordinations.r - generate ordination graphics through phyloseq
+#  phyloseq_ordination_p5.r - generate p5 ordination graphic through phyloseq
 #
 #  Version 1.0.0 (December 24, 2015)
 #
@@ -51,54 +51,7 @@ md0 = genefilter_sample(MD, filterfun_sample(function(x) x > 5), A = 0.1 * nsamp
 MD1=prune_taxa(md0, MD)
 
 ## Ordinate command
-MD.ord <- ordinate(MD1, "NMDS", "bray")
-
-## Make taxa-only ordination (NMDS)
-p1 = plot_ordination(MD1, MD.ord, type = "taxa", color = "Class", title = "Faceted taxonomic ordination (NMDS)")
-## Output pdf graphic
-pdf(paste0(factor, "_taxa-only_NMDS.pdf"))
-plot(p1)
-dev.off()
-
-## Make faceted version of taxa-only ordination
-#p1 + facet_wrap(~Class, 2)
-## Output pdf graphic
-pdf(paste0(factor, "_taxa-only-faceted_NMDS.pdf"))
-plot(p1 + facet_wrap(~Class, 2))
-dev.off()
-
-## Make samples-only ordination (NMDS)
-p2 = plot_ordination(MD1, MD.ord, type = "samples", color = factor, title = "Samples ordination (NMDS)")
-## Output pdf graphic
-pdf(paste0(factor, "_samples-only_NMDS.pdf"))
-plot(p2)
-dev.off()
-
-## Samples-only ordination with polygon fill
-#p21 = p2 + geom_polygon(aes(fill = factor)) + geom_point(size = 5) + ggtitle("Samples ordination with fill (NMDS)")
-## Output pdf graphic
-#pdf(paste0(factor, "_samples-only-polygon_NMDS.pdf"))
-#plot(p21)
-#dev.off()
-
-## Make biplot
-p3 = plot_ordination(MD1, MD.ord, type = "biplot", color = factor, shape = "Class", title = "Biplot")
-#MD1.shape.names = get_taxa_unique(MD1, "Class")
-#MD1.shape <- 15:(15 + length(MD1.shape.names) - 1)
-#names(MD1.shape) <- MD1.shape.names
-#MD1.shape["samples"] <- 16
-#p3 + scale_shape_manual(values = MD1.shape)
-## Output pdf graphic
-pdf(paste0(factor, "_biplot_NMDS.pdf"))
-plot(p3)
-dev.off()
-
-## Make splitplot
-p4 = plot_ordination(MD1, MD.ord, type = "split", color = "Class", shape = factor, title = "split") + geom_point(size = 5)
-## Output pdf graphic
-pdf(paste0(factor, "_split-biplot_NMDS.pdf"))
-plot(p4)
-dev.off()
+#MD.ord <- ordinate(MD1, "NMDS", "bray")
 
 ## Composite faceted ordination
 dist = "bray"
@@ -120,16 +73,9 @@ p5 = p5 + geom_point(size = 4) + geom_polygon()
 p5 = p5 + facet_wrap(~method, scales = "free")
 p5 = p5 + scale_fill_brewer(type = "qual", palette = "Set1")
 p5 = p5 + scale_colour_brewer(type = "qual", palette = "Set1")
+
 ## Output pdf graphic
 pdf(paste0(factor, "_composite_ordinations.pdf"))
 plot(p5)
 dev.off()
-
-## Change pdf resolution like this (doesnt change text size):
-#pdf("network.pdf", height = 12, width = 12)
-
-## .png output instead
-#png('network.png', height="12")
-#plot(networkout)
-#dev.off()
 
