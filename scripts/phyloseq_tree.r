@@ -44,7 +44,7 @@ otus=import_biom(otufile,parseFunction=parse_taxonomy_greengenes)
 mergedata=merge_phyloseq(otus,tree,map)
 
 ## Make a tree
-treeout <- plot_tree(mergedata, color = factor, label.tips = "Species", plot.margin = 0.5, ladderize = "left", nodelabf = nodeplotboot(), size = "abundance", base.spacing = 0.03, shape = "Class")
+treeout = plot_tree(mergedata, color = factor, label.tips = "Species", plot.margin = 0.5, ladderize = "left", nodelabf = nodeplotboot(), size = "abundance", base.spacing = 0.03, shape = "Class")
 
 ## Output pdf graphic
 pdf(paste0(factor, "_tree.pdf"))
