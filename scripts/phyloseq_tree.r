@@ -43,12 +43,20 @@ tree=read_tree(treefile)
 otus=import_biom(otufile,parseFunction=parse_taxonomy_greengenes)
 mergedata=merge_phyloseq(otus,tree,map)
 
-## Make a tree
-treeout = plot_tree(mergedata, color = factor, label.tips = "Species", plot.margin = 0.5, ladderize = "left", nodelabf = nodeplotboot(), size = "abundance", base.spacing = 0.03, shape = "Class")
+## Make phylum-colored tree
+phylumtree = plot_tree(mergedata, color = "Phylum", label.tips = "taxa_names", plot.margin = 0.5, ladderize = "left", nodelabf = nodeplotboot())
 
 ## Output pdf graphic
-pdf(paste0(factor, "_tree.pdf"))
-plot(treeout)
+pdf("Phylum_tree.pdf")
+plot(phylumtree)
+dev.off()
+
+## Make detailed tree
+detailtree = plot_tree(mergedata, color = factor, label.tips = "Species", plot.margin = 0.5, ladderize = "left", nodelabf = nodeplotboot(), size = "abundance", base.spacing = 0.03, shape = "Class")
+
+## Output pdf graphic
+pdf(paste0(factor, "_detail_tree.pdf"))
+plot(detailtree)
 dev.off()
 
 ## Change pdf resolution like this (doesnt change text size):

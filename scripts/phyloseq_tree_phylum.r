@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 #
-#  phyloseq_ordination_p5.r - generate p5 ordination graphic through phyloseq
+#  phyloseq_tree.r - generate tree graphic through phyloseq
 #
 #  Version 1.0.0 (December 24, 2015)
 #
@@ -28,8 +28,6 @@ library(phyloseq)
 library(ggplot2)
 library(scales)
 library(grid)
-library(plyr)
-theme_set(theme_bw())
 
 ## Recieve input files from bash
 args <- commandArgs(TRUE)
@@ -44,37 +42,20 @@ map=import_qiime_sample_data(mapfile)
 tree=read_tree(treefile)
 otus=import_biom(otufile,parseFunction=parse_taxonomy_greengenes)
 mergedata=merge_phyloseq(otus,tree,map)
-MD=mergedata
 
-## Filter taxa not present at least 5 times in at least 10% of samples
-md0 = genefilter_sample(MD, filterfun_sample(function(x) x > 5), A = 0.1 * nsamples(MD))
-MD1=prune_taxa(md0, MD)
-
-## Ordinate command
-MD.ord <- ordinate(MD1, "NMDS", "bray")
-
-## Composite faceted ordination
-dist = "bray"
-ord_meths = c("DCA", "CCA", "RDA", "DPCoA", "NMDS", "MDS", "PCoA")
-plist = llply(as.list(ord_meths), function(i, physeq, dist) {
-    ordi = ordinate(physeq, method = i, distance = dist)
-    plot_ordination(physeq, ordi, "samples", color = "Community")
-}, MD1, dist)
-names(plist) <- ord_meths
-pdataframe = ldply(plist, function(x) {
-    df = x$data[, 1:2]
-    colnames(df) = c("Axis_1", "Axis_2")
-    return(cbind(df, x$data))
-})
-names(pdataframe)[1] = "method"
-p5 = ggplot(pdataframe, aes(Axis_1, Axis_2, color = "Community", fill = "Community"))
-p5 = p5 + geom_point(size = 4) + geom_polygon()
-p5 = p5 + facet_wrap(~method, scales = "free")
-p5 = p5 + scale_fill_brewer(type = "qual", palette = "Set1")
-p5 = p5 + scale_colour_brewer(type = "qual", palette = "Set1")
+## Make phylum-colored tree
+phylumtree = plot_tree(mergedata, color = "Phylum", label.tips = "taxa_names", plot.margin = 0.5, ladderize = "left", nodelabf = nodeplotboot())
 
 ## Output pdf graphic
-pdf(paste0(factor, "_composite_ordinations.pdf"))
-plot(p5)
+pdf("Phylum_tree.pdf")
+plot(phylumtree)
 dev.off()
+
+## Change pdf resolution like this (doesnt change text size):
+#pdf("network.pdf", height = 12, width = 12)
+
+## .png output instead
+#png('network.png', height="12")
+#plot(networkout)
+#dev.off()
 

@@ -42,6 +42,7 @@ trap finish EXIT
 	map="$2"
 	tree="$3"
 	factor="$4"
+	mode="$5"
 
 	date0=$(date +%Y%m%d_%I%M%p)
 	res0=$(date +%s.%N)
@@ -60,7 +61,7 @@ trap finish EXIT
 	fi
 
 ## If incorrect number of inputs supplied display usage
-	if [[ "$#" -ne 4 ]]; then
+	if [[ "$#" -ne 5 ]]; then
 		cat $repodir/docs/phyloseq_tree.usage
 		exit 0
 	fi
@@ -79,18 +80,24 @@ trap finish EXIT
 	wait
 
 ## Execute R slave to generate network
+	if [[ $5 == "phylum" ]]; then
 	echo "Generating phylogenetic tree plot."
-	Rscript $scriptdir/phyloseq_tree.r $table $map $tree $factor &>/dev/null
+	Rscript $scriptdir/phyloseq_tree_phylum.r $table $map $tree $factor &>/dev/null
 	wait
 	sleep 1
-	if [[ -f "${factor}_tree.pdf" ]]; then
-	echo "Success!
+	elif [[ $5 == "detail" ]]; then
+	echo "Generating phylogenetic tree plot."
+	Rscript $scriptdir/phyloseq_tree_detail.r $table $map $tree $factor &>/dev/null
+	wait
+	sleep 1
+#	if [[ -f "${factor}_tree.pdf" ]]; then
+#	echo "Success!
 
-Output file: ${factor}_tree.pdf
-	"
-	else
-	echo "
-There seems to have been a problem.  Check your inputs and try again.
-	"
+#Output file: ${factor}_tree.pdf
+#	"
+#	else
+#	echo "
+#There seems to have been a problem.  Check your inputs and try again.
+#	"
 	fi
 exit 0

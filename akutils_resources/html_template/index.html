@@ -10,7 +10,7 @@
     <script src=".html/jquery-1.9.1.js"></script>
     <script src=".html/json2.js"></script>
     <script src=".html/jquery.collapse.js"></script>
-
+    <script src=".html/jquery.collapse_storage.js"></script>
   </head>
   <body>
 <br>
@@ -18,9 +18,7 @@
 <hr>
     <h1><a STYLE="text-decoration:none" href="https://github.com/alk224/akutils" target="_blank">akutils core diversity output (v2.0)</a></h1>
 
-
     <div class="col c1">
-
       <h2>Summary data:</h2>
       <div id="result1" data-collapse="accordion persist">
         <h3>Run summary data</h3>
@@ -37,7 +35,19 @@
         </div>
       </div>
 
-      <h2>Normalized analysis results:</h2>
+      <h2>DNA sequences:</h2>
+      <div id="result5" data-collapse="accordion persist">
+        <h3>Unaligned sequences (fasta format)</h3>
+        <div>
+        <!-- anchor18 -->
+        </div>
+        <h3>MAFFT alignments of multi-sequence OTUs (clustal format)</h3>
+        <div>
+        <!-- anchor19 -->
+        </div>
+      </div>
+
+      <h2>Normalized analysis results (QIIME output):</h2>
       <div id="result2" data-collapse="accordion persist">
         <h3>Taxonomic plots</h3>
         <div>
@@ -65,7 +75,7 @@
         </div>
       </div>
 
-      <h2>Rarefied analyis results:</h2>
+      <h2>Rarefied analyis results (QIIME output):</h2>
       <div id="result3" data-collapse="accordion persist">
         <h3>Taxonomic plots</h3>
         <div>
@@ -97,6 +107,18 @@
         </div>
       </div>
 
+      <h2>Additional graphics (Phyloseq output):</h2>
+      <div id="result4" data-collapse="accordion persist">
+        <h3>Phylogenetic tree plots</h3>
+        <div>
+        <!-- anchor20 -->
+        </div>
+        <h3>Network plots (using CSS-normalized table)</h3>
+        <div>
+        <!-- anchor21 -->
+        </div>
+      </div>
+
       <script>
         new jQueryCollapse($("#result1"), {
           open: function() {
@@ -122,7 +144,26 @@
             this.slideUp(100);
           }
         });
+        new jQueryCollapse($("#result4"), {
+          open: function() {
+            this.slideDown(100);
+          },
+          close: function() {
+            this.slideUp(100);
+          }
+        });
+        new jQueryCollapse($("#result5"), {
+          open: function() {
+            this.slideDown(100);
+          },
+          close: function() {
+            this.slideUp(100);
+          }
+        });
       </script>
     </div>
   </body>
+<br>
+<br>
+<hr>
 </html>

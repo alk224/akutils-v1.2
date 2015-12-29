@@ -114,8 +114,7 @@ pdataframe = ldply(plist, function(x) {
     return(cbind(df, x$data))
 })
 names(pdataframe)[1] = "method"
-p5 = ggplot(pdataframe, aes(Axis_1, Axis_2, color = factor, 
-    fill = factor))
+p5 = ggplot(pdataframe, aes(Axis_1, Axis_2, color = factor, fill = factor))
 p5 = p5 + geom_point(size = 4) + geom_polygon()
 p5 = p5 + facet_wrap(~method, scales = "free")
 p5 = p5 + scale_fill_brewer(type = "qual", palette = "Set1")

@@ -196,12 +196,14 @@ INITIAL TABLE PROCESSING STARTS HERE
 		## Find phylogenetic tree or set mode nonphylogenetic
 		if [[ -f $inputdirup1/pynast_alignment/fasttree_phylogeny.tre ]]; then
 		tree="$inputdirup1/pynast_alignment/fasttree_phylogeny.tre"
+		treebase=$(basename $tree)
 		phylogenetic="YES"
 		metrics="bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac"
 		alphametrics="PD_whole_tree,chao1,observed_species,shannon"
 		fi
 		if [[ -f $inputdirup1/mafft_alignment/fasttree_phylogeny.tre ]]; then
 		tree="$inputdirup1/mafft_alignment/fasttree_phylogeny.tre"
+		treebase=$(basename $tree)
 		phylogenetic="YES"
 		metrics="bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac"
 		alphametrics="PD_whole_tree,chao1,observed_species,shannon"
@@ -224,13 +226,13 @@ INITIAL TABLE PROCESSING STARTS HERE
 		IFS=$OIFS
 		sed -i '/^\s*$/d' $alphatemp
 
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 		## Summarize input table
 		biom-summarize_folder.sh $tabledir &>/dev/null
 
 		## Refresh html output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 		## Rarefy input table according to established depth
 		raretable="$tabledir/rarefied_table.biom"
@@ -258,7 +260,7 @@ Single rarefaction command:
 		rarebase=$(basename $raretable .biom)
 
 		## Refresh html output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 		## Filter any samples removed by rarefying from the original input table
 		inlines0=$(cat $insummary | wc -l)
@@ -315,7 +317,7 @@ Normalizing sample-filtered table with CSS transformation:
 	
 		## Summarize tables one last time and refresh html output
 		biom-summarize_folder.sh $tabledir &>/dev/null
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 		## Sort OTU tables
 		CSSsort="$outdir/OTU_tables/CSS_table_sorted.biom"
@@ -394,6 +396,41 @@ Tree file: None found" >> $log
 		if [[ ! -f $CSSsortreltxt ]]; then
 		biomtotxt.sh $CSSsortrel &>/dev/null
 		fi
+
+		## Build tree plots
+		if [[ "$phylogenetic" == "YES" ]]; then
+		if [[ ! -d $outdir/Phyloseq_output/Trees ]]; then
+		echo "
+Generating phylogenetic tree plots based on input."
+			mkdir -p $outdir/Phyloseq_output/Trees 2>/dev/null
+			cp $tree $outdir/Phyloseq_output/Trees/ 2>/dev/null
+			phyloseq_tree.sh $CSSsort $mapfile $tree NULL phylum &>/dev/null
+			wait
+				mv Phylum_tree.pdf $outdir/Phyloseq_output/Trees/ 2>/dev/null
+
+			for line in `cat $catlist`; do
+			phyloseq_tree.sh $CSSsort $mapfile $tree $line detail &>/dev/null
+			wait
+				mv ${line}_detail_tree.pdf $outdir/Phyloseq_output/Trees/ 2>/dev/null
+			done
+		fi
+		fi
+
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+
+		## Build network plots
+		if [[ ! -d $outdir/Phyloseq_output/Networks ]]; then
+		echo "
+Generating network plots for each supplied category."
+			mkdir -p $outdir/Phyloseq_output/Networks 2>/dev/null
+			for line in `cat $catlist`; do
+			phyloseq_network.sh $CSSsort $mapfile $line &>/dev/null
+			wait
+				mv ${line}_network.pdf $outdir/Phyloseq_output/Networks/ 2>/dev/null
+			done
+		fi
+
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 ################################################################################
 ## START OF NORMALIZED ANALYSIS HERE
@@ -593,7 +630,7 @@ Generating 3D NMDS plots."
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 ## Make 2D plots
 	if [[ ! -d $outdir/Normalized_output/beta_diversity/2D_PCoA_bdiv_plots ]]; then
@@ -616,7 +653,7 @@ Generating 2D PCoA plots."
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 ## Comparing categories statistics
 if [[ ! -f $outdir/Normalized_output/beta_diversity/permanova_results_collated.txt && ! -f $outdir/Normalized_output/beta_diversity/permdisp_results_collated.txt && ! -f $outdir/Normalized_output/beta_diversity/anosim_results_collated.txt && ! -f $outdir/Normalized_output/beta_diversity/dbrda_results_collated.txt && ! -f $outdir/Normalized_output/beta_diversity/adonis_results_collated.txt ]]; then
@@ -768,7 +805,7 @@ echo "
 Categorical comparisons already present." >> $log
 fi
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 ## Distance boxplots for each category
 	boxplotscount=`ls $outdir/Normalized_output/beta_diversity/*_boxplots 2>/dev/null | wc -l`
@@ -795,7 +832,7 @@ Boxplots already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 ## Make biplots
 	if [[ ! -d $outdir/Normalized_output/beta_diversity/biplots ]]; then
@@ -829,7 +866,7 @@ Biplots already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 ## Run supervised learning on data using supplied categories
 	if [[ ! -d $outdir/Normalized_output/SupervisedLearning ]]; then
@@ -851,7 +888,7 @@ Supervised Learning already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 ## Make rank abundance plots (normalized)
 	if [[ ! -d $outdir/Normalized_output/RankAbundance ]]; then
@@ -873,7 +910,162 @@ Generating rank abundance plots."
 wait
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+
+#######################################
+## Start of taxonomy plotting steps
+
+## Plot taxa summaries
+		taxaout="$outdir/Normalized_output/taxa_plots"
+		if [[ ! -d $taxaout ]]; then
+	echo "
+Plotting taxonomy by sample."
+	echo "
+Plot taxa summaries command:
+	plot_taxa_summary.py -i $outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L2.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L3.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L4.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L5.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L6.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L7.txt -o $taxaout/taxa_summary_plots/ -c bar" >> $log
+	plot_taxa_summary.py -i $outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L2.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L3.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L4.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L5.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L6.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L7.txt -o $taxaout/taxa_summary_plots/ -c bar 1> $stdout 2> $stderr || true
+	wait
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+		fi
+
+## Taxa summaries for each category
+	for line in `cat $catlist`; do
+		taxaout="$outdir/Normalized_output/taxa_plots_${line}"
+		if [[ ! -d $taxaout ]]; then
+	echo "
+Building taxonomy plots for category: $line."
+	echo "
+Summarize taxa commands by category \"$line\":
+	collapse_samples.py -m ${mapfile} -b ${CSSsort} --output_biom_fp ${taxaout}/${line}_otu_table.biom --output_mapping_fp ${taxaout}/${line}_map.txt --collapse_fields $line
+	sort_otu_table.py -i ${taxaout}/${line}_otu_table.biom -o ${taxaout}/${line}_otu_table_sorted.biom
+	summarize_taxa.py -i ${taxaout}/${line}_otu_table_sorted.biom -o ${taxaout}/  -L 2,3,4,5,6,7 -a
+	plot_taxa_summary.py -i ${taxaout}/${line}_otu_table_sorted_L2.txt,${taxaout}/${line}_otu_table_sorted_L3.txt,${taxaout}/${line}_otu_table_sorted_L4.txt,${taxaout}/${line}_otu_table_sorted_L5.txt,${taxaout}/${line}_otu_table_sorted_L6.txt,${taxaout}/${line}_otu_table_sorted_L7.txt -o ${taxaout}/taxa_summary_plots/ -c bar,pie" >> $log
+
+		mkdir $taxaout
+
+	collapse_samples.py -m ${mapfile} -b ${CSSsort} --output_biom_fp ${taxaout}/${line}_otu_table.biom --output_mapping_fp ${taxaout}/${line}_map.txt --collapse_fields $line 1> $stdout 2> $stderr || true
+	wait
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+		wait
+	sort_otu_table.py -i ${taxaout}/${line}_otu_table.biom -o ${taxaout}/${line}_otu_table_sorted.biom 1> $stdout 2> $stderr || true
+	wait
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+		wait
+	summarize_taxa.py -i ${taxaout}/${line}_otu_table_sorted.biom -o ${taxaout}/  -L 2,3,4,5,6,7 -a 1> $stdout 2> $stderr || true
+	wait
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+		wait
+	plot_taxa_summary.py -i ${taxaout}/${line}_otu_table_sorted_L2.txt,${taxaout}/${line}_otu_table_sorted_L3.txt,${taxaout}/${line}_otu_table_sorted_L4.txt,${taxaout}/${line}_otu_table_sorted_L5.txt,${taxaout}/${line}_otu_table_sorted_L6.txt,${taxaout}/${line}_otu_table_sorted_L7.txt -o ${taxaout}/taxa_summary_plots/ -c bar,pie 1> $stdout 2> $stderr || true
+	wait
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+		wait
+		fi
+	done
+
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+
+############################
+## Group comparison steps
+
+## Group significance for each category (Kruskal-Wallis and nonparametric Ttest)
+
+	## Kruskal-Wallis
+	kwout="$outdir/Normalized_output/KruskalWallis/"
+	kwtestcount=$(ls $kwout/kruskalwallis_* 2> /dev/null | wc -l)
+	if [[ $kwtestcount == 0 ]]; then
+	echo "
+Group significance commands:" >> $log
+	if [[ ! -d $kwout ]]; then
+	mkdir $kwout
+	fi
+	CSSsortrel="$outdir/OTU_tables/CSS_table_sorted_relativized.biom"
+	if [[ ! -f $CSSsortrel ]]; then
+	echo "
+Relativizing OTU table:
+	relativize_otu_table.py -i $CSSsort" >> $log
+	relativize_otu_table.py -i $CSSsort >/dev/null 2>&1 || true
+	fi
+		CSSsortreltxt="$outdir/OTU_tables/CSS_table_sorted_relativized.txt"
+		if [[ ! -f $CSSsortreltxt ]]; then
+		biomtotxt.sh $CSSsortrel &>/dev/null
+		fi
+	echo "
+Calculating Kruskal-Wallis test statistics when possible."
+for line in `cat $catlist`; do
+	if [[ ! -f $kwout/kruskalwallis_${line}_OTU.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $CSSsortrel -m $mapfile -c $line -o $kwout/kruskalwallis_${line}_OTU.txt -s kruskal_wallis" >> $log
+	( group_significance.py -i $CSSsortrel -m $mapfile -c $line -o $kwout/kruskalwallis_${line}_OTU.txt -s kruskal_wallis ) >/dev/null 2>&1 || true &
+	fi
+done
+wait
+for line in `cat $catlist`; do
+	if [[ ! -f $kwout/kruskalwallis_$line\_L2.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L2.biom -m $mapfile -c $line -o $kwout/kruskalwallis_${line}_L2.txt -s kruskal_wallis" >> $log
+	( group_significance.py -i $outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L2.biom -m $mapfile -c $line -o $kwout/kruskalwallis_${line}_L2.txt -s kruskal_wallis ) >/dev/null 2>&1 || true &
+	fi
+done
+wait
+for line in `cat $catlist`; do
+	if [[ ! -f $kwout/kruskalwallis_$line\_L3.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L3.biom -m $mapfile -c $line -o $kwout/kruskalwallis_${line}_L3.txt -s kruskal_wallis" >> $log
+	( group_significance.py -i $outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L3.biom -m $mapfile -c $line -o $kwout/kruskalwallis_${line}_L3.txt -s kruskal_wallis ) >/dev/null 2>&1 || true &
+	fi
+done
+wait
+for line in `cat $catlist`; do
+	if [[ ! -f $kwout/kruskalwallis_$line\_L4.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L4.biom -m $mapfile -c $line -o $kwout/kruskalwallis_${line}_L4.txt -s kruskal_wallis" >> $log
+	( group_significance.py -i $outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L4.biom -m $mapfile -c $line -o $kwout/kruskalwallis_${line}_L4.txt -s kruskal_wallis ) >/dev/null 2>&1 || true &
+	fi
+done
+wait
+for line in `cat $catlist`; do
+	if [[ ! -f $kwout/kruskalwallis_$line\_L5.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L5.biom -m $mapfile -c $line -o $kwout/kruskalwallis_${line}_L5.txt -s kruskal_wallis" >> $log
+	( group_significance.py -i $outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L5.biom -m $mapfile -c $line -o $kwout/kruskalwallis_${line}_L5.txt -s kruskal_wallis ) >/dev/null 2>&1 || true &
+	fi
+done
+wait
+for line in `cat $catlist`; do
+	if [[ ! -f $kwout/kruskalwallis_$line\_L6.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L6.biom -m $mapfile -c $line -o $kwout/kruskalwallis_${line}_L6.txt -s kruskal_wallis" >> $log
+	( group_significance.py -i $outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L6.biom -m $mapfile -c $line -o $kwout/kruskalwallis_${line}_L6.txt -s kruskal_wallis ) >/dev/null 2>&1 || true &
+	fi
+done
+wait
+for line in `cat $catlist`; do
+	if [[ ! -f $kwout/kruskalwallis_$line\_L7.txt ]]; then
+	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+	sleep 1
+	done
+	echo "	group_significance.py -i $outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L7.biom -m $mapfile -c $line -o $kwout/kruskalwallis_${line}_L7.txt -s kruskal_wallis" >> $log
+	( group_significance.py -i $outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L7.biom -m $mapfile -c $line -o $kwout/kruskalwallis_${line}_L7.txt -s kruskal_wallis ) >/dev/null 2>&1 || true &
+	fi
+done
+fi
+wait
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+
 
 echo "
 ********************************************************************************
@@ -1081,7 +1273,7 @@ Generating 3D NMDS plots."
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 ## Make 2D plots
 	if [[ ! -d $outdir/Rarefied_output/beta_diversity/2D_PCoA_bdiv_plots ]]; then
@@ -1104,7 +1296,7 @@ Generating 2D PCoA plots."
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 ## Comparing categories statistics
 if [[ ! -f $outdir/Rarefied_output/beta_diversity/permanova_results_collated.txt && ! -f $outdir/Rarefied_output/beta_diversity/permdisp_results_collated.txt && ! -f $outdir/Rarefied_output/beta_diversity/anosim_results_collated.txt && ! -f $outdir/Rarefied_output/beta_diversity/dbrda_results_collated.txt && ! -f $outdir/Rarefied_output/beta_diversity/adonis_results_collated.txt ]]; then
@@ -1261,7 +1453,7 @@ echo "
 Categorical comparisons already present." >> $log
 fi
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 ## Distance boxplots for each category
 	boxplotscount=`ls $outdir/Rarefied_output/beta_diversity/*_boxplots 2>/dev/null | wc -l`
@@ -1288,7 +1480,7 @@ Boxplots already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 ## Make biplots
 	if [[ ! -d $outdir/Rarefied_output/beta_diversity/biplots ]]; then
@@ -1322,7 +1514,7 @@ Biplots already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 ## Run supervised learning on data using supplied categories
 	if [[ ! -d $outdir/Rarefied_output/SupervisedLearning ]]; then
@@ -1344,7 +1536,7 @@ Supervised Learning already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 ## Make rank abundance plots (rarefied)
 	if [[ ! -d $outdir/Rarefied_output/RankAbundance ]]; then
@@ -1366,7 +1558,7 @@ Generating rank abundance plots."
 wait
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 	## Remove pointless log.txt file output by supervised learning
 	sllogtest=$(grep "confusion.matrix" ./log.txt 2>/dev/null)
@@ -1451,7 +1643,7 @@ Alpha diversity analysis already completed." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 #######################################
 ## Start of taxonomy plotting steps
@@ -1504,7 +1696,7 @@ Summarize taxa commands by category \"$line\":
 	done
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 ############################
 ## Group comparison steps
@@ -1605,7 +1797,7 @@ done
 fi
 wait
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 #	## Nonparametric T-test
 #	if [[ ! -d $outdir/Nonparametric_ttest ]]; then
@@ -1691,7 +1883,7 @@ wait
 #fi
 #wait
 	## Update HTML output
-#		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+#		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 ## Run match_reads_to_taxonomy if rep set present
 ## Automatically find merged_rep_set.fna file from existing akutils workflows
@@ -1716,7 +1908,7 @@ Extracting sequences command:
 
 fi
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
 
 done
 ################################################################################
