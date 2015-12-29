@@ -35,6 +35,7 @@ args <- commandArgs(TRUE)
 otufile=(args[1])
 mapfile=(args[2])
 factor=(args[3])
+outdir=(args[4])
 
 ## Load data into phyloseq
 map=import_qiime_sample_data(mapfile)
@@ -49,7 +50,7 @@ networkout <- plot_network(ig, mergedata, color=factor, label=NULL)
 netout <- plot_net(mergedata, maxdist = "0.9", color=factor, distance="bray")
 
 ## Write to output
-pdf(paste0(factor, "_network.pdf"))
+pdf(paste0(outdir, factor, "_network.pdf"))
 plot(networkout)
 dev.off()
 

@@ -41,6 +41,7 @@ trap finish EXIT
 	input="$1"
 	map="$2"
 	factor="$3"
+	code="$4"
 
 	date0=$(date +%Y%m%d_%I%M%p)
 	res0=$(date +%s.%N)
@@ -59,14 +60,14 @@ trap finish EXIT
 	fi
 
 ## If incorrect number of inputs supplied display usage
-	if [[ "$#" -ne 3 ]]; then
+	if [[ "$#" -le 2 ]]; then
 		cat $repodir/docs/phyloseq_network.usage
 		exit 0
 	fi
 
 ## Test if input is properly formatted
 	hdf5test=$(file $input | grep "Hierarchical Data Format")
-	if [[ -z "$hdftest" ]]; then
+	if [[ ! -z "$hdf5test" ]]; then
 		## convert biom for processing
 		echo "Converting input table (HDF5 format) to JSON for processing."
 		biom convert -i $input -o $jsontemp --to-json
@@ -79,7 +80,7 @@ trap finish EXIT
 
 ## Execute R slave to generate network
 	echo "Generating network plot."
-	Rscript $scriptdir/phyloseq_network.r $table $map $factor &>/dev/null
+	Rscript $scriptdir/phyloseq_network.r $table $map $factor $code &>/dev/null
 	wait
 	sleep 1
 	if [[ -f "${factor}_network.pdf" ]]; then

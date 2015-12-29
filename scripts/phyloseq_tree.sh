@@ -43,6 +43,7 @@ trap finish EXIT
 	tree="$3"
 	factor="$4"
 	mode="$5"
+	outdir="$6"
 
 	date0=$(date +%Y%m%d_%I%M%p)
 	res0=$(date +%s.%N)
@@ -61,14 +62,14 @@ trap finish EXIT
 	fi
 
 ## If incorrect number of inputs supplied display usage
-	if [[ "$#" -ne 5 ]]; then
+	if [[ "$#" -le 4 ]]; then
 		cat $repodir/docs/phyloseq_tree.usage
 		exit 0
 	fi
 
 ## Test if input is properly formatted
-	hdftest=$(grep "HDF" $input)
-	if [[ -z "$hdftest" ]]; then
+	hdf5test=$(file $input | grep "Hierarchical Data Format")
+	if [[ ! -z "$hdf5test" ]]; then
 		## convert biom for processing
 		echo "Converting input table (HDF5 format) to JSON for processing."
 		biom convert -i $input -o $jsontemp --to-json
@@ -82,12 +83,12 @@ trap finish EXIT
 ## Execute R slave to generate network
 	if [[ $5 == "phylum" ]]; then
 	echo "Generating phylogenetic tree plot."
-	Rscript $scriptdir/phyloseq_tree_phylum.r $table $map $tree $factor &>/dev/null
+	Rscript $scriptdir/phyloseq_tree_phylum.r $table $map $tree $factor $outdir &>/dev/null
 	wait
 	sleep 1
 	elif [[ $5 == "detail" ]]; then
 	echo "Generating phylogenetic tree plot."
-	Rscript $scriptdir/phyloseq_tree_detail.r $table $map $tree $factor &>/dev/null
+	Rscript $scriptdir/phyloseq_tree_detail.r $table $map $tree $factor $outdir &>/dev/null
 	wait
 	sleep 1
 #	if [[ -f "${factor}_tree.pdf" ]]; then

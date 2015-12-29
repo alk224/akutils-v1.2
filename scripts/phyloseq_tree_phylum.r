@@ -36,6 +36,7 @@ otufile=(args[1])
 mapfile=(args[2])
 treefile=(args[3])
 factor=(args[4])
+outdir=(args[5])
 
 ## Load data into phyloseq
 map=import_qiime_sample_data(mapfile)
@@ -47,7 +48,7 @@ mergedata=merge_phyloseq(otus,tree,map)
 phylumtree = plot_tree(mergedata, color = "Phylum", label.tips = "taxa_names", plot.margin = 0.5, ladderize = "left", nodelabf = nodeplotboot())
 
 ## Output pdf graphic
-pdf("Phylum_tree.pdf")
+pdf(paste0(outdir, "Phylum_tree.pdf"))
 plot(phylumtree)
 dev.off()
 

@@ -404,14 +404,16 @@ Tree file: None found" >> $log
 Generating phylogenetic tree plots based on input."
 			mkdir -p $outdir/Phyloseq_output/Trees 2>/dev/null
 			cp $tree $outdir/Phyloseq_output/Trees/ 2>/dev/null
-			phyloseq_tree.sh $CSSsort $mapfile $tree NULL phylum &>/dev/null
+	#		randcode1=`cat /dev/urandom |tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1` 2>/dev/null
+			phyloseq_tree.sh $CSSsort $mapfile $tree NULL phylum $outdir/Phyloseq_output/Trees/ &>/dev/null
 			wait
-				mv Phylum_tree.pdf $outdir/Phyloseq_output/Trees/ 2>/dev/null
+	#			mv Phylum_tree_${randcode1}.pdf $outdir/Phyloseq_output/Trees/Phylum_tree.pdf 2>/dev/null
 
 			for line in `cat $catlist`; do
-			phyloseq_tree.sh $CSSsort $mapfile $tree $line detail &>/dev/null
+	#		randcode1=`cat /dev/urandom |tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1` 2>/dev/null
+			phyloseq_tree.sh $CSSsort $mapfile $tree $line detail $outdir/Phyloseq_output/Trees/ &>/dev/null
 			wait
-				mv ${line}_detail_tree.pdf $outdir/Phyloseq_output/Trees/ 2>/dev/null
+#				mv ${line}_detail_tree_${randcode1}.pdf $outdir/Phyloseq_output/Trees/${line}_detail_tree.pdf 2>/dev/null
 			done
 		fi
 		fi
@@ -424,9 +426,10 @@ Generating phylogenetic tree plots based on input."
 Generating network plots for each supplied category."
 			mkdir -p $outdir/Phyloseq_output/Networks 2>/dev/null
 			for line in `cat $catlist`; do
-			phyloseq_network.sh $CSSsort $mapfile $line &>/dev/null
+		#	randcode1=`cat /dev/urandom |tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1` 2>/dev/null
+			phyloseq_network.sh $CSSsort $mapfile $line $outdir/Phyloseq_output/Networks/ &>/dev/null
 			wait
-				mv ${line}_network.pdf $outdir/Phyloseq_output/Networks/ 2>/dev/null
+#				mv ${line}_network_${randcode1}.pdf $outdir/Phyloseq_output/Networks/${line}_network.pdf 2>/dev/null
 			done
 		fi
 
