@@ -66,7 +66,7 @@ trap finish EXIT
 
 ## Test if input is properly formatted
 	hdf5test=$(file $input | grep "Hierarchical Data Format")
-	if [[ ! -z "$hdftest" ]]; then
+	if [[ -z "$hdftest" ]]; then
 		## convert biom for processing
 		echo "Converting input table (HDF5 format) to JSON for processing."
 		biom convert -i $input -o $jsontemp --to-json
