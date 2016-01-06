@@ -112,5 +112,5 @@ Things to change before next release:
 11) Full workflows for both rarefied and normalized data (completed (12/23/15)
 12) Better handling of input tables, requiring only a single input (completed 12/23/15)
 13) Better workflow logging (in progress)
-
+14) One line commands to modify config settings
 
