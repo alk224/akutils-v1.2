@@ -28,37 +28,95 @@ workdir=$(pwd)
 cd
 homedir=$(pwd)
 cd $workdir
+echo ""
 
-## Run install if .bashrc exists
+## Run install steps if .bashrc exists
 if [[ -f "$homedir/.bashrc" ]]; then
 	repodir="$( cd "$( dirname "$0" )" && pwd )"
 	sourceline="source $repodir/akutils_resources/akutils_autocomplete"
-	sourcecount=$(grep "$sourceline" ~/.bashrc | wc -l)
+	sourcecount=$(grep "$sourceline" ~/.bashrc 2>/dev/null | wc -l)
+	pathline="$repodir/scripts"
+	pathcount=$(grep "$pathline" ~/.bashrc 2>/dev/null | wc -l)
+
 	if [[ "$sourcecount" == "0" ]]; then
 	echo "
 ## Autocompletion for akutils commands.
 $sourceline
 " >> $homedir/.bashrc
-		sourcecount=$(grep $sourceline ~/.bashrc | wc -l)
+
+		sourcecount=$(grep $sourceline ~/.bashrc 2>/dev/null | wc -l)
 		if [[ "$sourcecount" == "0" ]]; then
-		echo "
-Unexpected problem.  akutils not installed.
+		echo "Unexpected problem. Command autocompletion not configured.
 		"
 		elif [[ "$sourcecount" -ge "1" ]]; then
-		echo "
-akutils successfully installed.  Restart your terminal or run:
-source ~/.bashrc
+		echo "Command autocompletion successfully configured for akutils.
 		"
 		fi
+
 	elif [[ "$sourcecount" -ge "1" ]]; then
-	echo "
-akutils is already installed.
+	echo "Command autocompletion already configured for akutils.
 	"
 	fi
+
+	if [[ "$pathcount" == "0" ]]; then
+
+		bashrcpathcount=$(grep "PATH=" ~/.bashrc 2>/dev/null | wc -l)
+		if [[ "$bashrcpathcount" -ge "1" ]]; then
+		sed -i "/PATH/s/\"$/:TARGET/" ~/.bashrc 2>/dev/null || true
+		sed -i "/PATH/s|TARGET$|$repodir/scripts\"|" ~/.bashrc 2>/dev/null || true
+		else
+		echo "
+## Add PATH variables here.
+PATH=\"\$PATH:$repodir/scripts\"
+" >> $homedir/.bashrc
+		fi
+
+		pathcount=$(grep $pathline ~/.bashrc 2>/dev/null | wc -l)
+		if [[ "$pathcount" == "0" ]]; then
+		echo "Unexpected problem. PATH to akutils scripts not configured.
+		"
+		elif [[ "$pathcount" -ge "1" ]]; then
+		echo "Command PATH successfully configured for akutils.
+		"
+		fi
+
+	elif [[ "$pathcount" -ge "1" ]]; then
+	echo "Command PATH already configured for akutils.
+	"
+	fi
+
 source $homedir/.bashrc
+
+	sourcecount=$(grep "$sourceline" ~/.bashrc 2>/dev/null | wc -l)
+	pathcount=$(grep "$pathline" ~/.bashrc 2>/dev/null | wc -l)
+
+	if [[ "$sourcecount" -ge "1" && "$pathcount" -ge "1" ]]; then
+	echo "akutils is properly configured. Restart your terminal or run:
+source ~/.bashrc
+	"
+	else
+	echo "Unexpected problem(s) encountered.
+	"
+		if [[ "$sourcecount" -eq "0" ]]; then
+		echo "Command autocompletion not configured.
+		"
+		else
+		echo "Command autocompletion is properly configured.
+		"
+		fi
+
+		if [[ "$pathcount" -eq "0" ]]; then
+		echo "Command PATH not configured.
+		"
+		else
+		echo "Command PATH is properly configured.
+		"
+		fi
+	fi
+
 else
 	echo "
-No $homedir/.bashrc file found.  You may need to manually configure akutils.
+No $homedir/.bashrc file found. You may need to manually configure akutils.
 	"
 fi
 
