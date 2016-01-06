@@ -1,130 +1,97 @@
-#
-# **********************************************************************
-# ***                                                                ***
-# ***                         akutils README                         ***
-# ***                                                                ***
-# **********************************************************************
-#
-# This is a collection of scripts I wrote to make myself more productive
-# while doing microbial ecology work with QIIME. I was having difficulty
-# knowing that I was making the best decisions in my analyses, so I
-# started writing this as an exercise in getting to know the QIIME
-# commands that I was using better.  I can now use it to run many OTU
-# picking workflows in a row and it generates the plots and stats that I
-# like to have access to right away.  This avoids the tedium of entering
-# many commands and helps to keep me organized.  For more information on
-# the functionality of akutils, check out the wiki pages:
-#
-# https://github.com/alk224/akutils/wiki
-# 
-# I do everything on a Linux system (Ubuntu 14.04).  I have also tested
-# most of them on CentOS 6.6 (monsoon at NAU). You should be comfortable
-# installing packages and such that these scripts might require.  I will
-# try to include in help functions what dependencies are required, but
-# here is a short list which should cover most of these tools:
-#
-# 1) QIIME 1.9.0 (https://qiime.org)
-# 2) ea-utils (https://code.google.com/p/ea-utils/)
-# 3) Fastx toolkit (http://hannonlab.cshl.edu/fastx_toolkit/)
-# 4) vsearch (https://github.com/torognes/vsearch)
-# 5) ITSx (http://microbiology.se/software/itsx/)
-# 6) Smalt (https://www.sanger.ac.uk/resources/software/smalt/)
-# 7) HMMer v3+ (http://hmmer.janelia.org/)
-# 8) Mafft (http://mafft.cbrc.jp/alignment/software/)
-#
-# Install these and then you can use my scripts.  If they break for you,
-# I probably can't help.  Mostly because I don't really have any
-# computer science background and moreso because I am a graduate student
-# with not a whole lot of time.  Still if you find any problems or have
-# ideas for useful functionality, you can submit an issue via github:
-#
-# https://github.com/alk224/akutils/issues
-#
-# **********************************************************************
-#
-# Installation (two options):
-#
-# Install option 1: Use my new installer script (best for bare installs,
-# but probably works on existing installs fine).
-#
-# Go to https://github.com/alk224/akutils_ubuntu_installer and follow
-# the (very short) instructions.
-#
-# *****
-#
-# Install option 2: Clone the repo
-# 
-# You need git installed (default on many systems).
-#
-# git clone https://github.com/alk224/akutils.git
-#
-# Then add the repo directory to your path.  That should be everything,
-# but to help you to know that you have everything in place, 
-# dependencies and all, you should run the dependency check utility:
-#
-# akutils_dependency_check.sh
-#
-# And then check your results:
-#
-# akutils_dependency_check.sh result
-#
-# Below are
-# instructions to add a directory to your path in Ubuntu or Centos as
-# this sometimes confuses people.
-#
-# *** In Ubuntu 14.04, change /etc/environment (need sudo power). ***
-#
-# While anywhere, execute:
-#
-# sudo nano /etc/environment
-#
-# Add a PATH line or append your existing one.
-#
-# If you have to add a line, it will look like this:
-#
-# PATH=$PATH:/home/<userid_or_accountname>/akutils
-#
-# If there is already a line that looks like that, append it:
-#
-# PATH=$PATH:other/paths/first:/home/<userid_or_accountname>/akutils
-#
-# Reboot.
-#
-# *** In CentOS 6.6, modify .bashrc (should not need sudo). ***
-#
-# While in your home directory, execute:
-#
-# nano .bashrc
-#
-# Change PATH line as in Ubuntu instructions, then execute:
-#
-# export PATH
-#
-# Log out and log back in (or reboot).
-#
-# **********************************************************************
-#
-# Updating:
-#
-# If (when) I make useful changes, I will push them to the repo. To 
-# benefit from these changes, navigate to your akutils directory and
-# type:
-#
-# git pull
-#
-# After this, you want to rerun the config utility:
-#
-# akutils_config_utility.sh
-#
-# and choose "rebuild" to make a fresh global config file.  Older local
-# config files may not function correctly after an update.  Some scripts
-# may miss a variable import without a config file to match the version
-# of that script.
-#
-# **********************************************************************
-#
-# Citing akutils:
-#
-# Andrew Krohn. (2015). akutils: Facilitating analyses of microbial 
-# communities through QIIME. Zenodo. 10.5281/zenodo.18615
-#
+
+**********************************************************************
+***                                                                ***
+***                     akutils-dev README                         ***
+***                                                                ***
+**********************************************************************
+
+This is a collection of scripts I wrote to make myself more productive while
+doing microbial ecology work with QIIME. I was having difficulty knowing that I
+was making the best decisions in my analyses, so I started writing this as an
+exercise in getting to know the QIIME commands that I was using better. I can
+now use it to run many OTU picking workflows in a row and it generates the plots
+and stats that I like to have access to right away. This avoids the tedium of
+entering many commands and helps to keep me organized. I do everything on a 
+Linux system (Ubuntu 14.04). I have also tested most things on CentOS 6.6
+(monsoon at NAU). You should be comfortable installing packages and such that
+may be required. For more information on the functionality of akutils, check out
+the wiki pages:
+
+     https://github.com/alk224/akutils/wiki (non-dev pages only)
+
+**********************************************************************
+
+Getting akutils on your local system (workstation or VirtualBox):
+
+ 1) Set up your system appropriately. I have done this on a large workstation as
+well as within a VirtualBox on my netbook. Install Ubuntu 14.04LTS. I have had
+trouble with 14.04.3 base installs so prefer 14.04.1 install and then update:
+http://old-releases.ubuntu.com/releases/14.04.2/ubuntu-14.04.1-desktop-amd64.iso
+
+2) Get all programs and dependencies installed. The easiest way is with my
+installer script: https://github.com/alk224/akutils_ubuntu_installer
+Instructions are there to fix the screen size in a Virtualbox guest as well as
+to update and run all installation. This part takes a long time and requires a
+decent internet connection.
+
+3) Clone the akutils-dev repository:
+
+     git clone https://github.com/alk224/akutils-dev
+
+4) Run install script to add akutils to PATH and enable command autocompletion.
+
+     cd akutils-dev
+     bash install
+
+**********************************************************************
+
+Getting akutils on your compute cluster:
+
+ 1) No guarantees! This works on Ubuntu 14.04 and Centos 6.6. Maybe other 
+systems too.
+
+ 2) Have your sysadmin install the necessary packages:
+
+ -- QIIME 1.9.1 (https://qiime.org)
+ -- ea-utils (https://code.google.com/p/ea-utils/)
+ -- Fastx toolkit (http://hannonlab.cshl.edu/fastx_toolkit/)
+ -- vsearch (https://github.com/torognes/vsearch)
+ -- ITSx (http://microbiology.se/software/itsx/)
+ -- Smalt (https://www.sanger.ac.uk/resources/software/smalt/)
+ -- HMMer v3+ (http://hmmer.janelia.org/)
+ -- Mafft (http://mafft.cbrc.jp/alignment/software/)
+
+ 3) Clone the repository and run the install script (steps 3-4 above).
+
+**********************************************************************
+
+If you find any problems or have ideas for useful functionality, you can submit
+an issue via github:
+
+https://github.com/alk224/akutils/issues
+
+**********************************************************************
+
+Updating:
+
+If (when) I make useful changes, I will push them to the repo. To benefit from
+these changes, navigate to your akutils directory and type:
+
+     git pull
+
+After this, you want to rerun the config utility:
+
+     akutils configure
+
+Choose "rebuild" to make a fresh global config file (necessary if changes have
+been made to configurable settings). Older config files may not function
+correctly after an update. This can cause some scripts to miss a variable import
+without a config file to match the version of that script.
+
+**********************************************************************
+
+Citing akutils:
+
+Andrew Krohn. (2015). akutils: Facilitating analyses of microbial 
+communities through QIIME. Zenodo. 10.5281/zenodo.18615
+
