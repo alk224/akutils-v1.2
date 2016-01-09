@@ -286,7 +286,7 @@ echo "<tr><td> Distance boxplots (${line}, ${dmbase}) </td><td> <a href=\"./Norm
 	done
 	nmsstress=`grep -e "^stress\s" $outdir/Normalized_output/beta_diversity/${dmbase}_nmds.txt 2>/dev/null || true | cut -f2`
 echo "<tr><td> 3D PCoA plot (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/${dmbase}_emperor_pcoa_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
-<tr><td> 2D PCoA plot (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/2D_bdiv_plots/${dmbase}_pc_2D_PCoA_plots.html\" target=\"_blank\"> index.html </a></td></tr>
+<tr><td> 2D PCoA plot (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/2D_PCoA_bdiv_plots/${dmbase}_pc_2D_PCoA_plots.html\" target=\"_blank\"> index.html </a></td></tr>
 <tr><td> 3D NMDS plot (${dmbase}, $nmsstress) </td><td> <a href=\"./Normalized_output/beta_diversity/${dmbase}_emperor_nmds_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
 <tr><td> DB-RDA plot (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/dbrda_out/\" target=\"_blank\"> dbrda_plot_directory </a></td></tr>" >> $anchor06temp
 echo "<tr><td> Distance matrix (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/${dmbase}_dm.txt\" target=\"_blank\"> ${dmbase}_dm.txt </a></td></tr>
