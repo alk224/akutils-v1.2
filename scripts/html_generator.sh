@@ -166,10 +166,10 @@ if [[ -f $outdir/OTU_tables/rarefied_table_sorted_relativized.txt ]]; then
 echo "<tr><td> Rarefied OTU table, relativized (tab-delimited format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted_relativized.txt\" target=\"_blank\"> rarefied_table_sorted_relativized.txt </a></td></tr>" >> $anchor02temp
 fi
 if [[ -f $outdir/OTU_tables/sample_filtered_table.biom ]]; then
-echo "<tr><td> Sample-filtered table (input for normzliation, BIOM format) </td><td> <a href=\"./OTU_tables/sample_filtered_table.biom\" target=\"_blank\"> sample_filtered_table.biom </a></td></tr>" >> $anchor02temp
+echo "<tr><td> Sample-filtered table (input for normalization, BIOM format) </td><td> <a href=\"./OTU_tables/sample_filtered_table.biom\" target=\"_blank\"> sample_filtered_table.biom </a></td></tr>" >> $anchor02temp
 fi
 if [[ -f $outdir/OTU_tables/sample_filtered_table.txt ]]; then
-echo "<tr><td> Sample-filtered table (input for normzliation, tab-delimited format) </td><td> <a href=\"./OTU_tables/sample_filtered_table.txt\" target=\"_blank\"> sample_filtered_table.txt </a></td></tr>" >> $anchor02temp
+echo "<tr><td> Sample-filtered table (input for normalization, tab-delimited format) </td><td> <a href=\"./OTU_tables/sample_filtered_table.txt\" target=\"_blank\"> sample_filtered_table.txt </a></td></tr>" >> $anchor02temp
 fi
 if [[ -f $outdir/OTU_tables/CSS_table_sorted.biom ]]; then
 echo "<tr><td> Normalized OTU table (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted.biom\" target=\"_blank\"> CSS_table_sorted.biom </a></td></tr>" >> $anchor02temp
