@@ -926,7 +926,7 @@ Plotting taxonomy by sample."
 	echo "
 Plot taxa summaries command:
 	plot_taxa_summary.py -i $outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L2.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L3.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L4.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L5.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L6.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L7.txt -o $taxaout/taxa_summary_plots/ -c bar" >> $log
-	plot_taxa_summary.py -i $outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L2.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L3.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L4.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L5.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L6.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L7.txt -o $taxaout/taxa_summary_plots/ -c bar 1> $stdout 2> $stderr || true
+	plot_taxa_summary.py -i $outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L2.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L3.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L4.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L5.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L6.txt,$outdir/Normalized_output/beta_diversity/summarized_tables/CSS_table_sorted_L7.txt -o $taxaout/taxa_summary_plots/ -c bar -l Phylum,Class,Order,Family,Genus,Species 1> $stdout 2> $stderr || true
 	wait
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 		fi
@@ -958,7 +958,7 @@ Summarize taxa commands by category \"$line\":
 	wait
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 		wait
-	plot_taxa_summary.py -i ${taxaout}/${line}_otu_table_sorted_L2.txt,${taxaout}/${line}_otu_table_sorted_L3.txt,${taxaout}/${line}_otu_table_sorted_L4.txt,${taxaout}/${line}_otu_table_sorted_L5.txt,${taxaout}/${line}_otu_table_sorted_L6.txt,${taxaout}/${line}_otu_table_sorted_L7.txt -o ${taxaout}/taxa_summary_plots/ -c bar,pie 1> $stdout 2> $stderr || true
+	plot_taxa_summary.py -i ${taxaout}/${line}_otu_table_sorted_L2.txt,${taxaout}/${line}_otu_table_sorted_L3.txt,${taxaout}/${line}_otu_table_sorted_L4.txt,${taxaout}/${line}_otu_table_sorted_L5.txt,${taxaout}/${line}_otu_table_sorted_L6.txt,${taxaout}/${line}_otu_table_sorted_L7.txt -o ${taxaout}/taxa_summary_plots/ -c bar,pie -l Phylum,Class,Order,Family,Genus,Species -d 300 -w 0.65 -x 8 -y 10 1> $stdout 2> $stderr || true
 	wait
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 		wait
@@ -1659,7 +1659,7 @@ Plotting taxonomy by sample."
 	echo "
 Plot taxa summaries command:
 	plot_taxa_summary.py -i $outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L2.txt,$outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L3.txt,$outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L4.txt,$outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L5.txt,$outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L6.txt,$outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L7.txt -o $taxaout/taxa_summary_plots/ -c bar" >> $log
-	plot_taxa_summary.py -i $outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L2.txt,$outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L3.txt,$outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L4.txt,$outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L5.txt,$outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L6.txt,$outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L7.txt -o $taxaout/taxa_summary_plots/ -c bar 1> $stdout 2> $stderr || true
+	plot_taxa_summary.py -i $outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L2.txt,$outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L3.txt,$outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L4.txt,$outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L5.txt,$outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L6.txt,$outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L7.txt -o $taxaout/taxa_summary_plots/ -c bar -l Phylum,Class,Order,Family,Genus,Species 1> $stdout 2> $stderr || true
 	wait
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 		fi
@@ -1691,7 +1691,7 @@ Summarize taxa commands by category \"$line\":
 	wait
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 		wait
-	plot_taxa_summary.py -i ${taxaout}/${line}_otu_table_sorted_L2.txt,${taxaout}/${line}_otu_table_sorted_L3.txt,${taxaout}/${line}_otu_table_sorted_L4.txt,${taxaout}/${line}_otu_table_sorted_L5.txt,${taxaout}/${line}_otu_table_sorted_L6.txt,${taxaout}/${line}_otu_table_sorted_L7.txt -o ${taxaout}/taxa_summary_plots/ -c bar,pie 1> $stdout 2> $stderr || true
+	plot_taxa_summary.py -i ${taxaout}/${line}_otu_table_sorted_L2.txt,${taxaout}/${line}_otu_table_sorted_L3.txt,${taxaout}/${line}_otu_table_sorted_L4.txt,${taxaout}/${line}_otu_table_sorted_L5.txt,${taxaout}/${line}_otu_table_sorted_L6.txt,${taxaout}/${line}_otu_table_sorted_L7.txt -o ${taxaout}/taxa_summary_plots/ -c bar,pie -l Phylum,Class,Order,Family,Genus,Species -d 300 -w 0.65 -x 8 -y 10 1> $stdout 2> $stderr || true
 	wait
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 		wait
