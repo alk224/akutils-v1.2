@@ -147,42 +147,74 @@ echo "</table>" >> $anchor01temp
 	## OTU tables
 ## Tables used in analysis (biom and .txt versions)
 echo "<table class=\"center\" border=1>" > $anchor02temp
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Metadata (input mapping file) </td></tr>" >> $anchor02temp
+if [[ -f $outdir/OTU_tables/input_mapping_file.txt ]]; then
+echo "<tr><td> Input metadata mapping file </td><td> <a href=\"./OTU_tables/input_mapping_file.txt\" target=\"_blank\"> input_mapping_file.txt </a></td></tr>" >> $anchor02temp
+fi
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Input OTU table </td></tr>" >> $anchor02temp
 if [[ -f $outdir/OTU_tables/${inputbase}.biom ]]; then
 echo "<tr><td> Input OTU table (BIOM format) </td><td> <a href=\"./OTU_tables/${inputbase}.biom\" target=\"_blank\"> ${inputbase}.biom </a></td></tr>" >> $anchor02temp
 fi
 if [[ -f $outdir/OTU_tables/${inputbase}.txt ]]; then
 echo "<tr><td> Input OTU table (tab-delimited format) </td><td> <a href=\"./OTU_tables/${inputbase}.txt\" target=\"_blank\"> ${inputbase}.txt </a></td></tr>" >> $anchor02temp
 fi
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Rarefied OTU tables (depth = ${depth}) </td></tr>" >> $anchor02temp
 if [[ -f $outdir/OTU_tables/rarefied_table_sorted.biom ]]; then
 echo "<tr><td> Rarefied OTU table (BIOM format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted.biom\" target=\"_blank\"> rarefied_table_sorted.biom </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/rarefied_table_sorted_with_metadata.biom ]]; then
+echo "<tr><td> Rarefied OTU table with metadata (BIOM format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted_with_metadata.biom\" target=\"_blank\"> rarefied_table_sorted_with_metadata.biom </a></td></tr>" >> $anchor02temp
 fi
 if [[ -f $outdir/OTU_tables/rarefied_table_sorted.txt ]]; then
 echo "<tr><td> Rarefied OTU table (tab-delimited format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted.txt\" target=\"_blank\"> rarefied_table_sorted.txt </a></td></tr>" >> $anchor02temp
 fi
+#if [[ -f $outdir/OTU_tables/rarefied_table_sorted_with_metadata.txt ]]; then
+#echo "<tr><td> Rarefied OTU table with metadata (tab-delimited format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted_with_metadata.txt\" target=\"_blank\"> rarefied_table_sorted_with_metadata.txt </a></td></tr>" >> $anchor02temp
+#fi
 if [[ -f $outdir/OTU_tables/rarefied_table_sorted_relativized.biom ]]; then
 echo "<tr><td> Rarefied OTU table, relativized (BIOM format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted_relativized.biom\" target=\"_blank\"> rarefied_table_sorted_relativized.biom </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/rarefied_table_sorted_relativized_with_metadata.biom ]]; then
+echo "<tr><td> Rarefied OTU table, relativized with metadata (BIOM format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted_relativized_with_metadata.biom\" target=\"_blank\"> rarefied_table_sorted_relativized_with_metadata.biom </a></td></tr>" >> $anchor02temp
 fi
 if [[ -f $outdir/OTU_tables/rarefied_table_sorted_relativized.txt ]]; then
 echo "<tr><td> Rarefied OTU table, relativized (tab-delimited format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted_relativized.txt\" target=\"_blank\"> rarefied_table_sorted_relativized.txt </a></td></tr>" >> $anchor02temp
 fi
+#if [[ -f $outdir/OTU_tables/rarefied_table_sorted_relativized_with_metadata.txt ]]; then
+#echo "<tr><td> Rarefied OTU table, relativized with metadata (tab-delimited format) </td><td> <a href=\"./OTU_tables/rarefied_table_sorted_relativized_with_metadata.txt\" target=\"_blank\"> rarefied_table_sorted_relativized_with_metadata.txt </a></td></tr>" >> $anchor02temp
+#fi
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Sample-filtered OTU tables (input OTU table filtered for samples removed during rarefaction) </td></tr>" >> $anchor02temp
 if [[ -f $outdir/OTU_tables/sample_filtered_table.biom ]]; then
 echo "<tr><td> Sample-filtered table (input for normalization, BIOM format) </td><td> <a href=\"./OTU_tables/sample_filtered_table.biom\" target=\"_blank\"> sample_filtered_table.biom </a></td></tr>" >> $anchor02temp
 fi
 if [[ -f $outdir/OTU_tables/sample_filtered_table.txt ]]; then
 echo "<tr><td> Sample-filtered table (input for normalization, tab-delimited format) </td><td> <a href=\"./OTU_tables/sample_filtered_table.txt\" target=\"_blank\"> sample_filtered_table.txt </a></td></tr>" >> $anchor02temp
 fi
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Normalized OTU tables (CSS transformation of sample-filtered table) </td></tr>" >> $anchor02temp
 if [[ -f $outdir/OTU_tables/CSS_table_sorted.biom ]]; then
 echo "<tr><td> Normalized OTU table (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted.biom\" target=\"_blank\"> CSS_table_sorted.biom </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/CSS_table_sorted_with_metadata.biom ]]; then
+echo "<tr><td> Normalized OTU table with metadata (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_with_metadata.biom\" target=\"_blank\"> CSS_table_sorted_with_metadata.biom </a></td></tr>" >> $anchor02temp
 fi
 if [[ -f $outdir/OTU_tables/CSS_table_sorted.txt ]]; then
 echo "<tr><td> Normalized OTU table (tab-delimited format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted.txt\" target=\"_blank\"> CSS_table_sorted.txt </a></td></tr>" >> $anchor02temp
 fi
+#if [[ -f $outdir/OTU_tables/CSS_table_sorted_with_metadata.txt ]]; then
+#echo "<tr><td> Normalized OTU table with metadata (tab-delimited format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_with_metadata.txt\" target=\"_blank\"> CSS_table_sorted_with_metadata.txt </a></td></tr>" >> $anchor02temp
+#fi
 if [[ -f $outdir/OTU_tables/CSS_table_sorted_relativized.biom ]]; then
 echo "<tr><td> Normalized OTU table, relativized (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_relativized.biom\" target=\"_blank\"> CSS_table_sorted_relativized.biom </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/CSS_table_sorted_relativized_with_metadata.biom ]]; then
+echo "<tr><td> Normalized OTU table, relativized with metadata (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_relativized_with_metadata.biom\" target=\"_blank\"> CSS_table_sorted_relativized_with_metadata.biom </a></td></tr>" >> $anchor02temp
 fi
 if [[ -f $outdir/OTU_tables/CSS_table_sorted_relativized.txt ]]; then
 echo "<tr><td> Normalized OTU table, relativized (tab-delimited format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_relativized.txt\" target=\"_blank\"> CSS_table_sorted_relativized.txt </a></td></tr>" >> $anchor02temp
 fi
+#if [[ -f $outdir/OTU_tables/CSS_table_sorted_relativized_with_metadata.txt ]]; then
+#echo "<tr><td> Normalized OTU table, relativized with metadata (tab-delimited format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_relativized_with_metadata.txt\" target=\"_blank\"> CSS_table_sorted_relativized_with_metadata.txt </a></td></tr>" >> $anchor02temp
+#fi
 echo "</table>" >> $anchor02temp
 
 	## Find anchor in template and send data

@@ -56,7 +56,7 @@ trap finish EXIT
 	randcode="$3"
 	config="$4"
 	input="$5"
-	mapfile="$6"
+	inmap="$6"
 	cats="$7"
 	cores="$8"
 	threads=$(($cores+1))
@@ -120,7 +120,7 @@ Exiting.
 ## Make categories temp file
 	echo "
 Parsing input categories."
-	bash $scriptdir/parse_cats.sh $stdout $stderr $log $mapfile $cats $catlist $randcode $tempdir
+	bash $scriptdir/parse_cats.sh $stdout $stderr $log $inmap $cats $catlist $randcode $tempdir
 
 ## Make normalized tables if necessary
 
@@ -139,6 +139,7 @@ for table in `cat $tablelist`; do
 		inputdir=$(dirname $table)
 		inputdirup1=$(dirname $inputdir)
 		inputbase=$(basename $table .biom)
+		mapbase=$(basename $inmap)
 
 		## Summarize any tables in input directory
 		biom-summarize_folder.sh $inputdir &>/dev/null
@@ -164,8 +165,12 @@ for table in `cat $tablelist`; do
 		if [[ ! -f $tabledir/$inputbase.biom ]]; then
 			cp $table $tabledir
 		fi
+		if [[ ! -f $tabledir/input_mapping_file.txt ]]; then
+			cp $inmap $tabledir/input_mapping_file.txt
+		fi
 		intable="$tabledir/$inputbase.biom"
 		insummary="$tabledir/$inputbase.summary"
+		mapfile="$tabledir/input_mapping_file.txt"
 
 		## Find log file or set new one. 
 		rm log_core_diversity*~ 2>/dev/null
@@ -226,13 +231,13 @@ INITIAL TABLE PROCESSING STARTS HERE
 		IFS=$OIFS
 		sed -i '/^\s*$/d' $alphatemp
 
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 		## Summarize input table
 		biom-summarize_folder.sh $tabledir &>/dev/null
 
 		## Refresh html output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 		## Rarefy input table according to established depth
 		raretable="$tabledir/rarefied_table.biom"
@@ -260,7 +265,7 @@ Single rarefaction command:
 		rarebase=$(basename $raretable .biom)
 
 		## Refresh html output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 		## Filter any samples removed by rarefying from the original input table
 		inlines0=$(cat $insummary | wc -l)
@@ -314,10 +319,10 @@ Normalizing sample-filtered table with CSS transformation:
 
 		wait
 		fi
-	
+
 		## Summarize tables one last time and refresh html output
 		biom-summarize_folder.sh $tabledir &>/dev/null
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 		## Sort OTU tables
 		CSSsort="$outdir/OTU_tables/CSS_table_sorted.biom"
@@ -347,6 +352,17 @@ Normalizing sample-filtered table with CSS transformation:
 		relativize_otu_table.py -i $CSSsort" >> $log
 		fi
 
+		# Add sample metadata to rarefied and normalized tables (both relativized and count format)
+		CSSsortwmd="$outdir/OTU_tables/CSS_table_sorted_with_metadata.biom"
+		raresortwmd="$outdir/OTU_tables/rarefied_table_sorted_with_metadata.biom"
+		raresortrelwmd="$outdir/OTU_tables/rarefied_table_sorted_relativized_with_metadata.biom"
+		CSSsortrelwmd="$outdir/OTU_tables/CSS_table_sorted_relativized_with_metadata.biom"
+		biom add-metadata -i $CSSsort -o $CSSsortwmd --sample-metadata-fp $mapfile >/dev/null 2>&1 || true
+		biom add-metadata -i $raresort -o $raresortwmd --sample-metadata-fp $mapfile >/dev/null 2>&1 || true
+		biom add-metadata -i $CSSsortrel -o $CSSsortrelwmd --sample-metadata-fp $mapfile >/dev/null 2>&1 || true
+		biom add-metadata -i $raresortrel -o $raresortrelwmd --sample-metadata-fp $mapfile >/dev/null 2>&1 || true
+
+		## Report mode and metrics
 		if [[ "$phylogenetic" == "YES" ]]; then
 		echo "
 Analysis will be ${bold}phylogenetic${normal}.
@@ -378,6 +394,11 @@ Tree file: None found" >> $log
 		filtertabletxt="$outdir/OTU_tables/sample_filtered_table.txt"
 		raresortreltxt="$outdir/OTU_tables/rarefied_table_sorted_relativized.txt"
 		CSSsortreltxt="$outdir/OTU_tables/CSS_table_sorted_relativized.txt"
+#		CSSsortwmdtxt="$outdir/OTU_tables/CSS_table_sorted_with_metadata.txt"
+#		raresortwmdtxt="$outdir/OTU_tables/rarefied_table_sorted_with_metadata.txt"
+#		raresortrelwmdtxt="$outdir/OTU_tables/rarefied_table_sorted_relativized_with_metadata.txt"
+#		CSSsortrelwmdtxt="$outdir/OTU_tables/CSS_table_sorted_relativized_with_metadata.txt"
+
 		if [[ ! -f $CSSsorttxt ]]; then
 		biomtotxt.sh $CSSsort &>/dev/null
 		fi
@@ -396,6 +417,18 @@ Tree file: None found" >> $log
 		if [[ ! -f $CSSsortreltxt ]]; then
 		biomtotxt.sh $CSSsortrel &>/dev/null
 		fi
+#		if [[ ! -f $CSSsortwmdtxt ]]; then
+#		biomtotxt.sh $CSSsortwmd &>/dev/null
+#		fi
+#		if [[ ! -f $raresortwmdtxt ]]; then
+#		biomtotxt.sh $raresortwmd &>/dev/null
+#		fi
+#		if [[ ! -f $raresortrelwmdtxt ]]; then
+#		biomtotxt.sh $raresortrelwmd &>/dev/null
+#		fi
+#		if [[ ! -f $CSSsortrelwmdtxt ]]; then
+#		biomtotxt.sh $CSSsortrelwmd &>/dev/null
+#		fi
 
 		## Build tree plots
 		if [[ "$phylogenetic" == "YES" ]]; then
@@ -418,7 +451,7 @@ Generating phylogenetic tree plots based on input."
 		fi
 		fi
 
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 		## Build network plots
 		if [[ ! -d $outdir/Phyloseq_output/Networks ]]; then
@@ -433,7 +466,7 @@ Generating network plots for each supplied category."
 			done
 		fi
 
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 ################################################################################
 ## START OF NORMALIZED ANALYSIS HERE
@@ -633,7 +666,7 @@ Generating 3D NMDS plots."
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 ## Make 2D plots
 	if [[ ! -d $outdir/Normalized_output/beta_diversity/2D_PCoA_bdiv_plots ]]; then
@@ -656,7 +689,7 @@ Generating 2D PCoA plots."
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 ## Comparing categories statistics
 if [[ ! -f $outdir/Normalized_output/beta_diversity/permanova_results_collated.txt && ! -f $outdir/Normalized_output/beta_diversity/permdisp_results_collated.txt && ! -f $outdir/Normalized_output/beta_diversity/anosim_results_collated.txt && ! -f $outdir/Normalized_output/beta_diversity/dbrda_results_collated.txt && ! -f $outdir/Normalized_output/beta_diversity/adonis_results_collated.txt ]]; then
@@ -808,7 +841,7 @@ echo "
 Categorical comparisons already present." >> $log
 fi
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 ## Distance boxplots for each category
 	boxplotscount=`ls $outdir/Normalized_output/beta_diversity/*_boxplots 2>/dev/null | wc -l`
@@ -835,7 +868,7 @@ Boxplots already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 ## Make biplots
 	if [[ ! -d $outdir/Normalized_output/beta_diversity/biplots ]]; then
@@ -869,7 +902,7 @@ Biplots already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 ## Run supervised learning on data using supplied categories
 	if [[ ! -d $outdir/Normalized_output/SupervisedLearning ]]; then
@@ -891,7 +924,7 @@ Supervised Learning already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 ## Make rank abundance plots (normalized)
 	if [[ ! -d $outdir/Normalized_output/RankAbundance ]]; then
@@ -913,7 +946,7 @@ Generating rank abundance plots."
 wait
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 #######################################
 ## Start of taxonomy plotting steps
@@ -966,7 +999,7 @@ Summarize taxa commands by category \"$line\":
 	done
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 ############################
 ## Group comparison steps
@@ -1067,7 +1100,7 @@ done
 fi
 wait
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 
 echo "
@@ -1276,7 +1309,7 @@ Generating 3D NMDS plots."
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 ## Make 2D plots
 	if [[ ! -d $outdir/Rarefied_output/beta_diversity/2D_PCoA_bdiv_plots ]]; then
@@ -1299,7 +1332,7 @@ Generating 2D PCoA plots."
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 ## Comparing categories statistics
 if [[ ! -f $outdir/Rarefied_output/beta_diversity/permanova_results_collated.txt && ! -f $outdir/Rarefied_output/beta_diversity/permdisp_results_collated.txt && ! -f $outdir/Rarefied_output/beta_diversity/anosim_results_collated.txt && ! -f $outdir/Rarefied_output/beta_diversity/dbrda_results_collated.txt && ! -f $outdir/Rarefied_output/beta_diversity/adonis_results_collated.txt ]]; then
@@ -1456,7 +1489,7 @@ echo "
 Categorical comparisons already present." >> $log
 fi
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 ## Distance boxplots for each category
 	boxplotscount=`ls $outdir/Rarefied_output/beta_diversity/*_boxplots 2>/dev/null | wc -l`
@@ -1483,7 +1516,7 @@ Boxplots already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 ## Make biplots
 	if [[ ! -d $outdir/Rarefied_output/beta_diversity/biplots ]]; then
@@ -1517,7 +1550,7 @@ Biplots already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 ## Run supervised learning on data using supplied categories
 	if [[ ! -d $outdir/Rarefied_output/SupervisedLearning ]]; then
@@ -1539,7 +1572,7 @@ Supervised Learning already present." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 ## Make rank abundance plots (rarefied)
 	if [[ ! -d $outdir/Rarefied_output/RankAbundance ]]; then
@@ -1561,7 +1594,7 @@ Generating rank abundance plots."
 wait
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 	## Remove pointless log.txt file output by supervised learning
 	sllogtest=$(grep "confusion.matrix" ./log.txt 2>/dev/null)
@@ -1646,7 +1679,7 @@ Alpha diversity analysis already completed." >> $log
 	fi
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 #######################################
 ## Start of taxonomy plotting steps
@@ -1699,7 +1732,7 @@ Summarize taxa commands by category \"$line\":
 	done
 
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 ############################
 ## Group comparison steps
@@ -1800,7 +1833,7 @@ done
 fi
 wait
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 #	## Nonparametric T-test
 #	if [[ ! -d $outdir/Nonparametric_ttest ]]; then
@@ -1886,7 +1919,7 @@ wait
 #fi
 #wait
 	## Update HTML output
-#		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+#		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 ## Run match_reads_to_taxonomy if rep set present
 ## Automatically find merged_rep_set.fna file from existing akutils workflows
@@ -1911,7 +1944,7 @@ Extracting sequences command:
 
 fi
 	## Update HTML output
-		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
 done
 ################################################################################

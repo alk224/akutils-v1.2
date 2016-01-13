@@ -33,6 +33,7 @@ library(ggplot2)
 library(reshape2)
 library(plyr)
 library(dplyr)
+#library(lazyeval)
 
 ## Recieve input files from bash
 args <- commandArgs(TRUE)
@@ -41,27 +42,36 @@ xfactor=(args[2])
 Width=(args[3])
 Palette=(args[4])
 
+## Fix variable name for useful parsing
+#interp(xfactor, xfactor = as.name(xfactor))
+#interp(xfactor)
+
 ################################
 ## Set colorblind color palettes
-## 8-color palette from Wong, B. (2011) Nature Methods 8:441
-WongPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+## 7-color palette from Wong, B. (2011) Nature Methods 8:441
+WongPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
-## 8-color palette from ggplot tutorial (Wong with grey instead of black)
+## 8-color palette from ggplot tutorial (Wong plus black)
+WongPalette1 <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+## 8-color palette from ggplot tutorial (Wong plus grey)
 WongPalette2 <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 ## Read in data, transform and apply labels
 dat <- read.csv(otufile)
 dat.m <- melt(dat)
 dat.OTU <- rename(dat.m,Drought=variable,Abundance=value)
+#colnames(dat.OTU)[colnames(dat.OTU)=="value"] <- "Abundance"
+#colnames(dat.OTU)[colnames(dat.OTU)=="variable"] <- xfactor
 
 ## Summarize by taxonomic levels
-dat.Kingdom <- ddply(dat.OTU,.(Kingdom,xfactor),summarize,Kingdom_Abundance=sum(Abundance))
-dat.Phylum <- ddply(dat.OTU,.(Phylum,xfactor),summarize,Phylum_Abundance=sum(Abundance))
-dat.Class <- ddply(dat.OTU,.(Class,xfactor),summarize,Class_Abundance=sum(Abundance))
-dat.Order <- ddply(dat.OTU,.(Order,xfactor),summarize,Order_Abundance=sum(Abundance))
-dat.Family <- ddply(dat.OTU,.(Family,xfactor),summarize,Family_Abundance=sum(Abundance))
-dat.Genus <- ddply(dat.OTU,.(Genus,xfactor),summarize,Genus_Abundance=sum(Abundance))
-dat.Species <- ddply(dat.OTU,.(Species,xfactor),summarize,Species_Abundance=sum(Abundance))
+dat.Kingdom <- ddply(dat.OTU,.(Kingdom,Drought),summarize,Kingdom_Abundance=sum(Abundance))
+dat.Phylum <- ddply(dat.OTU,.(Phylum,Drought),summarize,Phylum_Abundance=sum(Abundance))
+#dat.Class <- ddply(dat.OTU,.(Class,xfactor),summarize,Class_Abundance=sum(Abundance))
+#dat.Order <- ddply(dat.OTU,.(Order,xfactor),summarize,Order_Abundance=sum(Abundance))
+#dat.Family <- ddply(dat.OTU,.(Family,xfactor),summarize,Family_Abundance=sum(Abundance))
+#dat.Genus <- ddply(dat.OTU,.(Genus,xfactor),summarize,Genus_Abundance=sum(Abundance))
+#dat.Species <- ddply(dat.OTU,.(Species,xfactor),summarize,Species_Abundance=sum(Abundance))
 
 ################
 ## Produce plots
@@ -75,7 +85,7 @@ p.Kingdom <- ggplot(dat.Kingdom,aes_string(x=(xfactor),y="Kingdom_Abundance",fil
 	# Write to output
 pdf(paste0("Kingdom_", xfactor, "_taxa_plot.pdf"))
 plot(p.Kingdom)
-q()
+
 	# Phylum plot
 p.Phylum <- ggplot(dat.Phylum,aes_string(x=(xfactor),y="Phylum_Abundance",fill="Phylum"))+
   theme_minimal()+
@@ -86,14 +96,14 @@ p.Phylum <- ggplot(dat.Phylum,aes_string(x=(xfactor),y="Phylum_Abundance",fill="
 	# Write to output
 pdf(paste0("Phylum_", xfactor, "_taxa_plot.pdf"))
 plot(p.Phylum)
-
+q()
 	# Class plot
 p.Class <- ggplot(dat.Class,aes_string(x=(xfactor),y="Class_Abundance",fill="Class"))+
   theme_minimal()+
   geom_bar(stat="identity",color="Black",width=0.3)+
   ylab("Relative abundance")+
   scale_y_continuous(labels=scales::percent)+
-  scale_fill_manual(values=rep(c(WongPalette2),10000), drop=FALSE)
+  scale_fill_manual(values=rep(c(WongPalette),10000), drop=FALSE)
 	# Write to output
 pdf(paste0("Class_", xfactor, "_taxa_plot.pdf"))
 plot(p.Class)
@@ -104,7 +114,7 @@ p.Order <- ggplot(dat.Order,aes_string(x=(xfactor),y="Order_Abundance",fill="Ord
   geom_bar(stat="identity",color="Black",width=0.3)+
   ylab("Relative abundance")+
   scale_y_continuous(labels=scales::percent)+
-  scale_fill_manual(values=rep(c(WongPalette2),10000), drop=FALSE)
+  scale_fill_manual(values=rep(c(WongPalette),10000), drop=FALSE)
 	# Write to output
 pdf(paste0("Order_", xfactor, "_taxa_plot.pdf"))
 plot(p.Order)
@@ -115,7 +125,7 @@ p.Family <- ggplot(dat.Family,aes_string(x=(xfactor),y="Family_Abundance",fill="
   geom_bar(stat="identity",color="Black",width=0.3)+
   ylab("Relative abundance")+
   scale_y_continuous(labels=scales::percent)+
-  scale_fill_manual(values=rep(c(WongPalette2),10000), drop=FALSE)
+  scale_fill_manual(values=rep(c(WongPalette),10000), drop=FALSE)
 	# Write to output
 pdf(paste0("Family_", xfactor, "_taxa_plot.pdf"))
 plot(p.Family)
@@ -126,7 +136,7 @@ p.Genus <- ggplot(dat.Genus,aes_string(x=(xfactor),y="Genus_Abundance",fill="Gen
   geom_bar(stat="identity",color="Black",width=0.3)+
   ylab("Relative abundance")+
   scale_y_continuous(labels=scales::percent)+
-  scale_fill_manual(values=rep(c(WongPalette2),10000), drop=FALSE)
+  scale_fill_manual(values=rep(c(WongPalette),10000), drop=FALSE)
 	# Write to output
 pdf(paste0("Genus_", xfactor, "_taxa_plot.pdf"))
 plot(p.Genus)
@@ -137,7 +147,7 @@ p.Species <- ggplot(dat.Species,aes_string(x=(xfactor),y="Species_Abundance",fil
   geom_bar(stat="identity",color="Black",width=0.3)+
   ylab("Relative abundance")+
   scale_y_continuous(labels=scales::percent)+
-  scale_fill_manual(values=rep(c(WongPalette2),10000), drop=FALSE)
+  scale_fill_manual(values=rep(c(WongPalette),10000), drop=FALSE)
 	# Write to output
 pdf(paste0("Species_", xfactor, "_taxa_plot.pdf"))
 plot(p.Species)
@@ -148,7 +158,7 @@ p.OTU <- ggplot(dat.OTU,aes_string(x=(xfactor),y="Abundance",fill="OTU"))+
   geom_bar(stat="identity",color="Black",width=0.3)+
   ylab("Relative abundance")+
   scale_y_continuous(labels=scales::percent)+
-  scale_fill_manual(values=rep(c(WongPalette2),10000), drop=FALSE)
+  scale_fill_manual(values=rep(c(WongPalette),10000), drop=FALSE)
 	# Write to output
 pdf(paste0("OTU_", xfactor, "_taxa_plot.pdf"))
 plot(p.OTU)
