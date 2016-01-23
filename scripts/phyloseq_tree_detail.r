@@ -45,10 +45,10 @@ otus=import_biom(otufile,parseFunction=parse_taxonomy_greengenes)
 mergedata=merge_phyloseq(otus,tree,map)
 
 ## Make detailed tree
-detailtree = plot_tree(mergedata, color = factor, label.tips = "Species", plot.margin = 0.5, ladderize = "left", nodelabf = nodeplotboot(), size = "abundance", base.spacing = 0.03, shape = "Class")
+detailtree = plot_tree(mergedata,color=factor,label.tips="Species",plot.margin=0.5,ladderize="left",nodelabf=nodeplotboot(),size="abundance",base.spacing=0.03,shape="Class",title="Detailed tree")
 
 ## Output pdf graphic
-pdf(paste0(outdir, factor, "_detail_tree.pdf"))
+pdf(file=(paste0(outdir,factor,"_detail_tree.pdf")),paper="letter")
 plot(detailtree)
 dev.off()
 

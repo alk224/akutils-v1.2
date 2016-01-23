@@ -45,10 +45,10 @@ otus=import_biom(otufile,parseFunction=parse_taxonomy_greengenes)
 mergedata=merge_phyloseq(otus,tree,map)
 
 ## Make phylum-colored tree
-phylumtree = plot_tree(mergedata, color = "Phylum", label.tips = "taxa_names", plot.margin = 0.5, ladderize = "left", nodelabf = nodeplotboot())
+phylumtree = plot_tree(mergedata,color="Phylum",label.tips="taxa_names",plot.margin = 0.5,ladderize="left",nodelabf=nodeplotboot(),title="Phylum-level tree")
 
 ## Output pdf graphic
-pdf(paste0(outdir, "Phylum_tree.pdf"))
+pdf(file=(paste0(outdir,"Phylum_tree.pdf")),paper="letter")
 plot(phylumtree)
 dev.off()
 
