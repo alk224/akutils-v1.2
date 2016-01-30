@@ -56,8 +56,9 @@ trap finish EXIT
 
 ## Filter any erroneous categories
 	for line in `cat $catlist`; do
-		grep $line $mapcatstemp >> $filtertemp
+		grep -x $line $mapcatstemp >> $filtertemp
 	done
+
 cat $filtertemp > $catlist
 
 exit 0
