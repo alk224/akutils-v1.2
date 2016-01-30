@@ -199,6 +199,13 @@ INITIAL TABLE PROCESSING STARTS HERE
 " >> $log
 
 		## Find phylogenetic tree or set mode nonphylogenetic
+	if [[ -f "$tree" ]]; then
+	treebase=$(basename $tree)
+	phylogenetic="YES"
+	metrics="bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac"
+	alphametrics="PD_whole_tree,chao1,observed_species,shannon"
+	elif [[ "$tree" == "AUTO" ]]; then
+
 		if [[ -f $inputdirup1/pynast_alignment/fasttree_phylogeny.tre ]]; then
 		tree="$inputdirup1/pynast_alignment/fasttree_phylogeny.tre"
 		treebase=$(basename $tree)
@@ -213,11 +220,13 @@ INITIAL TABLE PROCESSING STARTS HERE
 		metrics="bray_curtis,chord,hellinger,kulczynski,unweighted_unifrac,weighted_unifrac"
 		alphametrics="PD_whole_tree,chao1,observed_species,shannon"
 		fi
-		if [[ -z $phylogenetic ]]; then
-		phylogenetic="NO"
-		metrics="bray_curtis,chord,hellinger,kulczynski"
-		alphametrics="chao1,observed_species,shannon"
-		fi
+	fi
+
+	if [[ -z $phylogenetic ]]; then
+	phylogenetic="NO"
+	metrics="bray_curtis,chord,hellinger,kulczynski"
+	alphametrics="chao1,observed_species,shannon"
+	fi
 
 		## Make alpha metrics temp file
 		echo > $alphatemp
