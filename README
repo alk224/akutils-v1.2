@@ -105,7 +105,7 @@ Things to change before next release:
  3) Autodetection of single or dual indexes during joining (completed 11/23/15)
  4) Updated help and usage screens (in progress)
  5) Updated wiki
- 6) Add ghost-tree to ITS align_and_tree command
+ 6) Add ghost-tree to ITS align_and_tree command (made separate command 1/31/16)
  7) Add tree as configurable variable (completed 1/30/16)
  8) Improved workflow testing
  9) Improved core_diversity interface with collapsible panels (completed 12/15/15)
