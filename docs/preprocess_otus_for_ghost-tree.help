@@ -5,7 +5,7 @@
 ***                                       ***
 *********************************************
 
-Convert a biom-formatted OTU table to tab-delimited.
+Process an OTU table against a ghost-tree .nwk file.
 
 Usage (order is important):
 	preprocess_otus_for_ghost-tree.sh <input_otu_table> <input_tree> <taxonomy_assignment_file>
@@ -15,4 +15,17 @@ Usage (order is important):
 	<taxonomy_assignment_file> is output from assign_taxonomy.py
 
 	De novo analysis requires taxonomy file to match OTUs to tips.
+
+This script assumes you have already run ghost-tree to produce a tree compatible
+with your database (presumably UNITE). If your OTU names are not all the same as
+those in your database file, then all your OTUs will be removed when you filter
+your output table against your list of tips from ghost-tree. This script will
+run the default ghost-tree preparation steps (get_otus_from_ghost_tree.py) if no
+taxonomy file is supplied. If one is supplied, it will rename all of the tree
+tips according to the OTUs in your data.
+
+This script is meant for usage within the akutils framework and assumes certain
+conventions and file structures consistent with akutils.
+
+Make sure to check the log file output upon script completion.
 
