@@ -1,0 +1,37 @@
+## Command autocompletion file for ghost-tree
+
+_ghost-tree()
+{
+  local cur prev opts base
+  COMPREPLY=()
+  cur="${COMP_WORDS[COMP_CWORD]}"
+  prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+  ## Basic options to autocomplete
+  opts="compare-trees extensions filter-alignment-positions
+	scaffold silva
+        "
+
+  ## Complete available ghost-tree command arguments
+  case $prev in
+	ghost-tree)
+	  COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+	  ;;
+
+  ## Complete options to some of the commands
+	silva)
+	  local sub="extract-fungi"
+	  COMPREPLY=( $(compgen -W "${sub}" -- ${cur}) )
+	  ;;
+	extensions)
+	  local sub="group-extensions"
+	  COMPREPLY=( $(compgen -W "${sub}" -- ${cur}) )
+	  ;;
+	scaffold)
+	  local sub="hybrid-tree"
+	  COMPREPLY=( $(compgen -W "${sub}" -- ${cur}) )
+	  ;;
+  esac
+  return 0
+}
+complete -o default -F _ghost-tree ghost-tree
