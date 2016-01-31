@@ -1,0 +1,184 @@
+#!/usr/bin/env bash
+##
+## get_otus_from_ghost_tree.sh
+## 
+## bash wrapper for using the get_otus_from_ghost_tree.py script
+##
+## Usage:
+##	get_otus_from_ghost_tree.sh 
+##
+## Trap function on exit.
+function finish {
+if [[ -f $tipfile ]]; then
+	rm $tipfile
+fi
+if [[ -f $OTUidstemp1 ]]; then
+	rm $OTUidstemp1
+fi
+if [[ -f $OTUidstemp2 ]]; then
+	rm $OTUidstemp2
+fi
+if [[ -f $tempdir/${randcode}_tree.temp ]]; then
+	rm $tempdir/${randcode}_tree.temp
+fi
+if [[ -f $stderr ]]; then
+	rm $stderr
+fi
+if [[ -f $stdout ]]; then
+	rm $stdout
+fi
+}
+trap finish EXIT
+
+## Define variables
+	workdir=$(pwd)
+	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
+	repodir=`dirname $scriptdir`
+	tempdir="$repodir/temp/"
+	stderr=($repodir/temp/$randcode\_stderr)
+	stdout=($repodir/temp/$randcode\_stdout)
+	randcode=`cat /dev/urandom |tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1` 2>/dev/null
+	biom="$1"
+	tree="$2"
+	taxfile="$3"
+	biombase=$(basename $biom .biom)
+	treebase=$(basename $tree)
+	tipfile="${tempdir}/${randcode}_ghost_tree_tips.txt"
+	otudir=$(dirname $biom)
+	outdir0=$(dirname $otudir)
+	outdir="$outdir0/ghost-tree_output"
+	validtaxa="$outdir/tax_assignments_filtered_against_input_ghost-tree.txt"
+	OTUidstemp1="$tempdir/${randcode}_otuids1.temp"
+	OTUidstemp2="$tempdir/${randcode}_otuids2.temp"
+	otukey="$outdir/otu_list.txt"
+	modtree="$outdir/$treebase"
+	log="$outdir/preprocess_otus_for_ghost-tree.log"
+
+## If other than one argument supplied, display usage
+	if [[ "$#" -ne "2" && "$#" -ne "3" ]]; then
+	echo "
+preprocess_otus_for_ghost-tree.sh
+
+Usage:
+	get_otus_from_ghost_tree.sh <input_otu_table> <input_tree> <taxonomy_assignment_file>
+
+	<input_otu_table> is biom file from your data
+	<input_tree> is newick file from ghost-tree
+	<taxonomy_assignment_file> is output from assign_taxonomy.py
+
+	De novo analysis requires taxonomy file to match OTUs to tips.
+	"
+	exit 1
+	fi
+
+## Make and clear output directory if necessary, establish log
+	mkdir -p $outdir &>/dev/null
+	rm -r $outdir/* &>/dev/null
+	echo "
+Processing data for use with ghost-tree file.
+
+Input OTU table: $biom
+Input tree file: $tree" > $log
+	if [[ ! -z $taxfile ]]; then
+	echo "Input taxonomy file: $taxfile" >> $log
+	fi
+	echo "" >> $log
+
+## Export variables to be read in via python
+	export tempdir
+	export outdir
+	export randcode
+	export tree
+
+## Filter input OTUs against supplied tree
+	echo "
+Filtering input OTU table against input tree"
+	python $scriptdir/get_otus_from_ghost_tree.py 1>$stdout 2>$stderr
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+
+## Report mode and proceed as necessary
+####################################
+## building new tree with renamed tips if tax file supplied
+	if [[ ! -z $taxfile ]]; then
+	echo "
+Taxonomy file supplied.  Will rename tree tips according to OTU names and provide
+a modified tree file."
+
+## Replace underscores in tree tips file, copy ghost-tree tree to output for processing
+	echo "
+Processing input tree to match OTU ID strings"
+	sed -i 's/\s/_/g' $tipfile
+	cp $tree $tempdir/${randcode}_tree.temp
+
+## Make list of valid OTUs
+	grep -Ff $tipfile $taxfile > $validtaxa
+	cat $validtaxa | cut -f1 > $OTUidstemp1
+	cat $validtaxa | cut -f4 > $OTUidstemp2
+	paste $OTUidstemp1 $OTUidstemp2 > $otukey
+
+## For loop with sed to replace taxID strings with OTUID strings
+	for otuid in `cat $otukey | cut -f1`; do
+		taxid=$(grep -w "$otuid" $otukey | cut -f2)
+		#echo "taxid = $taxid, otuid = $otuid" ## uncomment for debugging
+		sed -i "s/$taxid/$otuid/" $tempdir/${randcode}_tree.temp
+	done
+
+## Filter resulting tree to include only useful tips
+	echo "
+Filtering tree to include only useful tips"
+	filter_tree.py -i $tempdir/${randcode}_tree.temp -o $modtree -t $otukey 1>$stdout 2>$stderr
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+
+## Filter otus from table against tip file
+	echo "
+Filtering OTU table for available tree tips"
+	filter_otus_from_otu_table.py -i $biom -o $otudir/${biombase}_ghost-tree_filtered.biom -e $otukey --negate_ids_to_exclude 1>$stdout 2>$stderr
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+
+## Report completion
+	if [[ -f $otudir/${biombase}_ghost-tree_filtered.biom && -f $modtree ]]; then
+	echo "
+Table filtered against ghost-tree file for use in downstream analysis.
+
+Output OTU table: $otudir/${biombase}_ghost-tree_filtered.biom
+Output tree file: $modtree
+	"
+	exit 0
+	else
+	echo "
+There seems to have been a problem. Sorry I couldn't make your files. Check the
+log file for obvious errors: $log
+"
+	exit 1
+	fi
+
+####################################
+## normal workflow (no tax file supplied)
+	else
+
+## Filter otus from table against tip file
+	echo "
+Filtering OTU table for available tree tips"
+	filter_otus_from_otu_table.py -i $biom -o $otudir/${biombase}_ghost-tree_filtered.biom -e $tipfile --negate_ids_to_exclude 1>$stdout 2>$stderr
+		bash $scriptdir/log_slave.sh $stdout $stderr $log
+
+## Report completion
+	if [[ -f $otudir/${biombase}_ghost-tree_filtered.biom && -f $outdir/$modtree ]]; then
+	echo "
+Table filtered against ghost-tree file for use in downstream analysis.
+
+Output OTU table: $otudir/${biombase}_ghost-tree_filtered.biom
+	"
+	exit 0
+	else
+	echo "
+There seems to have been a problem. Sorry I couldn't make your file. Try supplying
+a taxonomy file (output from assign_taxonomy.py) in case your OTU IDs do not match
+those associated with your supplied tree from ghost-tree. Check the log file for
+obvious errors: $log
+"
+	exit 1
+	fi
+	fi
+
+exit 0
