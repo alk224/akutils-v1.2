@@ -1,0 +1,18 @@
+
+*********************************************
+***                                       ***
+***   preprocess_otus_for_ghost-tree.sh   ***
+***                                       ***
+*********************************************
+
+Convert a biom-formatted OTU table to tab-delimited.
+
+Usage (order is important):
+	preprocess_otus_for_ghost-tree.sh <input_otu_table> <input_tree> <taxonomy_assignment_file>
+
+	<input_otu_table> is biom file from your data
+	<input_tree> is newick file from ghost-tree
+	<taxonomy_assignment_file> is output from assign_taxonomy.py
+
+	De novo analysis requires taxonomy file to match OTUs to tips.
+

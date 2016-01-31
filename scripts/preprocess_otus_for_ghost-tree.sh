@@ -41,11 +41,7 @@ trap finish EXIT
 	biom="$1"
 	tree="$2"
 	taxfile="$3"
-	biombase=$(basename $biom .biom)
-	treebase=$(basename $tree)
 	tipfile="${tempdir}/${randcode}_ghost_tree_tips.txt"
-	otudir=$(dirname $biom)
-	outdir0=$(dirname $otudir)
 	outdir="$outdir0/ghost-tree_output"
 	validtaxa="$outdir/tax_assignments_filtered_against_input_ghost-tree.txt"
 	OTUidstemp1="$tempdir/${randcode}_otuids1.temp"
@@ -54,22 +50,27 @@ trap finish EXIT
 	modtree="$outdir/$treebase"
 	log="$outdir/preprocess_otus_for_ghost-tree.log"
 
+## Usage and help
+	usage="$repodir/docs/preprocess_otus_for_ghost-tree.usage"
+	help="$repodir/docs/preprocess_otus_for_ghost-tree.help"
+
+## Check whether user supplied help, -h or --help. If yes display help.
+	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]] || [[ "$1" == "help" ]]; then
+	less $help
+		exit 0	
+	fi
+
 ## If other than one argument supplied, display usage
 	if [[ "$#" -ne "2" && "$#" -ne "3" ]]; then
-	echo "
-preprocess_otus_for_ghost-tree.sh
-
-Usage:
-	get_otus_from_ghost_tree.sh <input_otu_table> <input_tree> <taxonomy_assignment_file>
-
-	<input_otu_table> is biom file from your data
-	<input_tree> is newick file from ghost-tree
-	<taxonomy_assignment_file> is output from assign_taxonomy.py
-
-	De novo analysis requires taxonomy file to match OTUs to tips.
-	"
+	cat $usage
 	exit 1
 	fi
+
+## Establish additional variables
+	biombase=$(basename $biom .biom)
+	treebase=$(basename $tree)
+	otudir=$(dirname $biom)
+	outdir0=$(dirname $otudir)
 
 ## Make and clear output directory if necessary, establish log
 	mkdir -p $outdir &>/dev/null
