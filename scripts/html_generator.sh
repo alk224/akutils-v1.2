@@ -119,6 +119,10 @@ anchor21temp="${tempdir}/${randcode}_anchor21.temp"
 log=`ls $outdir/log_core_diversity* 2>/dev/null`
 logfile=$(basename $log)
 
+## Set table name
+	## Find anchor in template and send table name
+	sed -i "s/<!--anchor001-->/${inputbase}.biom/" $outdir/index.html
+
 ## Build anchor01temp (Run summary data)
 	## Master log file
 echo "<table class=\"center\" border=1>

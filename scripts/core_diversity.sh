@@ -118,15 +118,7 @@ Exiting.
 	tablecount=$(cat $tablelist | wc -l)
 
 ## Make categories temp file
-	echo "
-Parsing input categories."
 	bash $scriptdir/parse_cats.sh $stdout $stderr $log $inmap $cats $catlist $randcode $tempdir
-
-## Make normalized tables if necessary
-
-#	echo "Normalizing tables if necessary.
-#	"
-#	bash $scriptdir/norm_tables.sh $stdout $stderr $log $tablelist $threads
 
 ################################################################################
 ## Start of for loop to process each table in the master list sequentially
@@ -197,6 +189,16 @@ INITIAL TABLE PROCESSING STARTS HERE
 
 ********************************************************************************
 " >> $log
+
+		## List validated categories to screen and log
+	echo "
+Validated input categories:"
+	echo "
+Validated input categories:" >> $log
+for line in `cat $catlist`; do
+	echo $line
+	echo $line >> $log
+done
 
 		## Find phylogenetic tree or set mode nonphylogenetic
 	if [[ -f "$tree" ]]; then
