@@ -8,14 +8,14 @@
 This is a collection of scripts I wrote to make myself more productive while
 doing microbial ecology work with QIIME. I was having difficulty knowing that I
 was making the best decisions in my analyses, so I started writing this as an
-exercise in getting to know the QIIME commands that I was using better. I can
+exercise in getting to know better the QIIME commands that I was using. I can
 now use it to run many OTU picking workflows in a row and it generates the plots
 and stats that I like to have access to right away. This avoids the tedium of
 entering many commands and helps to keep me organized. I do everything on a 
 Linux system (Ubuntu 14.04). I have also tested most things on CentOS 6.6
-(monsoon at NAU). You should be comfortable installing packages and such that
-may be required. For more information on the functionality of akutils, check out
-the wiki pages:
+(monsoon cluster at NAU). You should be comfortable installing packages and such
+that may be required. For more information on the functionality of akutils,
+check out the wiki pages:
 
      https://github.com/alk224/akutils/wiki (non-dev pages only)
 
@@ -79,14 +79,15 @@ these changes, navigate to your akutils directory and type:
 
      git pull
 
-After this, you want to rerun the config utility:
+After this, check your configuration:
 
-     akutils configure
+     akutils print_config
 
-Choose "rebuild" to make a fresh global config file (necessary if changes have
-been made to configurable settings). Older config files may not function
-correctly after an update. This can cause some scripts to miss a variable import
-without a config file to match the version of that script.
+If new configurable options are available, you will be instructed to run the
+config utility and choose "rebuild" to make a fresh global config file which
+will contain the new options. Older config files may not function correctly
+after an update. This can cause some scripts to miss a variable import without a
+config file to match the version of that script.
 
 **********************************************************************
 
@@ -105,7 +106,7 @@ Things to change before next release:
  4) Updated help and usage screens (in progress)
  5) Updated wiki
  6) Add ghost-tree to ITS align_and_tree command
- 7) Add tree as configurable variable
+ 7) Add tree as configurable variable (completed 1/30/16)
  8) Improved workflow testing
  9) Improved core_diversity interface with collapsible panels (completed 12/15/15)
 10) Phyloseq output in addition to QIIME output (in progress)
