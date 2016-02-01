@@ -70,7 +70,7 @@ sed -i "1i Dependency check results for akutils:\n\nTested $dependencycount depe
 echo "Test complete."
 head -7 $repodir/akutils_resources/akutils.dependencies.result | tail -6
 echo "For more detailed results, execute:
-akutils check-result
+akutils check_result
 "
 
 exit 0
