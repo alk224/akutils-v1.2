@@ -31,9 +31,8 @@ set -e
 ## Echo test start
 echo "
 Beginning tests of akutils functions.
-All tests take ~20 minutes on a system
-with 24 cores or ~60 minutes on a
-system with 2 cores.
+All tests take ~2 minutes on a system
+with 24 cores.
 
 Your system has: 
 CPU cores: ${bold}$cpus${normal}
@@ -384,8 +383,6 @@ $runtime
 ## Test of pick_otus command
 	res1=$(date +%s.%N)
 	echo "${bold}Test of pick_otus command.${normal}
-This test takes a while.  Please be patient
-(~13 minutes needed on a system with 24 cores).
 	"
 	echo "
 ***** Test of pick_otus command.
