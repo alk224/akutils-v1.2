@@ -38,6 +38,10 @@ set -e
 	read1="$8"
 	read2="$9"
 
+	bold=$(tput bold)
+	normal=$(tput sgr0)
+	underline=$(tput smul)
+
 ## Define filter mode based on number of supplied inputs
 	if [[ "$#" == 8 ]]; then
 	mode=(single)
@@ -127,8 +131,9 @@ PhiX filtering workflow beginning in paired read mode."
 
 ## Fastq-multx command:
 	echo "
-Demultiplexing sample data with fastq-multx.  Allowing $multx_errors indexing
+Demultiplexing sample data with fastq-multx.  Allowing ${bold}${multx_errors}${normal} indexing
 errors.
+
 Mapping file: $mapfile"
 	echo "
 Demultiplexing data (fastq-multx):" >> $log
@@ -275,10 +280,10 @@ Filter phix reads with filter_fasta.py:" >> $log
 ## Log results of PhiX filtering
 	if [[ `echo $mode` == "single" ]]; then
 	echo "
-Processed $totalseqs single reads.
-$phixseqs reads contained phix sequence.
-Contamination level is approximately $contampercent percent.
-Contamination level (decimal value): $decimal"
+Processed ${bold}${totalseqs}${normal} single reads.
+${bold}${phixseqs}${normal} reads contained phix sequence.
+Contamination level is approximately ${bold}${contampercent}${normal} percent.
+Contamination level (decimal value): ${bold}${decimal}${normal}"
 
 	echo "
 Processed $totalseqs single reads.

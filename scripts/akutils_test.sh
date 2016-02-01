@@ -6,7 +6,10 @@
 ## Trap function to replace temporary global config file on exit status 1
 function finish {
 if [[ ! -z $backfile ]]; then
-mv $backfile $homedir/akutils/akutils_resources/akutils.global.config
+mv $backfile $repodir/akutils_resources/akutils.global.config
+fi
+if [[ ! -z $log ]]; then
+cp $log $repodir/akutils_resources/akutils.workflow.test.result
 fi
 }
 trap finish EXIT
@@ -100,7 +103,7 @@ Workflow tests beginning." > $log
 	fi
 	if [[ $field == "OTU_picker" ]]; then
 	setting=`grep $field $masterconfig | grep -v "#" | cut -f 2`
-	newsetting="uclust"
+	newsetting="swarm"
 	sed -i -e "s@^$field\t$setting@$field\t$newsetting@" $masterconfig
 	fi
 	if [[ $field == "Tax_assigner" ]]; then
@@ -131,9 +134,9 @@ Workflow tests beginning." > $log
 	done
 
 ## If no global akutils config file, set global config
-	configtest=`ls $homedir/akutils/akutils_resources/akutils.global.config 2>/dev/null | wc -l`
+	configtest=`ls $repodir/akutils_resources/akutils.global.config 2>/dev/null | wc -l`
 	if [[ $configtest == 0 ]]; then
-	cp $masterconfig $homedir/akutils/akutils_resources/akutils.global.config
+	cp $masterconfig $repodir/akutils_resources/akutils.global.config
 	echo "Set akutils global config file.
 	"
 	echo "
@@ -143,16 +146,16 @@ Set akutils global config file." >> $log
 ## If global config exists, backup and temporarily replace
 	if [[ $configtest == 1 ]]; then
 	DATE=`date +%Y%m%d-%I%M%p`
-	backfile=($homedir/akutils/akutils_resources/akutils.global.config.backup.$DATE)
-	cp $homedir/akutils/akutils_resources/akutils.global.config $backfile
-	cp $masterconfig $homedir/akutils/akutils_resources/akutils.global.config
+	backfile=($repodir/akutils_resources/akutils.global.config.backup.$DATE)
+	cp $repodir/akutils_resources/akutils.global.config $backfile
+	cp $masterconfig $repodir/akutils_resources/akutils.global.config
 	echo "Set temporary akutils global config file.
 	"
 	echo "
 Set temporary akutils global config file." >> $log
 	fi
 
-## Test of format_database.sh command
+## Test of format_database command
 	res1=$(date +%s.%N)
 	echo "${bold}Test of format_database command.${normal}
 	"
@@ -206,14 +209,14 @@ $runtime
 	echo "$runtime
 	"
 
-## Test of strip_primers.sh command
+## Test of strip_primers command
 	res1=$(date +%s.%N)
 	echo "${bold}Test of strip_primers command.${normal}
 	"
 	echo "
 ***** Test of strip_primers command.
 ***** Command:
-akutils strip_primers $homedir/akutils/primers.16S.ITS.fa $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq" >> $log
+akutils strip_primers $testdir/resources/primers.16S.ITS.fa $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq" >> $log
 	if [[ ! -f $testdir/index1.fq ]]; then
 	cp $testdir/raw_data/idx.trim.fastq $testdir/index1.fq
 	fi
@@ -227,7 +230,7 @@ akutils strip_primers $homedir/akutils/primers.16S.ITS.fa $testdir/read1.fq $tes
 	rm -r $testdir/strip_primers_out
 	fi
 
-	akutils strip_primers $homedir/akutils/primers.16S.ITS.fa $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq 1>$testdir/std_out 2>$testdir/std_err || true
+	akutils strip_primers $testdir/resources/primers.16S.ITS.fa $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq 1>$testdir/std_out 2>$testdir/std_err || true
 	wait
 	if [[ ! -f $testdir/strip_primers_out/index1.noprimers.fastq ]] && [[ -f $testdir/strip_primers_out/index1.fastq ]]; then
 	mv $testdir/strip_primers_out/index1.fastq $testdir/strip_primers_out/index1.noprimers.fastq
@@ -324,7 +327,7 @@ See log file: $log
 	echo "$runtime
 	"
 
-## Test of join_paired_reads.sh command
+## Test of join_paired_reads command
 	res1=$(date +%s.%N)
 	echo "${bold}Test of join_paired_reads command.${normal}
 	"
@@ -370,7 +373,7 @@ See log file: $log
 	dt3=$(echo "$dt2-3600*$dh" | bc)
 	dm=$(echo "$dt3/60" | bc)
 	ds=$(echo "$dt3-60*$dm" | bc)
-	runtime=`printf "Runtime for Single_indexed_fqjoin_workflow.sh test:
+	runtime=`printf "Runtime for join_paired_reads test:
 %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
 	echo "
 $runtime
@@ -378,7 +381,7 @@ $runtime
 	echo "$runtime
 	"
 
-## Test of pick_otus.sh command
+## Test of pick_otus command
 	res1=$(date +%s.%N)
 	echo "${bold}Test of pick_otus command.${normal}
 This test takes a while.  Please be patient
@@ -396,8 +399,14 @@ akutils pick_otus 16S" >> $log
 	cp $testdir/join_paired_reads_out/idx.fq $testdir/pick_otus_out
 	cp $testdir/join_paired_reads_out/rd.fq $testdir/pick_otus_out
 	cd $testdir/pick_otus_out
-	akutils pick_otus.sh 16S 1>$testdir/std_out 2>$testdir/std_err || true
+	akutils pick_otus 16S 1>$testdir/std_out 2>$testdir/std_err || true
 	wait
+	## Remove highlighting from stdout and stderr
+	sed -i 's/${bold}//g' $testdir/std_out
+	sed -i 's/${bold}//g' $testdir/std_err
+	sed -i 's/${normal}//g' $testdir/std_out
+	sed -i 's/${normal}//g' $testdir/std_err
+
 	cd $workdir
 	echo "
 ***** pick_otus std_out:
@@ -446,7 +455,7 @@ exit 0
 ***** Command:
 akutils align_and_tree swarm_otus_d1/ 16S" >> $log
 	cd $testdir/pick_otus_out
-	bash $scriptdir/align_tree.sh swarm_otus_d1/ 16S 1>$testdir/std_out 2>$testdir/std_err || true
+	akutils align_and_tree swarm_otus_d1/ 16S 1>$testdir/std_out 2>$testdir/std_err || true
 	wait
 	cd $workdir
 	echo "
@@ -498,7 +507,7 @@ This test takes a while.  Please be patient
 ***** Command:
 akutils core_diversity.sh swarm_otus_d1/OTU_tables_blast_tax/03_table_hdf5.biom map.test.txt Community $cpus" >> $log
 	cd $testdir/pick_otus_out
-	bash $scriptdir/core_diversity.sh swarm_otus_d1/OTU_tables_blast_tax/03_table_hdf5.biom map.test.txt Community $cpus 1>$testdir/std_out 2>$testdir/std_err || true
+	akutils core_diversity swarm_otus_d1/OTU_tables_blast_tax/03_table_hdf5.biom map.test.txt Community $cpus 1>$testdir/std_out 2>$testdir/std_err || true
 	wait
 	cd $workdir
 	echo "

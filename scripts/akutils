@@ -125,7 +125,7 @@ Workflow tests have not been run previously.  To generate results, execute:
 akutils test
 		"
 		elif [[ $resultcount == 1 ]]; then
-		less $repodir/akutils_resources/akutils.workflow.test.result
+		less -r $repodir/akutils_resources/akutils.workflow.test.result
 		fi
 		exit 0
 	fi

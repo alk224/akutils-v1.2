@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-#  Single_indexed_fqjoin_workflow.sh - Fastq-join workflow for single-indexed MiSeq data
+#  akutils join_paired_reads - Fastq-join workflow for single- and dual-indexed MiSeq data
 #
 #  Version 1.1.0 (June 16, 2015)
 #

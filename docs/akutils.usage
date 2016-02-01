@@ -1,5 +1,6 @@
 
 akutils - core command to run akutils workflows and configure settings
+(v1.2)
 
 Usage:
 	akutils [command] [arguments]

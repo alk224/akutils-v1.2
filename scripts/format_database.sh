@@ -39,6 +39,10 @@ set -e
 	outdir="$9"
 	intree="${10}"
 
+	bold=$(tput bold)
+	normal=$(tput sgr0)
+	underline=$(tput smul)
+
 forward=`cat $primers | grep -e "f\s"`
 forname=`cat $primers | grep -e "f\s" | cut -f 1`
 forcount=`echo $forname | wc -l`
@@ -80,7 +84,7 @@ data.
 
 	echo "Format database files workflow beginning.
 $date1
-Input DB contains $refscount sequences.
+Input DB contains ${bold}${refscount}${normal} sequences.
 	"
 
 	echo "
@@ -161,8 +165,8 @@ Removing any leading or trailing whitespaces from inputs.
 	if [[ ! -d $outdir/analyze_primers_out ]]; then
 	mkdir -p $outdir/analyze_primers_out
 	echo "Generating primer hits files.
-Forward primer: $forward
-Reverse primer: $reverse
+Forward primer: ${bold}${forward}${normal}
+Reverse primer: ${bold}${reverse}${normal}
 	"
 	echo "
 Generating primer hits files.
@@ -267,7 +271,7 @@ Database stats:" >> $log
 	sed -i '/^$/d' $ampout/${seqid_base}_taxonomy.txt
 	taxnumber=`cat $ampout/${seqid_base}_taxonomy.txt | wc -l`
 	echo "DB for $seqid_base formatted with $taxnumber/$refscount references" >> $log
-	echo "DB for $seqid_base formatted with $taxnumber/$refscount references"
+	echo "DB for $seqid_base formatted with ${bold}${taxnumber}/${refscount}${normal} references"
 	done
 	wait
 
@@ -323,7 +327,7 @@ Database stats:" >> $log
 	fi
 	sed -i '/^$/d' $ampout/${forname}_${revname}_composite_taxonomy.txt
 	taxnumber=`cat $ampout/${forname}_${revname}_composite_taxonomy.txt | wc -l`
-	echo "DB for ${forname}_${revname}_composite formatted with $taxnumber/$refscount references
+	echo "DB for ${forname}_${revname}_composite formatted with ${bold}${taxnumber}/${refscount}${normal} references
 Composite database contains:
 $amp_count in silico amplicons
 $read1_count in silico forward reads (${length}bp)
@@ -331,9 +335,9 @@ $read2_count in silico reverse reads (${length}bp)" >> $log
 	echo "DB for ${forname}_${revname}_composite formatted with $taxnumber/$refscount references
 
 Composite database contains:
-$amp_count in silico amplicons
-$read1_count in silico forward reads (${length}bp)
-$read2_count in silico reverse reads (${length}bp)"
+${bold}${amp_count}${normal} in silico amplicons
+${bold}${read1_count}${normal} in silico forward reads (${length}bp)
+${bold}${read2_count}${normal} in silico reverse reads (${length}bp)"
 	echo ""
 	else
 	echo "Formatted database is complete.  Not generating a composite database.
