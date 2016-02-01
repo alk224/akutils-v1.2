@@ -1,0 +1,42 @@
+
+### akutils core_diversity - run the akutils core_diversity workflow  
+
+**Usage (order is important):**  
+
+    akutils core_diversity <input> <mapping_file> <comma_separated_categories> <processors_to_use>  
+    
+    <input> can be any of the following:  
+
+        help            detailed help  
+        table.biom      an input table (non-normalized)  
+        table           an input table prefix  
+        OTU_tables/     an input table directory  
+        ALL             will process all tables three directories down  
+
+**Inputs:**  
+
+    table.biom          -- An input table. Should be non-normalized. Will attempt to  
+                        generate normalized tables if not present (CSS transformation).  
+    table               -- A input table prefix (without extension). Will process  
+                        any tables named thusly three directories down.  
+    OTU_tables/         -- A input directory containing OTU tables.  
+    ALL                 -- Will look for and process all tables found three directories  
+                        down (e.g. in OTU tables directories from pick_otus output).  
+    help                -- This useful help screen.  
+
+**Mapping file:**  
+
+Your QIIME-formatted metadata mapping file.  
+
+**Comma-separated categories:**  
+
+A list of categories from your mapping file. A single comma is allowed between  
+each category (no spaces). akutils will attempt to validate supplied categories
+against your supplied mapping file. To list available metadata categories, run:  
+
+    mapcats.sh <mapping_file>	
+
+**Processors to use:**  
+
+An integer value. The number of CPU cores to utilize.
+

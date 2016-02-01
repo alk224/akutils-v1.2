@@ -22,12 +22,28 @@ _akutils()
 
   ## Complete options to some of the commands
 	pick_otus)
-	  local otu="16S ITS other"
+	  local otu="16S ITS other help"
 	  COMPREPLY=( $(compgen -W "${otu}" -- ${cur}) )
 	  ;;
 	align_and_tree)
-	  local align="16S other"
+	  local align="16S other help"
 	  COMPREPLY=( $(compgen -W "${align}" -- ${cur}) )
+	  ;;
+	format_database)
+	  local sub="help"
+	  COMPREPLY=( $(compgen -W "${sub}" -- ${cur}) )
+	  ;;
+	strip_primers)
+	  local sub="help"
+	  COMPREPLY=( $(compgen -W "${sub}" -- ${cur}) )
+	  ;;
+	phix_filtering)
+	  local sub="help"
+	  COMPREPLY=( $(compgen -W "${sub}" -- ${cur}) )
+	  ;;
+	join_paired_reads)
+	  local sub="help"
+	  COMPREPLY=( $(compgen -W "${sub}" -- ${cur}) )
 	  ;;
   esac
   return 0

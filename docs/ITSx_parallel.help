@@ -5,15 +5,15 @@
 ***                      ***
 ****************************
 
+Usage (order is important!!):
+ITSx_parallel.sh <InputFasta> <ThreadsToUse> <ITSx options>
+
 This script takes an input fasta file and processes it using the most
 excellent ITSx utility in parallel.  Command will not execute if output
 directory already exists.		
 
 Output will be the name of the sequence file minus the fasta extension
 plus _ITSx_output (e.g. seqs_ITSx_output for the above usage example).
-
-Usage (order is important!!):
-ITSx_parallel.sh <InputFasta> <ThreadsToUse> <ITSx options>
 
 Example:
 ITSx_parallel.sh seqs.fna 20 -t F --complement F --preserve T

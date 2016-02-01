@@ -1,0 +1,63 @@
+  
+### akutils - core command to run akutils workflows and configure settings  
+
+**Usage:**
+
+	akutils [command] [arguments]
+
+This is the control command for akutils. This command calls akutils workflows
+as well as configuration options.  Bash auto-completion is enabled for
+commands and most options.  
+
+**Workflow commands:**  
+
+    pick_otus                 -- run the akutils otu picking workflow  
+    align_and_tree            -- run the akutils align/tree workflow  
+    core_diversity            -- run the akutils cdiv/stats workflow  
+
+**Command-specific arguments:**  
+
+    pick_otus         16S     -- pick OTUs in "16S" mode  
+                      ITS     -- pick otus in "ITS" mode  
+                      other   -- pick otus in "other" mode  
+
+    align_and_tree    16S     -- alignment and tree in "16S" mode  
+                      other   -- alignment and tree in "other" mode  
+
+**Utility commands:**  
+
+    format_database           -- format a database against a primer set  
+    strip_primers             -- remove primer sequences from raw data  
+    phix_filtering            -- remove PhiX contamination from raw data  
+    join_paired_reads         -- join raw paired end data  
+
+**Configuration commands:**  
+
+    configure                 -- configure akutils settings  
+    print_config              -- list current configuration settings  
+    check                     -- check that commands are in your PATH  
+    check-result              -- detailed results of depencency check  
+    test                      -- test workflow steps against test data  
+    test-result               -- detailed results of workflow tests  
+
+**More help:**  
+
+    help                      -- detailed help page  
+    tutorial                  -- text-based tutorial  
+    akutils [command] help    -- command-specific help  
+
+To run the akutils workflow commands, you need Illumina fastq data, a QIIME-
+formatted mapping file, and an akutils configure file (global or local).  If a
+local config file results in the execution directory, its settings will override
+any global settings.
+
+**Examples:**  
+
+Run pick OTUs workflow in 16S mode:
+
+    akutils pick_otus 16S
+
+Run akutils configuration utility:
+
+    akutils configure
+

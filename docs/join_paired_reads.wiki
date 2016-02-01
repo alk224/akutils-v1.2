@@ -1,0 +1,36 @@
+
+### akutils join_paired_reads - join PE data with fastq-join from ea-utils
+
+**Usage (order is important!!):**  
+
+    akutils join_paired_reads <index1> <index2> <read1> <read2> <IndexLength> <fastq-join options>  
+    
+    <index2> is optional  
+    <IndexLength> is an integer equaling the total number of index bases  
+    <fastq-join options> as described in fastq-join documentation  
+
+This script takes paired end fastq files with a separate index read(s) (3-4
+input files) and joins the paired end reads where possible while keeping all
+reads in phase.  Script will automatically determine whether you supply one or
+two index reads.
+
+**Output:**  
+Output will be 2 files, an index file (idx.fq) and a read file (rd.fq).
+
+**Example:**  
+
+    akutils join_paired_reads index1.fq read1.fq read2.fq 12 -m 30 -p 10
+
+This example is joining fastq files read1.fq and read2.fq while keeping reads
+in sync with index1.fq.  The index read is 12 bases long, and it is calling
+options to the fastq-join command as -m 30 (minimum overlap of 30 bases) and
+-p 10 (10 percent allowable mismatch).
+
+Requires the following dependencies to run:  
+	1) ea-utils (https://code.google.com/p/ea-utils/)  
+	2) Fastx toolkit (http://hannonlab.cshl.edu/fastx_toolkit/)  
+		
+**Citations:**  
+ea-utils: Erik Aronesty (2011). ea-utils: Command-line tools for processing
+biological sequencing data; http://code.google.com/p/ea-utils
+

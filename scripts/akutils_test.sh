@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+##
+## akutils test - test that software is in place to run akutils commands
+##
+##
 ## Trap function to replace temporary global config file on exit status 1
 function finish {
 if [[ ! -z $backfile ]]; then
@@ -96,12 +100,12 @@ Workflow tests beginning." > $log
 	fi
 	if [[ $field == "OTU_picker" ]]; then
 	setting=`grep $field $masterconfig | grep -v "#" | cut -f 2`
-	newsetting="ALL"
+	newsetting="uclust"
 	sed -i -e "s@^$field\t$setting@$field\t$newsetting@" $masterconfig
 	fi
 	if [[ $field == "Tax_assigner" ]]; then
 	setting=`grep $field $masterconfig | grep -v "#" | cut -f 2`
-	newsetting="ALL"
+	newsetting="uclust"
 	sed -i -e "s@^$field\t$setting@$field\t$newsetting@" $masterconfig
 	fi
 	if [[ $field == "Alignment_template" ]]; then

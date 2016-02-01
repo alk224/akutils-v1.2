@@ -42,7 +42,7 @@ Configuration commands:
 	test-result		-- detailed results of workflow tests
 
 More help:
-	help			-- more detailed help page
+	help			-- this detailed help page
 	tutorial		-- text-based tutorial
 	akutils [command] help	-- command-specific help
 
