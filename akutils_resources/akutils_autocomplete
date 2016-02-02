@@ -52,7 +52,7 @@ _akutils()
 		Split_libraries_maxbad Prefix_length
 		Suffix_length OTU_picker Tax_assigner
 		Rarefaction_depth CPU_cores Multx_errors
-		ITSx_options"
+		ITSx_options help"
 	  COMPREPLY=( $(compgen -W "${sub}" -- ${cur}) )
 	  ;;
   esac

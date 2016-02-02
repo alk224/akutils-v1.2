@@ -1,0 +1,29 @@
+
+*****************************
+***                       ***
+***   akutils configure   ***
+***                       ***
+*****************************
+
+Configure akutils settings.
+
+Usage:
+	akutils configure <variable> <new_setting>
+
+	<variable> must be a configurable setting or "help"
+	<new_setting> is the new variable setting
+
+Execution without arguments will run the interactive configuration utility:
+
+	akutils configure
+
+Use of arguments allows changing of a single variable without entering the
+config utility. If a local file is present when using arguments, the local file
+will be changed. Otherwise, arguments will modify the global file. You will have
+the opportunity to abandon a proposed change. Configurable settings or "help"
+will autocomplete with tab.
+
+Example:
+
+	akutils configure CPU_cores 16
+
