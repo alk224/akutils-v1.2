@@ -45,6 +45,16 @@ _akutils()
 	  local sub="help"
 	  COMPREPLY=( $(compgen -W "${sub}" -- ${cur}) )
 	  ;;
+	configure)
+	  local sub="Reference Taxonomy Tree Chimeras
+		Alignment_template Alignment_lanemask
+		Split_libraries_qvalue Split_libraries_minpercent
+		Split_libraries_maxbad Prefix_length
+		Suffix_length OTU_picker Tax_assigner
+		Rarefaction_depth CPU_cores Multx_errors
+		ITSx_options"
+	  COMPREPLY=( $(compgen -W "${sub}" -- ${cur}) )
+	  ;;
   esac
   return 0
 }

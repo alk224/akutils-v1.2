@@ -86,8 +86,13 @@ options.
 
 ## Check whether user supplied configure.  If yes, run config utility.
 	if [[ "$1" == "configure" ]]; then
+	if [[ "$#" == "1" ]]; then
 	bash $scriptdir/configure_slave.sh $stdout $stderr $randcode
 	exit 0
+	elif [[ "$#" == "3" ]]; then
+	bash $scriptdir/configure_setting_slave.sh $stdout $stderr $randcode $2 $3
+	exit 0
+	fi
 	fi
 
 ## Check whether user supplied check.  If yes, run dependency check.
