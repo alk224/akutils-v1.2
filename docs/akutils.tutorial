@@ -1,5 +1,215 @@
 
-Tutorial here eventually...
+Please visit the akutils wiki for a cleaner version of this tutorial without the markdown:
+
+https://github.com/alk224/akutils-v1.2/wiki/akutils-tutorial
 
 
+### akutils tutorial  
 
+This tutorial assumes you have this [test data repository](https://github.com/alk224/QIIME_test_data_16S) in place. If you used the [akutils_ubuntu_installer](https://github.com/alk224/akutils_ubuntu_installer), this repository was automatically cloned for you. You will be guided through a typical workflow in QIIME (Caporaso et al., 2010a) using the framework of akutils (Krohn, 2015).
+
+**Use the help pages and tab autocomplete!**  
+ 1) Type any akutils command with no argument (or the wrong number of arguments) and you will see a usage screen.  
+ 2) Use autocomplete with your tab key. Autocomplete is enabled for akutils commands, so you can type "akutils" and then double-tap the tab key to see available options.  
+ 3) You can call command-specific help with -h or --help for all commands.  
+ 4) Help pages have been migrated to the [akutils wiki](https://github.com/alk224/akutils-v1.2/wiki). All commands are listed in the sidebar.  
+
+**Run the workflow test once before you start the tutorial.**  
+The test data includes a miniaturized version of the Greengenes database (McDonald et al., 2012) and everything is initially compressed. The initial workflow test will unpack all test data.
+
+**Navigate to the test data folder for this tutorial.**  
+
+    cd ~/QIIME_test_data_16S
+
+**Always preserve your raw data.**  
+Don't change the raw data folder. Instead, make a copy to work from (with recursive copy command), naming your working directory "tutorial":
+
+    cp -r raw_data/ tutorial  
+
+**Add database files to your working directory:**  
+You will need a reference database for assigning taxonomy (97* files), a chimera reference for chimera removal (gold.fa), a template alignment for pynast alignment (core_set_aligned.fasta.imputed), and a lanemask file to filter a resulting alignment for tree construction (lanemask_in_1s_and_0s). All of these files are in the "gg_database" folder with the rest of the test data.
+
+    cp -r gg_database/ ./tutorial/
+
+**Add primer sequence files to your working directory:**  
+These reside in the "resources" directory. One is for use with the format_database command, and the other for strip_primers. First make a new directory in your working directory and then copy the primer files to that new directory.
+
+    mkdir ./tutorial/resources
+    cp ./resources/primers* ./tutorial/resources/
+
+**Navigate into your new tutorial directory and list the files:**  
+
+    cd tutorial/  
+    ls -l  
+
+You can see there are 4 files here. An index file (idx.trim.fastq), two files for paired end reads (r1.trim.fastq, r2.trim.fastq), and a QIIME-formatted mapping file (map.mock.16S.nodils.txt). There is also the database directory (gg_database) and the new directory you made for the primers file (resources). You are now ready to start processing data.
+
+**Format your database for your region of study:**  
+This is not always done, but it is good practice and probably reduces computational requirements while improving accuracy (faster and better!). Werner et al. (2012) showed that even with the very short reads they had at the time there is systematic improvements to results. If you work with the 16S v4 region  (515f-806r) and you use an unmodified greengenes database, ~90% of the sequence you are referencing is non-target. What is happening during this step is that you are providing a file with primers to compare against your database, PrimerProspector (Walters et al., 2011) extracts the region of interest, then some bash magic compiles the result into a usable format. We will not be using a phylogenetic tree at this time.
+
+    cp ./resources/primers_515F-806R.txt ./gg_database/  
+    cd ./gg_database/  
+
+Try calling the format_database script with no arguments. For all akutils commands, this will display a concise usage screen.
+
+    akutils format_database  
+
+Now issue the command to format the database:
+
+    akutils format_database 97_rep_set_1000.fasta 97_taxonomy_1000.txt primers_515F-806R.txt 250 ./  
+
+This will take the reference fasta, "97_rep_set_1000.fasta" and associated taxonomy file, "97_taxonomy_1000.txt" and use the primer data in "primers_515F-806R.txt," format the database with 250 base synthetic read lengths (515f-806r is ~253bp total), and output the results into the same directory.
+
+The output message says there are several databases containing either in silico amplicons, forward reads, reverse reads, or a combination of all three (composite). I typically use the composite result since some databases (e.g. UNITE) may not have enough sequence to generate a reasonable number of in silico amplicons. By combining amplicon and read data, you will have a more complete database.
+
+Change directory back up to the tutorial directory:
+
+    cd ..  
+
+**Establish your akutils configuration with your new database files:**  
+Run the akutils configuration utility. It is interactive, so will ask explicitly for the information it needs. When it asks for local, global, or rebuild, choose "local." When it asks if you want new or copy, choose "new." Note the location of your new database files and add them to the configuration (use absolute paths).
+
+    akutils configure
+
+Fields to change (change $HOME to actual path on your system):  
+Reference: $HOME/QIIME_test_data_16S/tutorial/gg_database/515f_806r_composite.fasta  
+Taxonomy: $HOME/QIIME_test_data_16S/tutorial/gg_database/515f_806r_composite_taxonomy.txt  
+Chimeras: $HOME/QIIME_test_data_16S/tutorial/gg_database/gold.fa  
+Alignment_template: $HOME/QIIME_test_data_16S/tutorial/gg_database/core_set_aligned.fasta.imputed  
+Alignment_lanemask: $HOME/QIIME_test_data_16S/tutorial/gg_database/lanemask_in_1s_and_0s
+CPU_cores: Enter number of processors you wish to use
+
+Hit enter at the rest of the fields to leave them unchanged.
+
+You can check the contents of a config file by running:
+
+    akutils print_config
+
+If there is a local akutils config file present, this command will read that file. Otherwise, it reads the global settings.
+
+**Remove primer sequences from your data BEFORE analysis:**  
+Again, not always done, but good practice. The test data are from 2x150 MiSeq data, so don't actually have residual primers. If using a longer read mode with shorter products, you might sequence through the primer at the 3' end. This is synthetic sequence you shouldn't use in any comparison since it could be the result of a mismatch. Even worse, index and flowcell sequences are right behind it which could create spurious clustering as you pick OTUs. This script uses fastq-mcf from ea-utils (Aronesty, 2011) to remove primer sequences, some bash magic to keep things in phase, and [fastx toolkit](http://hannonlab.cshl.edu/fastx_toolkit/index.html) to provide the final output.
+
+    akutils strip_primers resources/primers.16S.ITS.fa r1.trim.fastq r2.trim.fastq idx.trim.fastq  
+
+**Remove PhiX contamination from your data:**  
+This might not be strictly necessary, but it can be a shock to realize that your demultiplexed data contains more than your sample data due to systematic issues with Illumina sequencing. PhiX is the control sequence used on Illumina sequencers and must be used in higher quantity with amplicon runs. During index reads, PhiX produces no signal and nearby clusters can generate enough signal to be read at the PhiX positions resulting in such data contamination. Filtering your data by taxonomic content probably is enough to get rid of it, but this script doesn't take too long, ensures it is all gone, and quantifies the amount of contamination in the data. Nelson et al. (2014) took measures to remove PhiX in their optimization of amplicon analysis, and Mukherjee et al. (2015) revealed that failure to do this by numerous investigators resulted in genomic assemblies rife with PhiX contamination, thus erroneous genome sequences. This step uses the utility [Smalt](http://www.sanger.ac.uk/science/tools/smalt-0) to map your data against the [PhiX genome](http://www.ncbi.nlm.nih.gov/nuccore/9626372), quantifies the amount of contamination, and returns to you data that is PhiX-free. For this command, you will use the output from the strip_primers step.
+
+    akutils phix_filtering phix_filtered map.mock.16S.nodils.txt strip_primers_out/idx.noprimers.fastq strip_primers_out/r1.noprimers.fastq strip_primers_out/r2.noprimers.fastq
+
+**Join paired reads:**  
+Combine your paired end reads prior to processing. This has the effect of correcting low-quality base calls (Schirmer et al., 2015), and provides more sequence per taxon which yields a more accurate result. If investigating length-polymorphic regions such as fungal ITS, perform this step with caution if using QIIME. [See this forum post for more information as it relates to fungal ITS analysis](https://groups.google.com/forum/#!searchin/qiime-forum/min$20per$20read$20fraction/qiime-forum/C0T8qxSlLzI/I-fXplxDhqYJ). For this command you will use the output from the phix_filtering step. This command uses fastq-join from ea-utils (Aronesty, 2011) and fastx toolkit to provide the final output. The length of this index sequences is 12 bases, and the choice of -m 30 (min overlap 30 bases) and -p 30 (max mismatch 30%) are based on extensive testing in our lab. You might need to adjust these settings based on the quality of your data (trial and error).
+
+    akutils join_paired_reads phix_filtered/index.phixfiltered.fastq phix_filtered/read1.phixfiltered.fastq phix_filtered/read2.phixfiltered.fastq 12 -m 30 -p 30  
+
+**Pick OTUs from the fastq data:**  
+You are ready to pick OTUs. Use the joined output (join_paired_reads_out) for this step. Before you can proceed, a little house cleaning to stay organized and avoid confusing akutils.
+
+Move the raw data into a new subdirectory:
+
+    mkdir raw_data  
+    mv *.fastq ./raw_data/  
+
+Now copy the joined output into the working directory:
+
+    cp ./join_paired_reads_out/*.fq ./  
+
+Check that you have a read file named "rd.fq" an index file named "idx.fq" a mapping file that starts with "map" and an akutils config file in your working directory:
+
+    ls -l  
+
+It's all there?  Good!  Now pick OTUs:  
+
+    akutils pick_otus 16S  
+
+This command will start with the split_libraries_fastq.py command in QIIME, then filter chimeras with vsearch (Rognes, 2015), then dereplicate your data with the prefix/suffix picker in QIIME. Assuming you left the otu picker and tax assigner on default, it will then pick OTUs with Swarm (Mahé et al., 2014), assign taxonomy with BLAST (Altschul et al., 1990), then provide several filtered output tables. Because you selected 16S mode, chimera checking is enabled, and the final table is filtered to remove OTUs not classified as Bacteria or Archaea. Your output will be in the folder named for the OTU picker and similarity threshold chosen. For more details on configurability, check out the [akutils pick_otus wiki page](https://github.com/alk224/akutils-v1.2/wiki/akutils-pick_otus). If you ran with defaults, you output is in the folder named, "swarm_otus_d1".
+
+**Align your output sequences and make a tree:**  
+Not always necessary, but very helpful for certain applications, especially when sequences in your data may not be among those in your reference. If you have OTUs present that are absent from a supplied phylogeny as tree tips, your downstream analysis may crash. Since you are now amid an akutils workflow, the next step is very easy. Because this is a 16S analysis, the next command will align your sequences with PyNAST (Caporaso et al., 2010b) against your supplied template and lanemask files, then build a phylogeny with Fasttree (Price et al., 2009).
+
+    akutils align_and_tree 16S swarm_otus_d1/  
+
+Output from this command can be found in swarm_otus_d1/pynast_alignment/. Look into that directory to be sure that your tree (fasttree_phylogeny.tre) was constructed. If it has a file size greater than zero, this is a good indication of success.
+
+    ls -l swarm_otus_d1/pynast_alignment/  
+
+**Run the core diversity workflow to generate plots and statistics:**  
+akutils will automatically find the tree you just made (if "Tree" is set to "AUTO" in the config file -- default) for the purposes of calculating phylogenetic diversity and UniFrac metrics. This command will output most of what you might need for a typical analysis, and is accessible via a user-friendly html-based interface. I have tried to make it contain more of what I like to see as well as be easier to navigate than the stock QIIME output (from core_diversity_analyses.py), though that output was the inspiration for this script. Before you run core_diversity, check your mapping categories with mapcats.sh:
+
+    mapcats.sh map.mock.16S.nodils.txt  
+
+This will output a comma-separated list of all of your mapping file categories:
+
+    Mapping file: map.mock.16S.nodils.txt  
+    Categories: BarcodeSequence,LinkerPrimerSequence,Community,Plate,Well,BarcodeName,Dilution,Column,Rep,Description  
+
+The category you care about for this tutorial is "Community." Run the core_diversity command without arguments to view the usage:
+
+    akutils core_diversity
+
+Using the "03" table from within the pick_otus output, now run the core_diversity workflow:
+
+    akutils core_diversity swarm_otus_d1/OTU_tables_blast_taxonomy/03_table.biom map.mock.16S.nodils.txt Community 20  
+
+Adjust the number of cores to something appropriate for your own system (I have 24 cores on mine).
+
+The workflow will constantly be refreshing the output file which can be found within the OTU tables directory. In this case, the file you want is:
+
+    swarm_otus_d1/OTU_tables_blast_taxonomy/core_diversity/03_table_depth349/index.html  
+
+Browse to this file via Nautilus (Ubuntu version of Windows Explorer or Macintosh Finder) and double click on it. You want to use Chrome browser for full compatibility with the Emperor plugin. The output will have collapsible panels within which you can view various items:
+
+Run summary data: biom summary data and a log file
+OTU tables and sample metadata: your supplied mapping files and various biom files
+Sequencing summary data by L7 taxon assignment: summary of # OTUs vs # taxa
+Unaligned sequences: fasta files for each OTU
+MAFFT alignments of multi-sequence OTUs: alignments of those complicated OTUs
+Taxonomic plots: bar and pie charts by sample and category
+Alpha diversity: statistical output and rarefaction plots (rarefied data only)
+Beta diversity: statistical output, PCoA, and NMDS plots
+Group significance: Kruskal-Wallis comparisons of categories
+Rank abundance: rank abundance plots
+Supervised learning: RandomForests output
+Biplots: taxonomy mapped onto PCoA plots
+Phylogenetic tree plots: phylum-level and more detailed plots
+Network plots: Network representation of you data by category
+
+Note that there are no MAFFT-aligned OTUs in this case since this analysis will yield a "perfect result." Rerun the core_diversity on the n2_table.biom file and observe the difference.
+
+The tree and network plots are still a little clunky, but I will improve them with time.
+
+Normalized and rarefied outputs will yield subtly different results. Read the "Waste Not Want Not" paper (McMurdie and Holmes, 2014) for an excellent background to the difference in these approaches. Try to make an informed decision about which to use, rather than cherry-picking your result.
+
+**Run this procedure with your own data:**  
+Get ready for a learning experience and good luck. I hope this workflow helps more than just myself.
+
+**References:**
+
+Altschul SF., Gish W., Miller W., Myers EW., Lipman DJ. (1990). Basic local alignment search tool. Journal of Molecular Biology 215:403–10.
+
+Aronesty E. (2011). ea-utils: Command-line tools for processing biological sequencing data. http://code.google.com/p/ea-utils
+
+Caporaso JG., Kuczynski J., Stombaugh J., Bittinger K., Bushman FD., Costello EK., Fierer N., Peña AG., Goodrich JK., Gordon JI., Huttley GA., Kelley ST., Knights D., Koenig JE., Ley RE., Lozupone CA., McDonald D., Muegge BD., Pirrung M., Reeder J., Sevinsky JR., Turnbaugh PJ., Walters WA., Widmann J., Yatsunenko T., Zaneveld J., Knight R. (2010a). QIIME allows analysis of high-throughput community sequencing data. Nature methods 7:335–6.
+
+Caporaso JG., Bittinger K., Bushman FD., Desantis TZ., Andersen GL., Knight R. (2010b). PyNAST: A flexible tool for aligning sequences to a template alignment. Bioinformatics 26:266–267.
+
+Krohn A. (2015). akutils: Facilitating analyses of microbial communities through QIIME. Zenodo. 10.5281/zenodo.18615
+
+Mahé F., Rognes T., Quince C., de Vargas C., Dunthorn M. (2014). Swarm: robust and fast clustering method for amplicon-based studies. PeerJ 2:e593.
+
+McDonald D., Price MN., Goodrich J., Nawrocki EP., DeSantis TZ., Probst A., Andersen GL., Knight R., Hugenholtz P. (2012). An improved Greengenes taxonomy with explicit ranks for ecological and evolutionary analyses of bacteria and archaea. The ISME journal 6:610–8.
+
+McMurdie PJ., Holmes S. (2014). Waste not, want not: why rarefying microbiome data is inadmissible. PLoS computational biology 10:e1003531.
+
+Mukherjee S., Huntemann M., Ivanova N., Kyrpides NC., Pati A. (2015). Large-scale contamination of microbial isolate genomes by Illumina PhiX control. Standards in Genomic Sciences 10:1–4.
+
+Nelson MC., Morrison HG., Benjamino J., Grim SL., Graf J. (2014). Analysis, optimization and verification of Illumina-generated 16S rRNA gene amplicon surveys. PloS one 9:e94249.
+Walters WA., Caporaso JG., Lauber CL., Berg-Lyons D., Fierer N., Knight R. (2011). PrimerProspector: de novo design and taxonomic analysis of barcoded polymerase chain reaction primers. Bioinformatics 27:1159–61.
+
+Price MN., Dehal PS., Arkin AP. (2009). Fasttree: Computing large minimum evolution trees with profiles instead of a distance matrix. Molecular Biology and Evolution 26:1641–1650.
+
+Rognes, T. (2015). vsearch: https://github.com/torognes/vsearch
+
+Schirmer M., Ijaz UZ., Amore RD., Hall N., Sloan WT., Quince C. (2015). Insight into biases and sequencing errors for amplicon sequencing with the Illumina MiSeq platform. Nucleic acids research:1–16.
+
+Werner JJ., Koren O., Hugenholtz P., DeSantis TZ., Walters WA., Caporaso JG., Angenent LT., Knight R., Ley RE. (2012). Impact of training sets on classification of high-throughput bacterial 16s rRNA gene surveys. The ISME journal 6:94–103.
