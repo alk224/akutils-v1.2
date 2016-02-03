@@ -31,8 +31,8 @@ set -e
 ## Echo test start
 echo "
 Beginning tests of akutils functions.
-All tests take ~2 minutes on a system
-with 24 cores.
+All tests take <2 minutes on a system with 24 cores, or ~5 minutes in a 
+VirtualBox instance on a netbook with 3 allocated cores.
 
 Your system has: 
 CPU cores: ${bold}$cpus${normal}
