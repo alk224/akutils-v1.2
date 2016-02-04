@@ -11,7 +11,7 @@ _akutils()
   opts="configure print_config check check_result help
 	pick_otus align_and_tree core_diversity
 	phix_filtering strip_primers format_database test
-	test_result join_paired_reads tutorial
+	test_result join_paired_reads tutorial index_groomer
         "
 
   ## Complete available akutils command arguments

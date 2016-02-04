@@ -177,6 +177,19 @@ akutils test
 	exit 0
 	fi
 
+## Check whether user supplied index_groomer.  If yes, run index_groomer or display specific usage or help if specified.
+	if [[ "$1" == "index_groomer" ]]; then
+		if [[ -z "$2" ]]; then
+		cat $repodir/docs/index_groomer.usage
+		exit 0
+		elif [[ "$2" == "help" ]]; then
+		cat $repodir/docs/index_groomer.help
+		exit 0
+		fi
+	bash $scriptdir/index_groomer.sh $stdout $stderr $randcode $configfile $2 $3 $4 $5
+	exit 0
+	fi
+
 ## Check whether user supplied phix_filtering.  If yes, run phix filtering workflow or display specific usage or help if specified.
 	if [[ "$1" == "phix_filtering" ]]; then
 		if [[ -z "$2" ]]; then

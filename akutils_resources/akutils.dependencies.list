@@ -41,7 +41,6 @@ split_libraries_fastq.py	(pick_otus)
 summarize_taxa.py	(core_diversity)
 supervised_learning.py	(core_diversity)
 
-
 ##ea-utils_commands:
 fastq-join	(join_paried_reads)
 fastq-mcf	(strip_primers)
@@ -64,6 +63,9 @@ smalt	(phix_filtering)
 
 ##Vsearch_commands:
 vsearch	(pick_otus)
+
+##fqgrep_commands:
+fqgrep
 
 ##akutils_commands:
 akutils	(akutils commands)

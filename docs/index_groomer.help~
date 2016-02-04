@@ -1,0 +1,49 @@
+
+*********************************
+***                           ***
+***   akutils index_groomer   ***
+***                           ***
+*********************************
+
+akutils index_groomer - correct index sequences against a list of valid sequences
+
+Usage (order is important):
+	akutils index_groomer <index_fastq> <sequence_list> <allowed_mismatch> <processors_to_use>
+
+		<input_fastq> is a raw fastq file (must have .fq or .fastq extension)
+		<sequence_list> contains sequences in the first column
+		<allowed_mismatch> is the number of mismatches to correct
+		<processors_to_use> is the number of CPU cores to use
+
+Index fastq:
+	Raw, unaltered index fastq. Do not concatenate separate index files first.
+
+Sequence list:
+	A list of sequences in a text file. Lines starting with "#" are ignored.
+Only the first column of the file is used for comparison. Example file:
+<file start>
+# valid_index1_sequences	
+ACGGTTTG
+TGTACGGA
+CGACCTAA
+CGAGAGTA
+ATCCCGTA
+CAGGGTTT
+TGTTGGAG
+TCTGCCTA
+GAGATCGT
+ATGCTTGG
+GAAGATCC
+GCAATGGT
+<file end>
+
+Allowed mismatch:
+	An integer value. The number of allowable mismatches. Do not exceed the
+distance value for you indexing set.
+
+Processors to use:
+	An integer value. The number of CPU cores to utilize.
+
+Example:
+	akutils index_groomer index1.fq valid_indexes.txt 2 16
+
