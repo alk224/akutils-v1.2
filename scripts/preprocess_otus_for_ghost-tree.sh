@@ -42,13 +42,8 @@ trap finish EXIT
 	tree="$2"
 	taxfile="$3"
 	tipfile="${tempdir}/${randcode}_ghost_tree_tips.txt"
-	outdir="$outdir0/ghost-tree_output"
-	validtaxa="$outdir/tax_assignments_filtered_against_input_ghost-tree.txt"
 	OTUidstemp1="$tempdir/${randcode}_otuids1.temp"
 	OTUidstemp2="$tempdir/${randcode}_otuids2.temp"
-	otukey="$outdir/otu_list.txt"
-	modtree="$outdir/$treebase"
-	log="$outdir/preprocess_otus_for_ghost-tree.log"
 
 ## Usage and help
 	usage="$repodir/docs/preprocess_otus_for_ghost-tree.usage"
@@ -71,6 +66,11 @@ trap finish EXIT
 	treebase=$(basename $tree)
 	otudir=$(dirname $biom)
 	outdir0=$(dirname $otudir)
+	outdir="$outdir0/ghost-tree_output"
+	validtaxa="$outdir/tax_assignments_filtered_against_input_ghost-tree.txt"
+	otukey="$outdir/otu_list.txt"
+	modtree="$outdir/$treebase"
+	log="$outdir/preprocess_otus_for_ghost-tree.log"
 
 ## Make and clear output directory if necessary, establish log
 	mkdir -p $outdir &>/dev/null
