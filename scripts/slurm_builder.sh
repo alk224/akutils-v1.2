@@ -104,7 +104,6 @@ Found local slurm script file:
 $slurm
 	"
 	sleep 1
-
 fi
 
 ## Interactive data entry
