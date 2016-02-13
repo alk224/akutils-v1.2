@@ -25,17 +25,18 @@
 
 ## Interactive tool to generate a slurm file for use on monsoon
 #set -e
+	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
+	repodir=$(dirname $scriptdir)
+	workdir=$(pwd)
+	tempdir="$repodir/temp"
 
 ## check whether user had supplied -h or --help. If yes display help 
-
 	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
-	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
-	less $scriptdir/docs/slurm_builder.help
+	less $repodir/docs/slurm_builder.help
 	exit 0	
 	fi
 
 ## If other than two arguments supplied, display usage 
-
 	if [  "$#" -ne 0 ]; then 
 
 		echo "
@@ -49,11 +50,9 @@ slurm_builder.sh
 	workdir=(`pwd`)
 
 ## Check for local slurm file and template file
-
-scriptdir="$( cd "$( dirname "$0" )" && pwd )"
-slurmtemplate=(`ls $scriptdir/akutils_resources/slurm_template.txt 2>/dev/null`)
-localslurmcount=(`ls slurm_script*.sh 2>/dev/null | wc -l`)
-DATE=`date +%Y%m%d-%I%M%p`
+	slurmtemplate=(`ls $repodir/akutils_resources/slurm_template.txt 2>/dev/null`)
+	localslurmcount=(`ls slurm_script*.sh 2>/dev/null | wc -l`)
+	DATE=`date +%Y%m%d-%I%M%p`
 
 ## Check for existing slurm script
 
@@ -107,7 +106,6 @@ $slurm
 fi
 
 ## Interactive data entry
-
 	echo "I will ask you several questions.  Enter a response to change the
 applicable field, or press <enter> to leave that field unchanged.
 	"
@@ -124,9 +122,11 @@ Current value: $currentjob:
 	sed -i -e "s/job-name=$currentjob/job-name=$newjob/g" $slurm
 	echo "Setting changed.
 	"
+	jobname="$newjob"
 	else
 	echo "Setting unchanged.
 	"
+	jobname="$currentjob"
 	fi
 
 ## job time
@@ -179,11 +179,11 @@ Current value: $currentcpu:
 	fi
 
 
-## job partition
+## job queue
 	currentpartition=(`grep -e "--partition" $slurm | cut -d "=" -f 2`)
 	echo "
-Enter the partition your job should run on (valid choices are debug,
-express, long, all, or himem).
+Enter the partition your job should run on (valid choices are debug, express, long,
+all, or himem).
 Current value: $currentpartition:
 	"
 	read newpartition
@@ -213,7 +213,7 @@ Current value: $currentpartition:
 #	"
 #	fi
 
-	sed -i "s@--output=.*@--output=$workdir/std_err.txt@g" $slurm
+	sed -i "s@--output=.*@--output=$workdir/std_err_${jobname}.txt@g" $slurm
 	sed -i "s@--workdir=.*@--workdir=$workdir/@g" $slurm
 
 
