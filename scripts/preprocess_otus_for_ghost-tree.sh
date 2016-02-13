@@ -66,10 +66,10 @@ trap finish EXIT
 	treebase=$(basename $tree)
 	otudir=$(dirname $biom)
 	outdir0=$(dirname $otudir)
-	outdir="$outdir0/ghost-tree_output"
+	outdir="${outdir0}/ghost-tree_output_${biombase}"
 	validtaxa="$outdir/tax_assignments_filtered_against_input_ghost-tree.txt"
 	otukey="$outdir/otu_list.txt"
-	modtree="$outdir/$treebase"
+	modtree="${outdir}/${biombase}_${treebase}"
 	log="$outdir/preprocess_otus_for_ghost-tree.log"
 
 ## Make and clear output directory if necessary, establish log
