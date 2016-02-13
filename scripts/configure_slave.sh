@@ -47,18 +47,21 @@ DATE=`date +%Y%m%d-%I%M%p`
 configtest="$repodir/temp/$randcode.config"
 templatetest="$repodir/temp/$randcode.template"
 
+	bold=$(tput bold)
+	normal=$(tput sgr0)
+	underline=$(tput smul)
+
 ## Start configuration process
 	echo "
-This will help you configure your akutils config file for running akutils
-workflows.
+This will help you configure your akutils config file for running akutils workflows.
 
-First, would you like to configure your global settings or make
-a local config file to override your global settings?  A local
-config file will reside within your current directory.
+First, would you like to configure your global settings or make a local config file
+to override your global settings?  A local config file will reside within your
+current directory.
 
-Or else, you can choose rebuild if you want to generate a fresh
-global config file.  This is useful if you recently updated akutils
-and need to integrate newly available configuration options.
+Or else, you can choose rebuild if you want to generate a fresh global config file.
+This is useful if you recently updated akutils and need to integrate newly available
+configuration options.
 
 Enter \"global,\" \"local,\" or \"rebuild.\"
 "
@@ -66,10 +69,10 @@ Enter \"global,\" \"local,\" or \"rebuild.\"
 
 ## Determine user supplied input
 	if [[ ! $globallocal == "global" && ! $globallocal == "local" && ! $globallocal == "rebuild" ]]; then
-		echo "Invalid entry.  global, local, or rebuild only."
+		echo "Invalid entry. global, local, or rebuild only."
 		read yesno
 	if [[ ! $globallocal == "global" && ! $globallocal == "local" && ! $globallocal == "rebuild" ]]; then
-		echo "Invalid entry.  Exiting.
+		echo "Invalid entry. Exiting.
 		"
 		exit 1
 	fi
@@ -78,7 +81,7 @@ Enter \"global,\" \"local,\" or \"rebuild.\"
 ## Rebuild option
 	if [[ $globallocal == rebuild ]]; then
 	echo "
-OK.  Building new global config file in akutils resources directory.
+OK. Building new global config file in akutils resources directory.
 ($repodir/akutils_resources/)
 	"
 	rm $repodir/akutils_resources/akutils.global.config 2>/dev/null
@@ -90,8 +93,7 @@ OK.  Building new global config file in akutils resources directory.
 ## Global option
 	if [[ "$globallocal" == "global" ]]; then
 	echo "
-OK.  Checking for existing global config file in akutils resources
-directory.
+OK. Checking for existing global config file in akutils resources directory.
 ($repodir/akutils_resources/)
 	"
 		if [[ ! -f "$globalconfigsearch" ]]; then
@@ -100,6 +102,7 @@ No global config file detected in akutils resources directory.
 ($repodir/akutils_resources/)
 
 Creating new global config file."
+		cp $repodir/akutils_resources/blank_config.config $repodir/akutils_resources/akutils.global.config
 		configfile=($repodir/akutils_resources/akutils.global.config)
 		else
 		echo "Found existing global config file.
@@ -112,29 +115,29 @@ Creating new global config file."
 ## Local option
 	if [[ "$globallocal" == "local" ]]; then
 	echo "
-OK.  Checking for existing config file in current directory.
+OK. Checking for existing config file in current directory.
 ($workdir/)
 	"
 
 	## Offer to copy global file to local position
 	if [[ ! -f "$localconfigsearch" ]]; then
 	echo "
-No config file detected in local directory.  Creating new local config file.
+No config file detected in local directory. Creating new local config file.
 	"
 	if [[ -f "$globalconfigsearch" ]]; then
 	echo "		
 Found existing global config file.
 ($globalconfigsearch)
 
-Do you want to generate a whole new config file or make a copy of the
-existing global file and modify that (new or copy)?"
+Do you want to generate a whole new config file or make a copy of the existing
+global file and modify that (new or copy)?"
 	read newcopy
 
 		if [[ ! "$newcopy" == "new" && ! "$newcopy" == "copy" ]]; then
-		echo "Invalid entry.  new or copy only."
+		echo "Invalid entry. new or copy only."
 		read newcopy
 			if [[ ! "$newcopy" == "new" && ! "$newcopy" == "copy" ]]; then
-			echo "Invalid entry.  Exiting.
+			echo "Invalid entry. Exiting.
 			"
 			exit 1
 			fi
@@ -142,7 +145,7 @@ existing global file and modify that (new or copy)?"
 
 		if [[ "$newcopy" == "new" ]]; then
 			echo "
-OK.  Creating new config file in your current directory.
+OK. Creating new config file in your current directory.
 ($workdir/akutils.$DATE.config)
 		"
 		cat $repodir/akutils_resources/blank_config.config > $workdir/akutils.$DATE.config
@@ -151,8 +154,7 @@ OK.  Creating new config file in your current directory.
 
 		if [[ $newcopy == "copy" ]]; then
 		echo "
-OK.  Copying global config file for local use in your current
-directory.
+OK. Copying global config file for local use in your current directory.
 ($workdir/akutils.$DATE.config)
 		"
 		cat $repodir/akutils_resources/akutils.global.config > $workdir/akutils.$DATE.config
@@ -174,9 +176,8 @@ directory.
 	templateuniq=`grep -cvFf $configtest $templatetest`
 	if [[ "$configuniq" -ge "1" ]]; then
 	echo "
-Your config file contains $configuniq extra variable setting(s).
-Consider running the config utility and rebuilding your configuration
-options.
+Your config file contains ${bold}${configuniq}${normal} extra variable setting(s). Consider running
+the config utility and rebuilding your configuration options.
 
 The extra lines present are:"
 	grep -vFf $templatetest $configtest
@@ -184,9 +185,9 @@ The extra lines present are:"
 	fi
 	if [[ "$templateuniq" -ge "1" ]]; then
 	echo "
-$templateuniq additional configuration setting(s) are available, but not
-present in your configuration file. Consider running the config
-utility and rebuilding your configuration options.
+$templateuniq additional configuration setting(s) are available, but not present in
+your configuration file. Consider running the config utility and rebuilding your
+configuration options.
 
 New configuration options available are:"
 	grep -vFf $configtest $templatetest
@@ -202,10 +203,10 @@ Reading configurable fields...
 	cat $configfile | grep -v "#" | grep -E -v '^$'
 
 	echo "
-I will now go through each configurable field and require your input.
-Press enter to retain the current value or enter a new value.  When
-entering paths (say, to greengenes database) use absolute path and
-remember to use tab-autocomplete to avoid errors.
+I will now go through each configurable field and require your input. Press enter
+to retain the current value or enter a new value. When entering paths (say, to
+greengenes database) use absolute path and remember to use tab-autocomplete to
+avoid errors.
 	"
 
 for field in `grep -v "#" $configfile | cut -f 1`; do
@@ -214,7 +215,7 @@ for field in `grep -v "#" $configfile | cut -f 1`; do
 	echo "
 Field: $fielddesc"
 	setting=`grep $field $configfile | grep -v "#" | cut -f 2`
-	echo "Current setting is: $setting
+	echo "Current setting is: ${bold}${setting}${normal}
 
 Enter new value (or press enter to keep current setting):"
 	read -e newsetting
