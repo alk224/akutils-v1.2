@@ -26,17 +26,19 @@
 #  https://www.biostars.org/p/62678/
 
 set -e
-scriptdir="$( cd "$( dirname "$0" )" && pwd )"
+
+	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
+	repodir=$(dirname $scriptdir)
+	workdir=$(pwd)
+	tempdir="$repodir/temp"
 
 ## Check whether user had supplied -h or --help. If yes display help 
-
 	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
 	less $scriptdir/docs/filter_fastq_by_length.help
 	exit 0
 	fi 
 
 ## Read script mode and display usage if incorrect number of arguments supplied
-
 	mode=($1)
 	usage=`printf "
 Usage (order is important!):
@@ -79,18 +81,14 @@ filter_fastq_by_length.sh <mode> <min_length> <max_length> <read1> <read2> <inde
 	fi
 
 ## Define universal variables
-
 	minlength=($2)
 	maxlength=($3)
 	read1=($4)
 	fastqext="${read1##*.}"
 	read1base=$(basename $read1 .$fastqext)
 
-## Define directories
-  
+## Define input directory
 	filedir=$(dirname $read1)
-#	workdir=$(pwd)
-#	res1=$(date +%s.%N)
 
 ## Echo selected mode for user
 	if [[ "$mode" == "1" ]]; then
