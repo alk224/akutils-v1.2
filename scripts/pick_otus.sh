@@ -286,6 +286,7 @@ directory.
 		qvalue=$((qual+1))
 
 	bash $scriptdir/split_libraries_slave.sh $stdout $stderr $log $qvalue $minpercent $maxbad $barcodetype $map
+	wait
 	fi
 	seqs="split_libraries/seqs.fna"
 	numseqs=`grep -e "^>" $seqs | wc -l`
@@ -294,6 +295,8 @@ directory.
 	if [[ $chimera_refs != "undefined" ]] || [[ -z $chimera_refs ]]; then
 	if [[ ! -f split_libraries/seqs_chimera_filtered.fna ]]; then
 	bash $scriptdir/filter_chimeras_slave.sh $stdout $stderr $log $CPU_cores $chimera_refs $numseqs
+	wait
+	seqs="split_libraries/seqs_chimera_filtered.fna"
 		else
 		if [[ -s split_libraries/seqs_chimera_filtered.fna ]]; then
 		seqs="split_libraries/seqs_chimera_filtered.fna"
