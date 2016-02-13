@@ -116,6 +116,7 @@ Processing input tree to match OTU ID strings"
 	cat $validtaxa | cut -f1 > $OTUidstemp1
 	cat $validtaxa | cut -f4 > $OTUidstemp2
 	paste $OTUidstemp1 $OTUidstemp2 > $otukey
+	wait
 
 ## For loop with sed to replace taxID strings with OTUID strings
 	for otuid in `cat $otukey | cut -f1`; do
@@ -123,6 +124,7 @@ Processing input tree to match OTU ID strings"
 		#echo "taxid = $taxid, otuid = $otuid" ## uncomment for debugging
 		sed -i "s/$taxid/$otuid/" $tempdir/${randcode}_tree.temp
 	done
+	wait
 
 ## Filter resulting tree to include only useful tips
 	echo "
