@@ -24,8 +24,7 @@
 #
 
 ## Interactive tool to generate a slurm file for use on monsoon
-
-set -e
+#set -e
 
 ## check whether user had supplied -h or --help. If yes display help 
 
