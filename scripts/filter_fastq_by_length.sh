@@ -261,9 +261,12 @@ Output 2: $filedir/$read2base.$minlength-$maxlength.$fastqext
 Output 3: $filedir/$indexbase.$minlength-$maxlength.$fastqext"
 	cat $read1 | awk -v high=$maxlength -v low=$minlength '{y= i++ % 4 ; L[y]=$0; if(y==3 && length(L[1])<=high) if(y==3 && length(L[1])>=low) {printf("%s\n%s\n%s\n%s\n",L[0],L[1],L[2],L[3]);}}' > $filedir/$read1base.$minlength-$maxlength.$fastqext
 	wait
+echo 1
 	read1outlines=$(cat $filedir/$read1base.$minlength-$maxlength.$fastqext | wc -l)
 	read1outseqs=$(echo "$read1outlines/4" | bc)
+echo 2
 	cat $read2 | awk -v high=$maxlength -v low=$minlength '{y= i++ % 4 ; L[y]=$0; if(y==3 && length(L[1])<=high) if(y==3 && length(L[1])>=low) {printf("%s\n%s\n%s\n%s\n",L[0],L[1],L[2],L[3]);}}' > $filedir/$read2base.$minlength-$maxlength.$fastqext
+echo 3
 	wait
 	read2outlines=$(cat $filedir/$read2base.$minlength-$maxlength.$fastqext | wc -l)
 	read2outseqs=$(echo "$read2outlines/4" | bc)
