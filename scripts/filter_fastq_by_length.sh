@@ -227,7 +227,7 @@ echo 1
 	read1outseqs=$(echo "$read1outlines/4" | bc)
 	awk 'NR%4==1' $filedir/$read1base.$minlength-$maxlength.$fastqext | sed 's/^@//' > seqs.to.keep.temp
 echo 2
-	perl $scriptdir/fastq-filter_extract_reads.pl -r seqs.to.keep.temp -f $index 1> $filedir/$indexbase.$minlength-$maxlength.$fastqext 2>/dev/null 
+	perl $scriptdir/fastq-filter_extract_reads.pl -r seqs.to.keep.temp -f $index 1> $filedir/$indexbase.$minlength-$maxlength.$fastqext #2>/dev/null 
 echo 3
 	indexoutlines=$(cat $filedir/$indexbase.$minlength-$maxlength.$fastqext | wc -l)
 	indexoutseqs=$(echo "$indexoutlines/4" | bc)
