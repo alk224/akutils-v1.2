@@ -38,6 +38,7 @@ set -e
 	index1="$8"
 	index2="$9"
 	outdir=$workdir/strip_primers_out
+	date0=$(date +%Y%m%d_%I%M%p)
 	res1=$(date +%s.%N)
 
 ## Check for output directory
