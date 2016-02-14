@@ -264,11 +264,11 @@ Outdir: $target/mafft_alignment/
 Aligning $seqcount sequences with MAFFT on $threads threads.
 
 Align sequences command (MAFFT command):
-	mafft --thread $threads --parttree --retree 2 --partsize 1000 --alga $repsetfile > $target/mafft_alignment/${repsetbase}_aligned.fasta 2>$target/mafft_alignment/alignment_log_${repsetbase}.txt
+	mafft --thread $threads --dpparttree --retree 2 --partsize 1000 --alga $repsetfile > $target/mafft_alignment/${repsetbase}_aligned.fasta 2>$target/mafft_alignment/alignment_log_${repsetbase}.txt
 " >> $log
 	mkdir -p $target/mafft_alignment
 	echo "See $target/mafft_alignment/alignment_log_${repsetbase}.txt for any errors.">$stderr
-	mafft --thread $threads --parttree --retree 2 --partsize 1000 --alga $repsetfile > $target/mafft_alignment/${repsetbase}_aligned.fasta 1>$stdout 2>$target/mafft_alignment/alignment_log_${repsetbase}.txt || true
+	mafft --thread $threads --dpparttree --retree 2 --partsize 1000 --alga $repsetfile > $target/mafft_alignment/${repsetbase}_aligned.fasta 1>$stdout 2>$target/mafft_alignment/alignment_log_${repsetbase}.txt || true
 	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	else
 	echo "Previous alignment output detected.
