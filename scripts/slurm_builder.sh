@@ -115,7 +115,7 @@ applicable field, or press <enter> to leave that field unchanged.
 	currentjob=(`grep -e "--job-name" $slurm | cut -d "=" -f 2`)
 	echo "
 Enter a name for this job (8 letters or less is best).
-Current value: $currentjob:
+Current value: $currentjob
 	"
 	read newjob
 	if [[ ! -z "$newjob" ]]; then
@@ -134,7 +134,7 @@ Current value: $currentjob:
 	echo "
 Enter how long you think this job might need in minutes (1440 = 1 day,
 7200 = 5 days).
-Current value: $currenttime:
+Current value: $currenttime
 	"
 	read newtime
 	if [[ ! -z "$newtime" ]]; then
@@ -150,7 +150,7 @@ Current value: $currenttime:
 	currentram=(`grep -e "--mem-per-cpu" $slurm | cut -d "=" -f 2`)
 	echo "
 Enter the amount of RAM per CPU you need in MB (12000 is default).
-Current value: $currentram:
+Current value: $currentram
 	"
 	read newram
 	if [[ ! -z "$newram" ]]; then
@@ -166,7 +166,7 @@ Current value: $currentram:
 	currentcpu=(`grep -e "--cpus-per-task" $slurm | cut -d "=" -f 2`)
 	echo "
 Enter the number of CPUs your job requires (32 available per node).
-Current value: $currentcpu:
+Current value: $currentcpu
 	"
 	read newcpu
 	if [[ ! -z "$newcpu" ]]; then
@@ -184,7 +184,7 @@ Current value: $currentcpu:
 	echo "
 Enter the partition your job should run on (valid choices are debug, express, long,
 all, or himem).
-Current value: $currentpartition:
+Current value: $currentpartition
 	"
 	read newpartition
 	if [[ ! -z "$newpartition" ]]; then
