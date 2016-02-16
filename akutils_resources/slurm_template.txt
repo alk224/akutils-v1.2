@@ -29,5 +29,3 @@ module load fasttree/2.1.7
 
 ## Run workflow script as saved.  Enter any commands you wish to run
 ## below here.
-
-
