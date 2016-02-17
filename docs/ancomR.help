@@ -23,9 +23,9 @@ significant OTUs were detected. When significant OTUs are observed, a pdf file
 is also output with box plots of the significant comparisons. This script
 requires that you have ANCOM installed within your R framework.
 
-A known issue is that when a pdf output is produced, the last page will state
-that no significant OTUs were detected. In fact, the plots are of significant
-OTUs, so ignore that last page.
+A known issue is that when a pdf output is produced (significant OTUs present),
+there is sometimes a final page stating that no significant OTUs were detected.
+In fact, the plots are of significant OTUs, so ignore that last page.
 
 Citation:
 Mandal S., Van Treuren W., White RA., Eggesbø M., Knight R., Peddada SD. 2015. Analysis of composition of microbiomes: a novel method for studying microbial composition. Microbial ecology in health and disease 26:27663.
