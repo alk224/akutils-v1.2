@@ -1,0 +1,10 @@
+
+convert_table_for_ancomR.sh - prepare a tab-delimited OTU table for analysis in the R package ANCOM
+
+Usage:
+	convert_table_for_ancomR.sh <input.txt> <mapping_file> <factor>
+
+		<input.txt> must be tab-delimited OTU table with .txt extension
+		<mapping_file> is QIIME-formatted sample mapping file
+		<factor> is the metadata category you wish to test
+

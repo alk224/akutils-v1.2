@@ -1,0 +1,10 @@
+
+ancomR.sh - Test of differential abundance in the R package ANCOM
+
+Usage:
+	ancomR.sh <input.biom> <mapping_file> <factor>
+
+		<input.biom> must be biom-formatted OTU table with .biom extension
+		<mapping_file> is QIIME-formatted sample mapping file
+		<factor> is the metadata category you wish to test
+

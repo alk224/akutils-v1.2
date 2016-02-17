@@ -1,0 +1,35 @@
+
+*********************
+***               ***
+***   ancomR.sh   ***
+***               ***
+*********************
+
+Test of differential abundance in the R package ANCOM
+
+Usage:
+	ancomR.sh <input.biom> <mapping_file> <factor>
+
+		<input.biom> must be biom-formatted OTU table with .biom extension
+		<mapping_file> is QIIME-formatted sample mapping file
+		<factor> is the metadata category you wish to test
+
+This script takes a biom-formatted OTU table, a QIIME-formatted mapping file, 
+and a factor listed in the mapping file and performs tests of differential
+abundance across all OTUs. The test is conducted without multiple correction as
+well as with FDR correction. A text file will be output for each test that will
+have either a list of OTUs detected as significant (alpha = 0.05), or that no
+significant OTUs were detected. When significant OTUs are observed, a pdf file
+is also output with box plots of the significant comparisons. This script
+requires that you have ANCOM installed within your R framework.
+
+A known issue is that when a pdf output is produced, the last page will state
+that no significant OTUs were detected. In fact, the plots are of significant
+OTUs, so ignore that last page.
+
+Citation:
+Mandal S., Van Treuren W., White RA., Eggesbø M., Knight R., Peddada SD. 2015. Analysis of composition of microbiomes: a novel method for studying microbial composition. Microbial ecology in health and disease 26:27663.
+
+Ancom.R website:
+https://www.niehs.nih.gov/research/resources/software/biostatistics/ancom/index.cfm
+
