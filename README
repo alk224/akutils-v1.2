@@ -1,7 +1,7 @@
 
 **********************************************************************
 ***                                                                ***
-***                     akutils-dev README                         ***
+***                     akutils-v1.2 README                        ***
 ***                                                                ***
 **********************************************************************
 
@@ -17,7 +17,7 @@ Linux system (Ubuntu 14.04). I have also tested most things on CentOS 6.6
 that may be required. For more information on the functionality of akutils,
 check out the wiki pages:
 
-     https://github.com/alk224/akutils/wiki (non-dev pages only)
+     https://github.com/alk224/akutils-v1.2/wiki
 
 **********************************************************************
 
@@ -34,13 +34,13 @@ Instructions are there to fix the screen size in a Virtualbox guest as well as
 to update and run all installation. This part takes a long time and requires a
 decent internet connection.
 
-3) Clone the akutils-dev repository:
+3) Clone the akutils-v1.2 repository:
 
-     git clone https://github.com/alk224/akutils-dev
+     git clone https://github.com/alk224/akutils-v1.2.git
 
 4) Run install script to add akutils to PATH and enable command autocompletion.
 
-     cd akutils-dev
+     cd akutils-v1.2
      bash install
 
 **********************************************************************
@@ -60,6 +60,8 @@ systems too.
  -- Smalt (https://www.sanger.ac.uk/resources/software/smalt/)
  -- HMMer v3+ (http://hmmer.janelia.org/)
  -- Mafft (http://mafft.cbrc.jp/alignment/software/)
+ -- Phyloseq (http://joey711.github.io/phyloseq/)
+ -- Ancom (https://www.niehs.nih.gov/research/resources/software/biostatistics/ancom/index.cfm)
 
  3) Clone the repository and run the install script (steps 3-4 above).
 
@@ -68,7 +70,7 @@ systems too.
 If you find any problems or have ideas for useful functionality, you can submit
 an issue via github:
 
-https://github.com/alk224/akutils/issues
+https://github.com/alk224/akutils-v1.2/issues
 
 **********************************************************************
 
@@ -104,14 +106,15 @@ Things to change before next release:
  2) Command autocompletion (completed 11/20/15)
  3) Autodetection of single or dual indexes during joining (completed 11/23/15)
  4) Updated help and usage screens (in progress)
- 5) Updated wiki
+ 5) Updated wiki (completed Feb 2016)
  6) Add ghost-tree to ITS align_and_tree command (made separate command 1/31/16)
  7) Add tree as configurable variable (completed 1/30/16)
- 8) Improved workflow testing
+ 8) Improved workflow testing (completed Feb 2016)
  9) Improved core_diversity interface with collapsible panels (completed 12/15/15)
 10) Phyloseq output in addition to QIIME output (in progress)
 11) Full workflows for both rarefied and normalized data (completed (12/23/15)
 12) Better handling of input tables, requiring only a single input (completed 12/23/15)
 13) Better workflow logging (in progress)
-14) One line commands to modify config settings
+14) One line commands to modify config settings (completed Feb 2016)
+15) Ancom functions (completed Feb 2016)
 
