@@ -62,6 +62,11 @@ $sourceline
 
 		bashrcpathcount=$(grep "PATH=" ~/.bashrc 2>/dev/null | wc -l)
 		if [[ "$bashrcpathcount" -ge "1" ]]; then
+		quotetest=$(grep "PATH=\"" ~/.bashrc 2>/dev/null | wc -l)
+			if [[ "$quotetest" == "0" ]]; then
+			sed -i "s/PATH=/PATH=\"/" ~/.bashrc
+			sed -i "/PATH=/ s/$/\"/" ~/.bashrc
+			fi
 		sed -i "/PATH/s/\"$/:TARGET/" ~/.bashrc 2>/dev/null || true
 		sed -i "/PATH/s|TARGET$|$repodir/scripts\"|" ~/.bashrc 2>/dev/null || true
 		else
