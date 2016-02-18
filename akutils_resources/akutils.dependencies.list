@@ -67,6 +67,9 @@ vsearch	(pick_otus)
 ##fqgrep_commands:
 fqgrep
 
+##datamash_commands:
+datamash
+
 ##akutils_commands:
 akutils	(akutils commands)
 biom-summarize_folder.sh	(pick_otus)
