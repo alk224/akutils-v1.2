@@ -58,7 +58,7 @@ check out the wiki pages:</p>
 
 <hr>
 
-<p>Getting akutils on your local system (workstation or VirtualBox):</p>
+<p><strong>Getting akutils on your local system (workstation or VirtualBox):</strong></p>
 
 <p>1) Set up your system appropriately. I have done this on a large workstation as
 well as within a VirtualBox on my netbook. Install Ubuntu 14.04LTS. I have had
@@ -66,7 +66,7 @@ trouble with 14.04.3 base installs so prefer 14.04.1 install and then update:
 <a href="http://old-releases.ubuntu.com/releases/14.04.2/ubuntu-14.04.1-desktop-amd64.iso">http://old-releases.ubuntu.com/releases/14.04.2/ubuntu-14.04.1-desktop-amd64.iso</a></p>
 
 <p>2) Get all programs and dependencies installed. The easiest way is with my
-installer script: <a href="https://github.com/alk224/akutils_ubuntu_installer">https://github.com/alk224/akutils_ubuntu_installer</a>
+installer script: <a href="https://github.com/alk224/akutils_ubuntu_installer">https://github.com/alk224/akutils_ubuntu_installer</a><br>
 Instructions are there to fix the screen size in a Virtualbox guest as well as
 to update and run all installation. This part takes a long time and requires a
 decent internet connection.</p>
@@ -84,23 +84,23 @@ decent internet connection.</p>
 
 <hr>
 
-<p>Getting akutils on your compute cluster:</p>
+<p><strong>Getting akutils on your compute cluster:</strong></p>
 
 <p>1) No guarantees! This works on Ubuntu 14.04 and Centos 6.6. Maybe other 
 systems too.</p>
 
 <p>2) Have your sysadmin install the necessary packages:</p>
 
-<p>-- QIIME 1.9.1 (<a href="https://qiime.org">https://qiime.org</a>)
- -- ea-utils (<a href="https://code.google.com/p/ea-utils/">https://code.google.com/p/ea-utils/</a>)
- -- Fastx toolkit (<a href="http://hannonlab.cshl.edu/fastx_toolkit/">http://hannonlab.cshl.edu/fastx_toolkit/</a>)
- -- vsearch (<a href="https://github.com/torognes/vsearch">https://github.com/torognes/vsearch</a>)
- -- ITSx (<a href="http://microbiology.se/software/itsx/">http://microbiology.se/software/itsx/</a>)
- -- Smalt (<a href="https://www.sanger.ac.uk/resources/software/smalt/">https://www.sanger.ac.uk/resources/software/smalt/</a>)
- -- HMMer v3+ (<a href="http://hmmer.janelia.org/">http://hmmer.janelia.org/</a>)
- -- Mafft (<a href="http://mafft.cbrc.jp/alignment/software/">http://mafft.cbrc.jp/alignment/software/</a>)
- -- Phyloseq (<a href="http://joey711.github.io/phyloseq/">http://joey711.github.io/phyloseq/</a>)
- -- Ancom (<a href="https://www.niehs.nih.gov/research/resources/software/biostatistics/ancom/index.cfm">https://www.niehs.nih.gov/research/resources/software/biostatistics/ancom/index.cfm</a>)</p>
+<p>-- QIIME 1.9.1 (<a href="https://qiime.org">https://qiime.org</a>)<br>
+ -- ea-utils (<a href="https://code.google.com/p/ea-utils/">https://code.google.com/p/ea-utils/</a>)<br>
+ -- Fastx toolkit (<a href="http://hannonlab.cshl.edu/fastx_toolkit/">http://hannonlab.cshl.edu/fastx_toolkit/</a>)<br>
+ -- vsearch (<a href="https://github.com/torognes/vsearch">https://github.com/torognes/vsearch</a>)<br>
+ -- ITSx (<a href="http://microbiology.se/software/itsx/">http://microbiology.se/software/itsx/</a>)<br>
+ -- Smalt (<a href="https://www.sanger.ac.uk/resources/software/smalt/">https://www.sanger.ac.uk/resources/software/smalt/</a>)<br>
+ -- HMMer v3+ (<a href="http://hmmer.janelia.org/">http://hmmer.janelia.org/</a>)<br>
+ -- Mafft (<a href="http://mafft.cbrc.jp/alignment/software/">http://mafft.cbrc.jp/alignment/software/</a>)<br>
+ -- Phyloseq (<a href="http://joey711.github.io/phyloseq/">http://joey711.github.io/phyloseq/</a>)<br>
+ -- Ancom (<a href="https://www.niehs.nih.gov/research/resources/software/biostatistics/ancom/index.cfm">https://www.niehs.nih.gov/research/resources/software/biostatistics/ancom/index.cfm</a>)  </p>
 
 <p>3) Clone the repository and run the install script (steps 3-4 above).</p>
 
@@ -113,7 +113,7 @@ an issue via github:</p>
 
 <hr>
 
-<p>Updating:</p>
+<p><strong>Updating:</strong></p>
 
 <p>If (when) I make useful changes, I will push them to the repo. To benefit from
 these changes, navigate to your akutils directory and type:</p>
@@ -134,7 +134,7 @@ config file to match the version of that script.</p>
 
 <hr>
 
-<p>Citing akutils:</p>
+<p><strong>Citing akutils:</strong></p>
 
 <p>Andrew Krohn. (2015). akutils: Facilitating analyses of microbial 
 communities through QIIME. Zenodo. 10.5281/zenodo.18615</p>
@@ -143,21 +143,21 @@ communities through QIIME. Zenodo. 10.5281/zenodo.18615</p>
 
 <p>Things to change before next release:</p>
 
-<p>1) Reorganize commands into a master script (completed 11/20/15)
- 2) Command autocompletion (completed 11/20/15)
- 3) Autodetection of single or dual indexes during joining (completed 11/23/15)
- 4) Updated help and usage screens (in progress)
- 5) Updated wiki (completed Feb 2016)
- 6) Add ghost-tree to ITS align_and_tree command (made separate command 1/31/16)
- 7) Add tree as configurable variable (completed 1/30/16)
- 8) Improved workflow testing (completed Feb 2016)
- 9) Improved core_diversity interface with collapsible panels (completed 12/15/15)
-10) Phyloseq output in addition to QIIME output (in progress)
-11) Full workflows for both rarefied and normalized data (completed (12/23/15)
-12) Better handling of input tables, requiring only a single input (completed 12/23/15)
-13) Better workflow logging (in progress)
-14) One line commands to modify config settings (completed Feb 2016)
-15) Ancom functions (completed Feb 2016)</p>
+<p>1) Reorganize commands into a master script (completed 11/20/15)<br>
+ 2) Command autocompletion (completed 11/20/15)<br>
+ 3) Autodetection of single or dual indexes during joining (completed 11/23/15)<br>
+ 4) Updated help and usage screens (in progress)<br>
+ 5) Updated wiki (completed Feb 2016)<br>
+ 6) Add ghost-tree to ITS align_and_tree command (made separate command 1/31/16)<br>
+ 7) Add tree as configurable variable (completed 1/30/16)<br>
+ 8) Improved workflow testing (completed Feb 2016)<br>
+ 9) Improved core_diversity interface with collapsible panels (completed 12/15/15)<br>
+10) Phyloseq output in addition to QIIME output (in progress)<br>
+11) Full workflows for both rarefied and normalized data (completed (12/23/15)<br>
+12) Better handling of input tables, requiring only a single input (completed 12/23/15)<br>
+13) Better workflow logging (in progress)<br>
+14) One line commands to modify config settings (completed Feb 2016)<br>
+15) Ancom functions (completed Feb 2016)  </p>
       </section>
     </div>
 
