@@ -90,6 +90,19 @@ trap finish EXIT
 		exit 1
 	fi 
 
+## Test for presence of datamash
+	dmtest=$(command -v datamash | wc -l)
+	if [[ "$datamash" == "0" ]]; then
+	echo "
+This script requires the datamash utility to run. Ensure the command is in your
+PATH before running this script again.
+You can obtain datamash here: https://www.gnu.org/software/datamash/download/
+Or run (or rerun) the akutils_ubuntu_installer: https://github.com/alk224/akutils_ubuntu_installer
+Exiting.
+	"
+	exit 1
+	fi
+
 ## Parse input file
 	inbase=$(basename $input .biom)
 	inext="${1##*.}"
@@ -158,26 +171,14 @@ command. Exiting.
 ## Remove taxonomy field
 	cat $tempfile0 | cut -f1-${column1} > $tempfile1
 
-## Transpose table
-	awk '
-{ 
-    for (i=1; i<=NF; i++)  {
-        a[NR,i] = $i
-    }
-}
-NF>p { p = NF }
-END {    
-    for(j=1; j<=p; j++) {
-        str=a[1,j]
-        for(i=2; i<=NR; i++){
-            str=str" "a[i,j];
-        }
-        print str
-    }
-}' $tempfile1 > $tempfile2
+## If this is a summarized table, remove all but the deepest taxonomic identifier (using semicolon as delimiter)
+	sctest=$(cat $tempfile1 | cut -f1 | grep ";" | wc -l)
+	if [[ "$sctest" -ge "1" ]]; then
+		sed -i "s/^.\+;//g" $tempfile1
+	fi
 
-## Replace spaces in transposed table with tabs (would like to correct awk string to do this instead)
-	sed -i 's/\s/\t/g' $tempfile2
+## Transpose table
+	datamash transpose < $tempfile1 > $tempfile2
 
 ## Replace sample IDs with factor according to mapping file
 	for line in `cat $tempfile3 | cut -f1`; do
