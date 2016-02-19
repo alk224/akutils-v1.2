@@ -30,6 +30,9 @@ are of significant OTUs, so ignore that last page.
 
  2) OTU tables with few OTUS (~10 or less) will not produce output.
 
+ 3) OTU IDs must not contain semicolons, while taxonomy must be delimited with
+semicolon.
+
 Citation:
 Mandal S., Van Treuren W., White RA., Eggesbø M., Knight R., Peddada SD. 2015. Analysis of composition of microbiomes: a novel method for studying microbial composition. Microbial ecology in health and disease 26:27663.
 
