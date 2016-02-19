@@ -39,17 +39,17 @@ otus <- read.table(otufile, sep="\t", header=TRUE)
 ancom.out <- ANCOM(real.data=otus,sig=0.05,multcorr=3)
 detections <- ancom.out$detected
 write(detections, paste0(outdir, "ANCOM_detections_", factor, "_uncorrected.txt"))
-plot1 <- plot_ancom(ancom.out)
+plot <- plot_ancom(ancom.out)
 pdf(paste0(outdir, "ANCOM_", factor, "_uncorrected.pdf"))
-plot(plot1)
+plot(plot)
 
 ## Run ancom with FDR correction
-ancom.out2 <- ANCOM(real.data=otus,sig=0.05,multcorr=2)
-detections2 <- ancom.out2$detected
-write(detections2, paste0(outdir, "ANCOM_detections_", factor, "_FDRcorrected.txt"))
-plot2 <- plot_ancom(ancom.out2)
+ancom.out.fdr <- ANCOM(real.data=otus,sig=0.05,multcorr=1)
+detections.fdr <- ancom.out.fdr$detected
+write(detections.fdr, paste0(outdir, "ANCOM_detections_", factor, "_FDRcorrected.txt"))
+plot.fdr <- plot_ancom(ancom.out.fdr)
 pdf(paste0(outdir, "ANCOM_", factor, "_FDRcorrected.pdf"))
-plot(plot2)
+plot(plot.fdr)
 
 ## End
 q()
