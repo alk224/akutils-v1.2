@@ -153,16 +153,26 @@ command. Exiting.
 ## Change OTU ID to Group
 	sed -i 's/#OTU ID/Group/' $tempfile0
 
-## Get column from OTU table that contains the taxonomy string
-	column0=`awk -v table="$tempfile0" '{ for(i=1;i<=NF;i++){if ($i ~ /taxonomy/) {print i}}}' $tempfile0`
-	column1=`expr $column0 - 2`
-
 ## Get factor column from map file and make tempfile to relate sample ID to factor
 	fact=`awk -v factor="$factor" -v map="$map" '{ for(i=1;i<=NF;i++){if ($i ~ factor) {print i}}}' $map`
 	grep -v "#" $map | cut -f1,${fact} > $tempfile3
 
-## Remove taxonomy field
+## Test for taxonomy field and remove if necessary
+	taxtest=$(head -1 $tempfile0 | grep "taxonomy" | wc -l)
+	if [[ "$taxtest" == "$1" ]]; then
+		#taxonomy field is present. remove it for processing.
+
+	## Get column from OTU table that contains the taxonomy string
+	column0=`awk -v table="$tempfile0" '{ for(i=1;i<=NF;i++){if ($i ~ /taxonomy/) {print i}}}' $tempfile0`
+	column1=`expr $column0 - 2`
+
+	## Remove taxonomy field
 	cat $tempfile0 | cut -d$'\t' -f1-${column1} > $tempfile1
+
+	else
+		#no taxonomy field present. make copy of temp file and continue)
+	cp $tempfile0 $tempfile1
+	fi
 
 ## If this is a summarized table, remove all but the deepest taxonomic identifier (using semicolon as delimiter)
 	sctest=$(cat $tempfile1 | cut -f1 | grep ";" | wc -l)
