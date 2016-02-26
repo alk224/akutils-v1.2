@@ -116,6 +116,17 @@ Exiting.
 	exit 1
 	fi
 
+## Test for presence of biom
+	biomtest=$(command -v biom | wc -l)
+	if [[ "$biomtest" -ge "1" ]]; then
+	echo "
+This script requires the biom package to be available in order to run. Ensure
+it is properly installed (or loaded) before running this script again.
+Exiting.
+	"
+	exit 1
+	fi
+
 ## Parse input file
 	inbase=$(basename $input .biom)
 	inext="${1##*.}"
