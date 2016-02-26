@@ -218,8 +218,8 @@ Beginning statistical comparisons. Please be patient.
 	wait
 
 ## Test for output, print completion and outputs, remove unwanted files
-	uncortest=$(grep "No significant OTUs detected" $outdir/ANCOM_detections_${factor}_uncorrected.txt | wc -l)
-	fdrtest=$(grep "No significant OTUs detected" $outdir/ANCOM_detections_${factor}_FDRcorrected.txt | wc -l)
+	uncortest=$(grep "No significant OTUs detected" $outdir/ANCOM_detections_${factor}_uncorrected.txt 2>/dev/null | wc -l)
+	fdrtest=$(grep "No significant OTUs detected" $outdir/ANCOM_detections_${factor}_FDRcorrected.txt 2>/dev/null | wc -l)
 		uncorout="ANCOM_${factor}_uncorrected.pdf"
 		uncorpdf="ANCOM_${factor}_uncorrected.pdf"
 		fdrout="ANCOM_${factor}_FDRcorrected.pdf"
