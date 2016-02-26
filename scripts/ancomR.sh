@@ -192,6 +192,7 @@ command. Exiting.
 
 ## Transpose table
 	datamash transpose < $tempfile1 > $tempfile2
+	wait
 
 ## Replace sample IDs with factor according to mapping file
 	for line in `cat $tempfile3 | cut -f1`; do
