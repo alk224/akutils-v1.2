@@ -162,6 +162,7 @@ command. Exiting.
 ## Convert biom file to txt and copy to tempdir for processing
 	biomtotxt.sh $input &>/dev/null
 	mv $indir/$inbase.txt $tempfile0
+	wait
 
 ## Test for initial header in some converted OTU tables and remove as necessary
 	headtest=$(grep "Constructed from biom file" $tempfile0 2>/dev/null | wc -l)
