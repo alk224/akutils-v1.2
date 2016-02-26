@@ -26,6 +26,17 @@
 randcode=`cat /dev/urandom |tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1` 2>/dev/null
 randfile="$randcode.biomtotxt.temp"
 
+## Test for biom command
+biomtest=$(command -v biom | wc -l)
+if [[ "$biomtest" == "0" ]]; then
+	echo "
+This script requires the biom utility to run. Ensure the command is in your
+PATH before running this script again.
+Exiting.
+	"
+	exit 1
+fi
+
 ## Get biom version
 ## test for biom 2.1.5 or newer
 biom215test=$(biom convert --version 2>/dev/null)
