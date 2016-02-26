@@ -21,7 +21,8 @@ well as with FDR correction. A text file will be output for each test that will
 have either a list of OTUs detected as significant (alpha = 0.05), or that no
 significant OTUs were detected. When significant OTUs are observed, a pdf file
 is also output with box plots of the significant comparisons. This script
-requires that you have ANCOM installed within your R framework.
+requires that you have ANCOM installed within your R framework, as well as the
+datamash utility and the biom command.
 
 Known issues:
  1) when a pdf output is produced (significant OTUs present), there is sometimes

@@ -8,3 +8,6 @@ Usage:
 		<mapping_file> is QIIME-formatted sample mapping file
 		<factor> is the metadata category you wish to test
 
+	Requires that ancom.R library be available in your R installation and
+	datamash and biom commands in your PATH.
+
