@@ -103,6 +103,19 @@ Exiting.
 	exit 1
 	fi
 
+## Test for presence of ancom.R
+	ancomrtest=$(Rscript $scriptdir/ancom_test.r | wc -l)
+	if [[ "$ancomrtest" -ge "1" ]]; then
+	echo "
+This script requires the ancom.R library to be available in order to run. Ensure
+it is properly installed (or loaded) before running this script again.
+You can obtain ancom.R here: https://www.niehs.nih.gov/research/resources/software/biostatistics/ancom/index.cfm
+Or run (or rerun) the akutils_ubuntu_installer: https://github.com/alk224/akutils_ubuntu_installer
+Exiting.
+	"
+	exit 1
+	fi
+
 ## Parse input file
 	inbase=$(basename $input .biom)
 	inext="${1##*.}"
@@ -201,6 +214,7 @@ Beginning statistical comparisons. Please be patient.
 
 ## Run ancom.R
 	Rscript $scriptdir/ancomR.r $tempfile6 $factor $outdir &>/dev/null
+	wait
 
 ## Test for output, print completion and outputs, remove unwanted files
 	uncortest=$(grep "No significant OTUs detected" $outdir/ANCOM_detections_${factor}_uncorrected.txt | wc -l)
