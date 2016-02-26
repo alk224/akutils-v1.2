@@ -118,7 +118,7 @@ Exiting.
 
 ## Test for presence of biom
 	biomtest=$(command -v biom | wc -l)
-	if [[ "$biomtest" -ge "1" ]]; then
+	if [[ "$biomtest" == "0" ]]; then
 	echo "
 This script requires the biom package to be available in order to run. Ensure
 it is properly installed (or loaded) before running this script again.
