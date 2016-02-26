@@ -92,7 +92,7 @@ trap finish EXIT
 
 ## Test for presence of datamash
 	dmtest=$(command -v datamash | wc -l)
-	if [[ "$datamash" == "0" ]]; then
+	if [[ "$dmtest" == "0" ]]; then
 	echo "
 This script requires the datamash utility to run. Ensure the command is in your
 PATH before running this script again.
