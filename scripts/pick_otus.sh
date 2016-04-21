@@ -329,8 +329,10 @@ Skipping chimera checking step.
 
 	seqs="split_libraries/seqs_chimera_filtered_ITSx_filtered.fna"
 	ITSseqs=`grep -e "^>" $seqs | wc -l`
+		numseqs=`grep -e "^>" $seqs | wc -l`
 	fi
 	seqs="split_libraries/seqs_chimera_filtered_ITSx_filtered.fna"
+		numseqs=`grep -e "^>" $seqs | wc -l`
 	if [[ ! -s $seqs ]]; then
 	exit 1
 	fi
