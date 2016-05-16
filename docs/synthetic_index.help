@@ -1,0 +1,32 @@
+
+******************************
+***                        ***
+***   synthetic_index.sh   ***
+***                        ***
+******************************
+
+Make an indexing file from already demultiplexed data
+
+Usage:
+	synthetic_index.sh <mapping_file> <fastq_directory>
+
+		<mapping_file> is QIIME-formatted sample mapping file
+		<fastq_directory> contains demultiplexed sequence files.
+
+	Fastq files must be named identically to the sampleIDs contained in the
+	mapping file, must contain a read designator (R1 or R2), and must have
+	"fastq" extension (not fq).
+
+	Example fastq file name: sampleID1.R1.fastq
+
+Indexes will be built using the index sequences contained in the mapping file
+(BarcodeSequence column). You should ensure they are all the same length and
+that none are the same sequence.
+
+Where possible, this script will utilize multiple processors. It will use the
+value for CPU_cores found in your global or local akutils config file.
+	*** parallel implementation not yet functional ***
+
+This script works ONLY with MiSeq data. Could be easily modified for other data
+types, but is not intended for anything other than MiSeq output.
+

@@ -1,0 +1,15 @@
+
+synthetic_index.sh - Make an indexing file from already demultiplexed data
+
+Usage:
+	synthetic_index.sh <mapping_file> <fastq_directory>
+
+		<mapping_file> is QIIME-formatted sample mapping file
+		<fastq_directory> contains demultiplexed sequence files.
+
+	Fastq files must be named identically to the sampleIDs contained in the
+	mapping file, must contain a read designator (R1 or R2), and must have
+	"fastq" extension (not fq).
+
+	Example fastq file name: sampleID1.R1.fastq
+
