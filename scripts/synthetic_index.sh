@@ -127,6 +127,9 @@ more details, use synthetic_index.sh help.
 	"
 
 ## For loop to build each index file
+## Can add parallelization by removing the -i flag from sed commands and instead
+## send revised files to temp directory to be moved to target directory upon
+## completion. Will need to background samples separately.
 	for sample in `cat $samplist`; do
 		index=$(grep -e "$sample\s" $indlist | cut -f2)
 		indfile="$fastqdir/${sample}.INDEX_temp.fastq"
