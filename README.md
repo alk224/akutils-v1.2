@@ -7,16 +7,9 @@ This is a collection of scripts I wrote to make myself more productive while doi
 
 **Getting akutils on your local system (workstation or VirtualBox):**
 
-**1)** Set up your system appropriately. I have done this on a large workstation as
-well as within a VirtualBox on my netbook. Install Ubuntu 14.04LTS. I have had
-trouble with 14.04.3 base installs so prefer 14.04.1 install and then update:  
-http://old-releases.ubuntu.com/releases/14.04.2/ubuntu-14.04.1-desktop-amd64.iso
+**1)** Set up your system appropriately. I have done this on a large workstation as well as within a VirtualBox on my netbook. Install Ubuntu 14.04LTS. I have had trouble with 14.04.3 base installs so prefer 14.04.1 install ([download .iso here](http://old-releases.ubuntu.com/releases/14.04.2/ubuntu-14.04.1-desktop-amd64.iso)) and then update.
 
-**2)** Get all programs and dependencies installed. The easiest way is with my
-installer script: https://github.com/alk224/akutils_ubuntu_installer  
-Instructions are there to fix the screen size in a Virtualbox guest as well as
-to update and run all installation. This part takes a long time and requires a
-decent internet connection.
+**2)** Get all programs and dependencies installed. The easiest way is with [my installer script.](https://github.com/alk224/akutils_ubuntu_installer) Instructions are there to fix the screen size in a Virtualbox guest as well as to update and run all installation. This part takes a long time and requires a decent internet connection.
 
 **3)** Clone the akutils-v1.2 repository:
 
