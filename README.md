@@ -20,14 +20,11 @@ This is a collection of scripts I wrote to make myself more productive while doi
      cd akutils-v1.2  
      bash install  
 
-**********************************************************************
+**Getting akutils on your compute cluster:**  
 
-**Getting akutils on your compute cluster:**
+**1)** No guarantees! This works on Ubuntu 14.04 and Centos 6.6. Maybe other systems too.  
 
-**1)** No guarantees! This works on Ubuntu 14.04 and Centos 6.6. Maybe other 
-systems too.
-
-**2)** Have your sysadmin install the necessary packages:
+**2)** Have your sysadmin install the necessary packages:  
 
  -- QIIME 1.9.1 (https://qiime.org)  
  -- ea-utils (https://code.google.com/p/ea-utils/)  
@@ -40,46 +37,29 @@ systems too.
  -- Phyloseq (http://joey711.github.io/phyloseq/)  
  -- Ancom (https://www.niehs.nih.gov/research/resources/software/biostatistics/ancom/index.cfm)  
  -- datamash (https://www.gnu.org/software/datamash/)  
- -- fasta-splitter.pl (http://kirill-kryukov.com/study/tools/fasta-splitter/)
+ -- fasta-splitter.pl (http://kirill-kryukov.com/study/tools/fasta-splitter/)  
 
-**3)** Clone the repository and run the install script (steps 3-4 above).
+**3)** Clone the repository and run the install script (steps 3-4 above).  
 
-**********************************************************************
+If you find any problems or have ideas for useful functionality, you can [submit an issue via github.](https://github.com/alk224/akutils-v1.2/issues)  
 
-If you find any problems or have ideas for useful functionality, you can submit
-an issue via github:
+**Updating:**  
 
-https://github.com/alk224/akutils-v1.2/issues
+If (when) I make useful changes, I will push them to the repo. To benefit from these changes, navigate to your akutils directory and type:  
 
-**********************************************************************
+     git pull  
 
-**Updating:**
+After this, check your configuration:  
 
-If (when) I make useful changes, I will push them to the repo. To benefit from
-these changes, navigate to your akutils directory and type:
+     akutils print_config  
 
-     git pull
+If new configurable options are available, you will be instructed to run the config utility and choose "rebuild" to make a fresh global config file which will contain the new options. Older config files may not function correctly after an update. This can cause some scripts to miss a variable import without a config file to match the version of that script.  
 
-After this, check your configuration:
+**Citing akutils:**  
 
-     akutils print_config
+Andrew Krohn. (2015). akutils: Facilitating analyses of microbial communities through QIIME. Zenodo. 10.5281/zenodo.18615  
 
-If new configurable options are available, you will be instructed to run the
-config utility and choose "rebuild" to make a fresh global config file which
-will contain the new options. Older config files may not function correctly
-after an update. This can cause some scripts to miss a variable import without a
-config file to match the version of that script.
-
-**********************************************************************
-
-**Citing akutils:**
-
-Andrew Krohn. (2015). akutils: Facilitating analyses of microbial 
-communities through QIIME. Zenodo. 10.5281/zenodo.18615
-
-**********************************************************************
-
-Things to change before next release:
+**Things to change before next release:**  
 
  1) Reorganize commands into a master script (completed 11/20/15)  
  2) Command autocompletion (completed 11/20/15)  
@@ -96,5 +76,4 @@ Things to change before next release:
 13) Better workflow logging (in progress)  
 14) One line commands to modify config settings (completed Feb 2016)  
 15) Ancom functions (completed Feb 2016)  
-16) Fold Ancom into core_diversity workflow
-
+16) Fold Ancom into core_diversity workflow  
