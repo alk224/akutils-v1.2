@@ -87,12 +87,12 @@ Workflow tests beginning." > $log
 	for field in `grep -v "#" $masterconfig | cut -f 1`; do
 	if [[ $field == "Reference" ]]; then
 	setting=`grep $field $masterconfig | grep -v "#" | cut -f 2`
-	newsetting=($testdir/db_format_out/515f_806r_composite.fasta)
+	newsetting=($testdir/format_database_out/515f_806r_composite.fasta)
 	sed -i -e "s@^$field\t$setting@$field\t$newsetting@" $masterconfig
 	fi
 	if [[ $field == "Taxonomy" ]]; then
 	setting=`grep $field $masterconfig | grep -v "#" | cut -f 2`
-	newsetting=($testdir/db_format_out/515f_806r_composite_taxonomy.txt)
+	newsetting=($testdir/format_database_out/515f_806r_composite_taxonomy.txt)
 	sed -i -e "s@^$field\t$setting@$field\t$newsetting@" $masterconfig
 	fi
 	if [[ $field == "Chimeras" ]]; then
@@ -166,7 +166,7 @@ Set temporary akutils global config file." >> $log
 	echo "
 ***** Test of format_database command.
 ***** Command:
-akutils format_database $testdir/gg_database/97_rep_set_1000.fasta $testdir/gg_database/97_taxonomy_1000.txt $testdir/resources/primers_515F-806R.txt 150 $testdir/db_format_out" >> $log
+akutils format_database $testdir/gg_database/97_rep_set_1000.fasta $testdir/gg_database/97_taxonomy_1000.txt $testdir/resources/primers_515F-806R.txt 150 $testdir/format_database_out" >> $log
 	if [[ -d $testdir/format_database_out ]]; then
 	rm -r $testdir/format_database_out
 	else
@@ -450,14 +450,14 @@ $runtime
 
 ## Test of align_and_tree command
 	res1=$(date +%s.%N)
-	echo "Test of align_and_tree command.
+	echo "${bold}Test of align_and_tree command.${normal}
 	"
 	echo "
 ***** Test of align_and_tree command.
 ***** Command:
-akutils align_and_tree swarm_otus_d1/ 16S" >> $log
+akutils align_and_tree 16S swarm_otus_d1/" >> $log
 	cd $testdir/pick_otus_out
-	akutils align_and_tree swarm_otus_d1/ 16S 1>$testdir/std_out 2>$testdir/std_err || true
+	akutils align_and_tree 16S swarm_otus_d1/ 1>$testdir/std_out 2>$testdir/std_err || true
 	wait
 	cd $workdir
 	echo "
@@ -500,16 +500,16 @@ See log file: $log
 
 ## Test of core_diversity command
 	res1=$(date +%s.%N)
-	echo "Test of core_diversity command.
+	echo "${bold}Test of core_diversity command.${normal}
 This test takes a while.  Please be patient
 (~7 minutes needed on a system with 24 cores).
 	"
 	echo "
 ***** Test of core_diversity command.
 ***** Command:
-akutils core_diversity.sh swarm_otus_d1/OTU_tables_blast_tax/03_table_hdf5.biom map.test.txt Community $cpus" >> $log
+akutils core_diversity.sh swarm_otus_d1/OTU_tables_uclust_taxonomy/03_table.biom map.test.txt Community $cpus" >> $log
 	cd $testdir/pick_otus_out
-	akutils core_diversity swarm_otus_d1/OTU_tables_blast_tax/03_table_hdf5.biom map.test.txt Community $cpus 1>$testdir/std_out 2>$testdir/std_err || true
+	akutils core_diversity swarm_otus_d1/OTU_tables_uclust_taxonomy/03_table.biom map.test.txt Community $cpus 1>$testdir/std_out 2>$testdir/std_err || true
 	wait
 	cd $workdir
 	echo "
