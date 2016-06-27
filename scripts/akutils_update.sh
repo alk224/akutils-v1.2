@@ -29,12 +29,24 @@
 	workdir=$(pwd)
 	tempdir="$repodir/temp"
 
+	bold=$(tput bold)
+	normal=$(tput sgr0)
+	underline=$(tput smul)
+
 ## Move to repo directory and perform git pull
 	cd $repodir
 	echo "
-Performing fresh git pull of akutils repository.
+${bold}Performing fresh git pull of akutils repository.${normal}
 	"
 	git pull
 	wait
-	source ~/.bashrc
+
+	echo "
+${bold}git pull command complete.${normal}
+If new functions were added, you may need to either open a new terminal window,
+or issue the following command:
+
+${underline}source ~/.bashrc${normal}
+	"
+
 exit 0
