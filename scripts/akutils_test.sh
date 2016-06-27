@@ -15,7 +15,7 @@ fi
 trap finish EXIT
 
 ## workflow of tests to examine system installation completeness
-set -e
+#set -e
 
 ## Define variables.
 	homedir=`echo $HOME`
@@ -128,6 +128,11 @@ Workflow tests beginning." > $log
 	if [[ $field == "CPU_cores" ]]; then
 	setting=`grep $field $masterconfig | grep -v "#" | cut -f 2`
 	newsetting=($cpus)
+	sed -i -e "s@^$field\t$setting@$field\t$newsetting@" $masterconfig
+	fi
+	if [[ $field == "Tree" ]]; then
+	setting=`grep $field $masterconfig | grep -v "#" | cut -f 2`
+	newsetting="AUTO"
 	sed -i -e "s@^$field\t$setting@$field\t$newsetting@" $masterconfig
 	fi
 	done
@@ -442,7 +447,7 @@ $runtime
 	" >> $log
 	echo "$runtime
 	"
-exit 0
+
 ## Test of align_and_tree command
 	res1=$(date +%s.%N)
 	echo "Test of align_and_tree command.
