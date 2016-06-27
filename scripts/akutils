@@ -242,6 +242,19 @@ akutils test
 	exit 0
 	fi
 
+## Check whether user supplied update.  If yes, run akutils_update.sh or display specific usage or help if specified.
+	if [[ "$1" == "update" ]]; then
+#		if [[ -z "$2" ]]; then
+#		cat $repodir/docs/akutils_update.usage
+#		exit 0
+#		elif [[ "$2" == "help" ]]; then
+#		less $repodir/docs/akutils_update.help
+#		exit 0
+#		fi
+	bash $scriptdir/akutils_update.sh 
+	exit 0
+	fi
+
 ## Display usage for non-parseable command.
 	cat $usage
 

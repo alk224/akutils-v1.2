@@ -12,6 +12,7 @@ _akutils()
 	pick_otus align_and_tree core_diversity
 	phix_filtering strip_primers format_database test
 	test_result join_paired_reads tutorial index_groomer
+	update
         "
 
   ## Complete available akutils command arguments
