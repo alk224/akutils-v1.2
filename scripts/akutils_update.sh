@@ -35,5 +35,6 @@
 Performing fresh git pull of akutils repository.
 	"
 	git pull
-	
+	wait
+	source ~/.bashrc
 exit 0
