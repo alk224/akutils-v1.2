@@ -502,7 +502,7 @@ See log file: $log
 	res1=$(date +%s.%N)
 	echo "${bold}Test of core_diversity command.${normal}
 This test takes a while.  Please be patient
-(~7 minutes needed on a system with 24 cores).
+(3-10 minutes usually needed, depending on your system).
 	"
 	echo "
 ***** Test of core_diversity command.
