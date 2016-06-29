@@ -297,6 +297,7 @@ directory.
 	bash $scriptdir/filter_chimeras_slave.sh $stdout $stderr $log $CPU_cores $chimera_refs $numseqs
 	wait
 	seqs="split_libraries/seqs_chimera_filtered.fna"
+	numseqs=`grep -e "^>" $seqs | wc -l`
 		else
 		if [[ -s split_libraries/seqs_chimera_filtered.fna ]]; then
 		seqs="split_libraries/seqs_chimera_filtered.fna"
