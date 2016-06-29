@@ -38,6 +38,7 @@ This is a collection of scripts I wrote to make myself more productive while doi
  -- Ancom (https://www.niehs.nih.gov/research/resources/software/biostatistics/ancom/index.cfm)  
  -- datamash (https://www.gnu.org/software/datamash/)  
  -- fasta-splitter.pl (http://kirill-kryukov.com/study/tools/fasta-splitter/)  
+ -- cutadapt (http://cutadapt.readthedocs.io/en/stable/index.html)  
 
 **3)** Clone the repository and run the install script (steps 3-4 above).  
 
