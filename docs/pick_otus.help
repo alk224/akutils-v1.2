@@ -84,19 +84,30 @@ picking directory.  For example:
 be 7 different OTU tables per OTU table directory plus summaries of these
 tables:
 
-1) raw_otu_table.biom - unfiltered table
-2) raw_otu_table_bacteria/fungi_only.biom - if mode is 16S or ITS
-3) min100_table_hdf5/CSS.biom - samples <100 counts removed
-4) mc2_table_hdf5/CSS.biom - singletons removed by table
-5) n2_table_hdf5/CSS.biom - singletons removed by sample
-6) 005_table_hdf5/CSS.biom - OTUs <0.005% removed by table
-7) 03_table_hdf5/CSS.biom - OTUs <0.3% removed by sample
+1) raw_OTU_tables/raw_otu_table.biom - unfiltered table
+2) raw_OTU_tables/raw_otu_table_bacteria/fungi_only.biom - if mode is 16S or ITS
+3) raw_OTU_tables/min100_table.biom - samples <100 counts removed
+4) mc2_table.biom - singletons removed by table
+5) n2_table.biom - singletons removed by sample, private OTUs removed
+6) 005_table.biom - OTUs <0.005% removed by table
+7) 03_table.biom - OTUs <0.3% removed by sample
 
- -- hdf5 tables can be rarefied
- -- CSS tables were normalized with CSS
+Configurable settings (akutils config file):
+	Split_libraries_qvalue		-- value to consider a low-quality base
+	Split_libraries_minpercent	-- Percent of read required to retain it
+	Split_libraries_maxbad		-- Maximum low-quality bases to allow
+	Reference			-- Your reference database sequences
+	Taxonomy			-- Your reference database taxonomy
+	Chimeras			-- Your chimera reference database
+	Prefix_length			-- Prefix for dereplication (0 disables)
+	Suffix_length			-- Suffix for dereplication (0 disables)
+	OTU_picker			-- OTU picking method to use
+	Tax_assigner			-- Taxonomic assignment to use
+	ITSx_options			-- Options for ITSx (ITS mode only)
+	CPU_cores			-- Processors to use during analysis
 
 Requires the following dependencies to run all steps:
-	1) QIIME 1.9.0 (qiime.org)
+	1) QIIME 1.9.1 (qiime.org)
 	2) vsearch (https://github.com/torognes/vsearch)
 	3) ITSx
 		
