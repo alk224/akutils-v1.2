@@ -49,6 +49,9 @@ fastq-multx	(phix_filtering)
 ##Fastx-toolkit_commands:
 fastx_trimmer	(join_paried_reads)
 
+##Cutadapt_commands:
+cutadapt
+
 ##ITSx_commands:
 ITSx
 
