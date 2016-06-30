@@ -8,35 +8,30 @@
 Remove primer sequences from your amplicon reads
 
 Usage (order is important!):
-akutils strip_primers <rev/comp_primers> <read1> <read2> <index1> <index2>
+akutils strip_primers <mode> <read1> <read2> <index1> <index2>
 
-	<index2> is optional.
+	Requires a primer file to be present (primer_file.txt).
+		-- only processes up to the first two primers in the file.
+	Must supply at least one valid fastq file with .fq or .fastq extension.
+	<mode> -- 0, 1, or 2. This indicates the number of index files supplied.
 
 Output:
 Resulting files will be output to a subdirectory called strip_primers_out.
 
-This script trims primers from input fastqs without removing any
-sequence reads which is important if you need to pass an associated
-index file against them next for demultiplexing purposes (eg for QIIME
-processing of amplicon data).
+Requires primer_file.txt to function. If not present, will call the primer_file
+function in akutils to produce one. Can modify this file further (or create a
+new one) with the the primer_file command:
+	akutils primer_file
 
-Rev/comp primers fasta file should contain somthing like this:
-	>515F-1
-	TTACCGCGGCTGCTGGCAC
-	>515F-2
-	TTACCGCGGCGGCTGGCAC
-	>806R-1
-	ATTAGATACCCTTGTAGTCC
-	>806R-2
-	ATTAGAAACCCTTGTAGTCC
-	>806R-3
-	ATTAGATACCCCTGTAGTCC
+Configurable settings (akutils config file):
+	Cutadapt_errors		-- Amount of primer mismatch allowed (decimal)
+
+This script trims primers from input fastqs. In some cases this can result in
+fastq lines which contain no sequence (empty record). This script will reconcile
+such empty records against any supplied index files in order to keep data in
+phase.
 
 Requires the following dependencies to run:
-	1) ea-utils (https://code.google.com/p/ea-utils/)
-	2) Fastx toolkit (http://hannonlab.cshl.edu/fastx_toolkit/)
-		
-Citing ea-utils:
-Erik Aronesty (2011). ea-utils: Command-line tools for processing
-biological sequencing data; http://code.google.com/p/ea-utils
+	1) cutadapt
+	2) QIIME 1.9.1
 
