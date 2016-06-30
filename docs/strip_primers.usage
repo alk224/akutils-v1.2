@@ -2,7 +2,10 @@
 akutils strip_primers - remove primer sequences from your amplicon reads
 
 Usage (order is important!):
-akutils strip_primers <rev/comp_primers> <read1> <read2> <index1> <index2>
+akutils strip_primers <mode> <read1> <read2> <index1> <index2>
 
-	<index2> is optional.
+	Requires a primer file to be present (primer_file.txt).
+		-- only processes up to the first two primers in the file.
+	Must supply at least one valid fastq file with .fq or .fastq extension.
+	<mode> -- 0, 1, or 2. This indicates the number of index files supplied.
 
