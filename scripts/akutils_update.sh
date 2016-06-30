@@ -28,12 +28,13 @@
 	repodir=$(dirname $scriptdir)
 	workdir=$(pwd)
 	tempdir="$repodir/temp"
+	homedir=`echo $HOME`
 
 	bold=$(tput bold)
 	normal=$(tput sgr0)
 	underline=$(tput smul)
 
-## Move to repo directory and perform git pull
+## Move to akutils repo directory and perform git pull
 	cd $repodir
 	echo "
 ${bold}Performing fresh git pull of akutils repository.${normal}
@@ -41,13 +42,43 @@ ${bold}Performing fresh git pull of akutils repository.${normal}
 	git pull
 	wait
 
+## If present, update QIIME_test_data_16S repo
+	if [[ -d "$homedir/QIIME_test_data_16S" ]]; then
+	cd $homedir/QIIME_test_data_16S
+	echo "
+${bold}Performing fresh git pull of QIIME_test_data_16S repository.${normal}
+	"
+	git pull
+	wait
+	fi
+
+## If present, update akutils_ubuntu_installer repo
+	if [[ -d "$homedir/akutils_ubuntu_installer" ]]; then
+	cd $homedir/akutils_ubuntu_installer
+	echo "
+${bold}Performing fresh git pull of akutils_ubuntu_installer repository.${normal}
+	"
+	git pull
+	wait
+	fi
+
+## If present, update akutils_RADseq_utility repo
+	if [[ -d "$homedir/akutils_RADseq_utility" ]]; then
+	cd $homedir/akutils_RADseq_utility
+	echo "
+${bold}Performing fresh git pull of akutils_RADseq_utility.${normal}
+	"
+	git pull
+	wait
+	fi
+
 ## Replace user-defined sequences from backed up primer database if necessary
 	if [[ -f "$repodir/akutils_resources/primer_sequences.bak" ]]; then
 	sort primer_sequences.txt primer_sequences.bak | uniq -u >> primer_sequences.txt
 	fi
 
 	echo "
-${bold}git pull command complete.${normal}
+${bold}git pull command(s) complete.${normal}
 If new functions were added, you may need to either open a new terminal window,
 or issue the following command:
 
