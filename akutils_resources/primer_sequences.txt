@@ -1,3 +1,12 @@
+#
+#
+#	akutils primer sequences list
+#
+#	add or remove sequences with akutils primer_file command
+#
+#	press q to exit this screen
+#
+#
 #PrimerName	PrimerSequence (IUPAC degeneracies OK)
 1391F	GTACACACCGCCCGTC
 926R	CCGYCAATTYMTTTRAGTTT
@@ -18,4 +27,4 @@ LR0R	ACCCGCTGAACTTAAGC
 LR3	CCGTGTTTCAAGACGGG
 P5	AATGATACGGCGACCACCGAGA
 P7	CAAGCAGAAGACGGCATACGAGAT
-WANDA	CAGCCGCGGTAATTCCAGCT	
+WANDA	CAGCCGCGGTAATTCCAGCT
