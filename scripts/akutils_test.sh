@@ -220,7 +220,7 @@ $runtime
 	echo "
 ***** Test of strip_primers command.
 ***** Command:
-akutils strip_primers $testdir/resources/primers.16S.ITS.fa $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq" >> $log
+akutils strip_primers 1 $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq" >> $log
 	if [[ ! -f $testdir/index1.fq ]]; then
 	cp $testdir/raw_data/idx.trim.fastq $testdir/index1.fq
 	fi
@@ -233,12 +233,19 @@ akutils strip_primers $testdir/resources/primers.16S.ITS.fa $testdir/read1.fq $t
 	if [[ -d $testdir/strip_primers_out ]]; then
 	rm -r $testdir/strip_primers_out
 	fi
-
-	akutils strip_primers $testdir/resources/primers.16S.ITS.fa $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq 1>$testdir/std_out 2>$testdir/std_err || true
-	wait
-	if [[ ! -f $testdir/strip_primers_out/index1.noprimers.fastq ]] && [[ -f $testdir/strip_primers_out/index1.fastq ]]; then
-	mv $testdir/strip_primers_out/index1.fastq $testdir/strip_primers_out/index1.noprimers.fastq
+	if [[ ! -f $testdir/primer_file.txt ]]; then
+	cp $repodir/akutils_resources/primer_file.test $testdir/primer_file.txt
 	fi
+
+	cd $testdir
+	akutils strip_primers 1 $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq 1>$testdir/std_out 2>$testdir/std_err || true
+	wait
+
+	## Rename outputs for phix test
+	mv $testdir/strip_primers_out/index1.noprimers.fq $testdir/strip_primers_out/index1.noprimers.fastq
+	mv $testdir/strip_primers_out/read1.noprimers.fq $testdir/strip_primers_out/read1.noprimers.fastq
+	mv $testdir/strip_primers_out/read2.noprimers.fq $testdir/strip_primers_out/read2.noprimers.fastq
+
 	echo "
 ***** strip_primers std_out:
 	" >> $log
@@ -276,6 +283,7 @@ $runtime
 	" >> $log
 	echo "$runtime
 	"
+	cd $workdir
 
 ## Test of phix_filtering command
 	res1=$(date +%s.%N)
