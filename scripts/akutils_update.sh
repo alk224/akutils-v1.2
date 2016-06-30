@@ -74,7 +74,7 @@ ${bold}Performing fresh git pull of akutils_RADseq_utility.${normal}
 
 ## Replace user-defined sequences from backed up primer database if necessary
 	if [[ -f "$repodir/akutils_resources/primer_sequences.bak" ]]; then
-	sort primer_sequences.txt primer_sequences.bak | uniq -u >> primer_sequences.txt
+	sort $repodir/akutils_resources/primer_sequences.txt $repodir/akutils_resources/primer_sequences.bak | uniq -u >> $repodir/akutils_resources/primer_sequences.txt
 	fi
 
 	echo "
