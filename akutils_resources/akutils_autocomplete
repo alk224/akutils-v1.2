@@ -12,7 +12,7 @@ _akutils()
 	pick_otus align_and_tree core_diversity
 	phix_filtering strip_primers format_database test
 	test_result join_paired_reads tutorial index_groomer
-	update
+	update primer_list primer_file
         "
 
   ## Complete available akutils command arguments
@@ -35,7 +35,11 @@ _akutils()
 	  COMPREPLY=( $(compgen -W "${sub}" -- ${cur}) )
 	  ;;
 	strip_primers)
-	  local sub="help"
+	  local sub="help 0 1 2"
+	  COMPREPLY=( $(compgen -W "${sub}" -- ${cur}) )
+	  ;;
+	primer_file)
+	  local sub=""
 	  COMPREPLY=( $(compgen -W "${sub}" -- ${cur}) )
 	  ;;
 	phix_filtering)
