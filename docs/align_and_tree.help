@@ -31,6 +31,11 @@ Targets:
 	otu picking directory	-- will run on rep set within directory
 	ALL			-- will sequentially operate on all otu
 					picking directories present
+
+Configurable settings (akutils config file):
+	Alignment_template	Used only in 16S mode
+	Alignment_lanemask	Used only in 16S mode
+
 Examples:
 	akutils align_tree_workflow 16S swarm_otus_d1
 	akutils align_tree_workflow 16S ALL
