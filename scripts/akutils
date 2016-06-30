@@ -216,6 +216,22 @@ akutils test
 	exit 0
 	fi
 
+## Check whether user supplied primer_list.  If yes, run primer_list.
+	if [[ "$1" == "primer_list" ]]; then
+		less $repodir/akutils_resources/primer_sequences.txt
+	exit 0
+	fi
+
+## Check whether user supplied primer_file.  If yes, run primer_file or display specific usage or help if specified.
+	if [[ "$1" == "primer_file" ]]; then
+		if [[ "$2" == "help" ]]; then
+		less $repodir/docs/primer_file.help
+		exit 0
+		fi
+	bash $scriptdir/primer_file.sh $stdout $stderr $randcode $configfile $2 $3 $4
+	exit 0
+	fi
+
 ## Check whether user supplied strip_primers.  If yes, run strip_primers or display specific usage or help if specified.
 	if [[ "$1" == "strip_primers" ]]; then
 		if [[ -z "$2" ]]; then
@@ -223,6 +239,9 @@ akutils test
 		exit 0
 		elif [[ "$2" == "help" ]]; then
 		less $repodir/docs/strip_primers.help
+		exit 0
+		elif [[ "$#" -le "2" ]]; then
+		cat $repodir/docs/strip_primers.usage
 		exit 0
 		fi
 	bash $scriptdir/strip_primers.sh $stdout $stderr $randcode $configfile $2 $3 $4 $5 $6
