@@ -41,6 +41,11 @@ ${bold}Performing fresh git pull of akutils repository.${normal}
 	git pull
 	wait
 
+## Replace user-defined sequences from backed up primer database if necessary
+	if [[ -f "$repodir/akutils_resources/primer_sequences.bak" ]]; then
+	sort primer_sequences.txt primer_sequences.bak | uniq -u >> primer_sequences.txt
+	fi
+
 	echo "
 ${bold}git pull command complete.${normal}
 If new functions were added, you may need to either open a new terminal window,
