@@ -39,3 +39,7 @@ mapcats.sh <mapping_file>
 Processors to use:
 	An integer value. The number of CPU cores to utilize.
 
+Configurable settings (akutils config file):
+	Tree			-- AUTO or specify a tree file
+	Rarefaction_depth	-- AUTO (lowest count) or specify a value
+
