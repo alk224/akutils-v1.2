@@ -125,6 +125,7 @@ No sequence entered. No changes made. Exiting.
 		sed -i "/^$/d" primer_file.txt
 		printf "\n${primername}\t${primerseq}\n" >> $repodir/akutils_resources/primer_sequences.txt
 		sed -i "/^$/d" $repodir/akutils_resources/primer_sequences.txt
+		cp $repodir/akutils_resources/primer_sequences.txt $repodir/akutils_resources/primer_sequences.bak
 		echo "
 Primer $primername has been added to your primer file. This file now contains:"
 		cat primer_file.txt
@@ -161,6 +162,7 @@ in your primer database:
 	"
 	read primername
 	sed -i "/$primername/d" $repodir/akutils_resources/primer_sequences.txt
+	cp $repodir/akutils_resources/primer_sequences.txt $repodir/akutils_resources/primer_sequences.bak
 	echo "
 Primer $primername has been removed from your primer database. This file now contains:"
 	cat $repodir/akutils_resources/primer_sequences.txt
