@@ -46,9 +46,9 @@ If you find any problems or have ideas for useful functionality, you can [submit
 
 **Updating:**  
 
-If (when) I make useful changes, I will push them to the repo. To benefit from these changes, navigate to your akutils directory and type:  
+If (when) I make useful changes, I will push them to the repo. To benefit from these changes, execute:  
 
-     git pull  
+     akutils update
 
 After this, check your configuration:  
 
