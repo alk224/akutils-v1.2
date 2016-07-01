@@ -62,21 +62,3 @@ Andrew Krohn. (2016). akutils-v1.2: Facilitating analyses of microbial communiti
 
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.56764.svg)](http://dx.doi.org/10.5281/zenodo.56764)  
 
-**Things to change before next release:**  
-
- 1) Reorganize commands into a master script (completed 11/20/15)  
- 2) Command autocompletion (completed 11/20/15)  
- 3) Autodetection of single or dual indexes during joining (completed 11/23/15)  
- 4) Updated help and usage screens (in progress)  
- 5) Updated wiki (completed Feb 2016)  
- 6) Add ghost-tree to ITS align_and_tree command (made separate command 1/31/16)  
- 7) Add tree as configurable variable (completed 1/30/16)  
- 8) Improved workflow testing (completed Feb 2016)  
- 9) Improved core_diversity interface with collapsible panels (completed 12/15/15)  
-10) Phyloseq output in addition to QIIME output (in progress)  
-11) Full workflows for both rarefied and normalized data (completed (12/23/15)  
-12) Better handling of input tables, requiring only a single input (completed 12/23/15)  
-13) Better workflow logging (in progress)  
-14) One line commands to modify config settings (completed Feb 2016)  
-15) Ancom functions (completed Feb 2016)  
-16) Fold Ancom into core_diversity workflow  
