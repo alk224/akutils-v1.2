@@ -58,7 +58,7 @@ If new configurable options are available, you will be instructed to run the con
 
 **Citing akutils:**  
 
-Andrew Krohn. (2015). akutils: Facilitating analyses of microbial communities through QIIME. Zenodo. 10.5281/zenodo.18615  
+Andrew Krohn (2016). akutils-v1.2: Facilitating analyses of microbial communities through QIIME. https://zenodo.org/record/56764
 
 **Things to change before next release:**  
 
