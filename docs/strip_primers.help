@@ -16,12 +16,17 @@ akutils strip_primers <mode> <read1> <read2> <index1> <index2>
 	<mode> -- 0, 1, or 2. This indicates the number of index files supplied.
 
 Output:
-Resulting files will be output to a subdirectory called strip_primers_out.
+Resulting files will be output to a subdirectory called strip_primers_out
+and appended with the primers issued with the command.
 
 Requires primer_file.txt to function. If not present, will call the primer_file
 function in akutils to produce one. Can modify this file further (or create a
 new one) with the the primer_file command:
 	akutils primer_file
+
+If removing primers from 3' end of reads, use reverse/complemented sequences. In
+the akutils primer database these have the "rc" suffix. This is the most common
+usage.
 
 Configurable settings (akutils config file):
 	Cutadapt_errors		-- Amount of primer mismatch allowed (decimal)
