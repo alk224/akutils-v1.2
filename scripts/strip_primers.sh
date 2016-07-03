@@ -74,7 +74,6 @@ trap finish EXIT
 	normal=$(tput sgr0)
 	underline=$(tput smul)
 
-	outdir=$workdir/strip_primers_out
 	date0=$(date +%Y%m%d_%I%M%p)
 	res1=$(date +%s.%N)
 
@@ -114,13 +113,21 @@ No valid primers in primer file. Exiting.
 		fi
 		if [[ "$primercount" -eq "1" ]]; then
 		primer1=$(head -1 $primers | cut -f2)
+		primer1name=$(head -1 $primers | cut -f1)
+
+		## Set output directory with primer names
+		outdir="$workdir/strip_primers_out_${primer1name}"
 		elif [[ "$primercount" -eq "2" ]]; then
 		primer1=$(head -1 $primers | cut -f2)
+		primer1name=$(head -1 $primers | cut -f1)
 		primer2=$(head -2 $primers | tail -1 | cut -f2)
+		primer2name=$(head -2 $primers | tail -1 | cut -f1)
+
+		## Set output directory with primer names
+		outdir="$workdir/strip_primers_out_${primer1name}-${primer2name}"
 		fi
 	fi
 
-	echo ""
 ## Check for valid mode or else exit.
 	if [[ "$mode" == "0" ]] || [[ "$mode" == "1" ]] || [[ "$mode" == "2" ]]; then
 	echo "Selected mode: ${bold}${mode} index files${normal}"
@@ -217,6 +224,7 @@ No files identified for primer removal. Exiting.
 
 
 ## Set output variable.
+
 	output="$outdir/$fastqbase.${primer}-removed.${mode}prime.$fastqext"
 
 ## Check for output directory.
@@ -250,6 +258,11 @@ Mode: $mode index file(s)" >> $log
 Primers to filter from reads:" >> $log
 	cat $primers >> $log
 	echo "" >> $log
+
+## Copy primer file into output directory
+	cp $primers $outdir/
+
+	echo ""
 
 ## Cutadapt command
 	echo "
