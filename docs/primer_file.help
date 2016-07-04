@@ -21,7 +21,7 @@ To view the list of available primer sequences in the akutils database, you can
 call the primer list with:
 	akutils primer_list
 
-	-- primer sequences with "rc" suffix are reverse-complemented and are
-		appropriate for most 3' primer/adapter removal tasks
-	-- use "q" to exit screen
+	-- primer sequence names with "rc" suffix indicate reverse-complemented
+		sequences, appropriate for most 3' primer/adapter removal tasks.
+	-- use "q" to exit screen.
 
