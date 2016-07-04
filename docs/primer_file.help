@@ -1,0 +1,19 @@
+
+*******************************
+***                         ***
+***   akutils primer_file   ***
+***                         ***
+*******************************
+
+Interactive utility to produce a primer_File.txt for use in akutils strip_primers
+
+Usage:
+	akutils primer_file
+
+Will start the interactive utility for producing a primer_file.txt which enables
+akutils strip_primers.
+
+Can be used to create or modify an existing file (in working directory) or to
+modify your akutils primer database. All text-based options must have correct
+spelling (caps-sensitive) or the script will exit.
+
