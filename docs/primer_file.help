@@ -17,3 +17,11 @@ Can be used to create or modify an existing file (in working directory) or to
 modify your akutils primer database. All text-based options must have correct
 spelling (caps-sensitive) or the script will exit.
 
+To view the list of available primer sequences in the akutils database, you can
+call the primer list with:
+	akutils primer_list
+
+	-- primer sequences with "rc" suffix are reverse-complemented and are
+		appropriate for most 3' primer/adapter removal tasks
+	-- use "q" to exit screen
+
