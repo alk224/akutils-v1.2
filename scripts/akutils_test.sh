@@ -230,8 +230,8 @@ akutils strip_primers 1 $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq" 
 	if [[ ! -f $testdir/read2.fq ]]; then
 	cp $testdir/raw_data/r2.trim.fastq $testdir/read2.fq
 	fi
-	if [[ -d $testdir/strip_primers_out ]]; then
-	rm -r $testdir/strip_primers_out
+	if [[ -d $testdir/strip_primers_out_515F-806R ]]; then
+	rm -r $testdir/strip_primers_out_515F-806R
 	fi
 	if [[ ! -f $testdir/primer_file.txt ]]; then
 	cp $repodir/akutils_resources/primer_file.test $testdir/primer_file.txt
@@ -242,9 +242,9 @@ akutils strip_primers 1 $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq" 
 	wait
 
 	## Rename outputs for phix test
-	mv $testdir/strip_primers_out/index1.noprimers.fq $testdir/strip_primers_out/index1.noprimers.fastq
-	mv $testdir/strip_primers_out/read1.noprimers.fq $testdir/strip_primers_out/read1.noprimers.fastq
-	mv $testdir/strip_primers_out/read2.noprimers.fq $testdir/strip_primers_out/read2.noprimers.fastq
+	mv $testdir/strip_primers_out_515F-806R/index1.noprimers.fq $testdir/strip_primers_out_515F-806R/index1.noprimers.fastq
+	mv $testdir/strip_primers_out_515F-806R/read1.noprimers.fq $testdir/strip_primers_out_515F-806R/read1.noprimers.fastq
+	mv $testdir/strip_primers_out_515F-806R/read2.noprimers.fq $testdir/strip_primers_out_515F-806R/read2.noprimers.fastq
 
 	echo "
 ***** strip_primers std_out:
@@ -292,14 +292,14 @@ $runtime
 	echo "
 ***** Test of phix_filtering command.
 ***** Command:
-akutils phix_filtering $testdir/phix_filtering_out $testdir/map.test.txt $testdir/strip_primers_out/index1.noprimers.fastq $testdir/strip_primers_out/read1.noprimers.fastq $testdir/strip_primers_out/read2.noprimers.fastq" >> $log
+akutils phix_filtering $testdir/phix_filtering_out $testdir/map.test.txt $testdir/strip_primers_out_515F-806R/index1.noprimers.fastq $testdir/strip_primers_out_515F-806R/read1.noprimers.fastq $testdir/strip_primers_out_515F-806R/read2.noprimers.fastq" >> $log
 	if [[ -d $testdir/phix_filtering_out ]]; then
 	rm -r $testdir/phix_filtering_out
 	fi
 	if [[ ! -f $testdir/map.test.txt ]]; then
 	cp $testdir/raw_data/map.mock.16S.nodils.txt $testdir/map.test.txt
 	fi
-	akutils phix_filtering $testdir/phix_filtering_out $testdir/map.test.txt $testdir/strip_primers_out/index1.noprimers.fastq $testdir/strip_primers_out/read1.noprimers.fastq $testdir/strip_primers_out/read2.noprimers.fastq 1>$testdir/std_out 2>$testdir/std_err 2>&1 || true
+	akutils phix_filtering $testdir/phix_filtering_out $testdir/map.test.txt $testdir/strip_primers_out_515F-806R/index1.noprimers.fastq $testdir/strip_primers_out_515F-806R/read1.noprimers.fastq $testdir/strip_primers_out_515F-806R/read2.noprimers.fastq 1>$testdir/std_out 2>$testdir/std_err 2>&1 || true
 	wait
 	echo "
 ***** phix_filtering std_out:
