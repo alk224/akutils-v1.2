@@ -170,7 +170,7 @@ akutils test
 		cat $repodir/docs/core_diversity.usage
 		exit 0
 		elif [[ "$2" == "help" ]]; then
-		cat $repodir/docs/core_diversity.help
+		less $repodir/docs/core_diversity.help
 		exit 0
 		fi
 	bash $scriptdir/core_diversity.sh $stdout $stderr $randcode $configfile $2 $3 $4 $5
@@ -183,7 +183,7 @@ akutils test
 		cat $repodir/docs/index_groomer.usage
 		exit 0
 		elif [[ "$2" == "help" ]]; then
-		cat $repodir/docs/index_groomer.help
+		less $repodir/docs/index_groomer.help
 		exit 0
 		fi
 	bash $scriptdir/index_groomer.sh $stdout $stderr $randcode $configfile $2 $3 $4 $5

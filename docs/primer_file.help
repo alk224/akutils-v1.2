@@ -1,0 +1,27 @@
+
+*******************************
+***                         ***
+***   akutils primer_file   ***
+***                         ***
+*******************************
+
+Interactive utility to produce a primer_File.txt for use in akutils strip_primers
+
+Usage:
+	akutils primer_file
+
+Will start the interactive utility for producing a primer_file.txt which enables
+akutils strip_primers.
+
+Can be used to create or modify an existing file (in working directory) or to
+modify your akutils primer database. All text-based options must have correct
+spelling (caps-sensitive) or the script will exit.
+
+To view the list of available primer sequences in the akutils database, you can
+call the primer list with:
+	akutils primer_list
+
+	-- primer sequence names with "rc" suffix indicate reverse-complemented
+		sequences, appropriate for most 3' primer/adapter removal tasks.
+	-- use "q" to exit screen.
+

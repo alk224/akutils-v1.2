@@ -27,6 +27,9 @@ Utility commands:
 	strip_primers		-- remove primer sequences from raw data
 	phix_filtering		-- remove PhiX contamination from raw data
 	join_paired_reads	-- join raw paired end data
+	index_groomer		-- attempt to correct errors in index reads
+	primer_list		-- list primers present in akutils database
+	primer_file		-- build primer file for use with strip_primers
 
 Configuration commands:
 	configure		-- configure akutils settings
