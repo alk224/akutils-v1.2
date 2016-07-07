@@ -213,7 +213,7 @@ Current value: $currentpartition
 #	"
 #	fi
 
-	sed -i "s@--output=.*@--output=$workdir/std_err_${jobname}.txt@g" $slurm
+	sed -i "s@--output=.*@--output=$workdir/output_slurmjob_${jobname}.txt@g" $slurm
 	sed -i "s@--workdir=.*@--workdir=$workdir/@g" $slurm
 
 
