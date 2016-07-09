@@ -448,6 +448,8 @@ Cutadapt command:
 fi
 
 ## Count empty fastq records from output and filter if necessary
+	echo "
+Checking for empty fastq records in filtered output."
 	empty1="$tempdir/${randcode}_empty1"
 	empty2="$tempdir/${randcode}_empty2"
 	empty3="$tempdir/${randcode}_empty3"
