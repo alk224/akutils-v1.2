@@ -19,7 +19,7 @@ akutils strip_primers <mode> <read1> <read2> <index1> <index2>
 
 Output:
 Resulting files will be output to a subdirectory called strip_primers_out
-and appended with the primers issued with the command.
+and appended with the primers and filtering mode.
 
 Examples:
 akutils strip_primers 13 read1.fq read2.fq index1.fq
