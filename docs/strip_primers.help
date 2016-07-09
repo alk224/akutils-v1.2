@@ -34,11 +34,23 @@ akutils strip_primers 1B read1.fq read2.fq index1.fq
 
 	1B denotes a single index file and primer trimming at both ends
 
+Primer file:
 Requires primer_file.txt to function. If not present, will call the primer_file
 function in akutils to produce one. Can modify this file further (or create a
 new one) with the the primer_file command:
 	akutils primer_file
 
+For directional primer removal (3' or 5' modes), primer name used to generate
+first sequencing read should be first in the file, primer name used to generate
+second sequencing read should be second in the file. In the example below, the
+primer file contents are appropriate for 16S V4 sequencing when the first read
+is generated with 515F and the second read is generated with 806R.
+
+Example primer file contents:
+515Frc  GTGCCAGCMGCCGCGGTAA
+806Rrc  GGACTACHVGGGTWTCTAAT
+
+Sequence orientation:
 If removing primers from 3' end of reads, use reverse/complemented sequences. In
 the akutils primer database these have the "rc" suffix. This is the most common
 usage.
