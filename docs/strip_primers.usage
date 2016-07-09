@@ -7,5 +7,7 @@ akutils strip_primers <mode> <read1> <read2> <index1> <index2>
 	Requires a primer file to be present (primer_file.txt).
 		-- only processes up to the first two primers in the file.
 	Must supply at least one valid fastq file with .fq or .fastq extension.
-	<mode> -- 0, 1, or 2. This indicates the number of index files supplied.
+	<mode> -- Two digits denoting trimming mode and count of supplied indexes.
+		First digit:	0, 1, or 2 -- the number of index files supplied.
+		Second digit:	3, 5, or B -- end to trim primers from.
 
