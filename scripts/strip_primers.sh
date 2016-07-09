@@ -478,7 +478,7 @@ $emptycount empty fastq records found. Filtering from read pairs and indexes." >
 		mv $out1 $outdir/$file1base.temp.fastq
 		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4
 		wait
-		mv $outdir/$file1base.noprimers.fastq $out1
+		mv $outdir/$file1base.noprimers.fastq $out1 2>/dev/null
 		rm $outdir/$file1base.temp.fastq
 		fi
 
@@ -488,8 +488,8 @@ $emptycount empty fastq records found. Filtering from read pairs and indexes." >
 		( filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4 ) &
 		( filter_fasta.py -f $outdir/$file2base.temp.fastq -o $outdir/$file2base.noprimers.fastq -n --sample_id_fp $empty4 ) &
 		wait
-		mv $outdir/$file1base.noprimers.fastq $out1
-		mv $outdir/$file2base.noprimers.fastq $out2
+		mv $outdir/$file1base.noprimers.fastq $out1 2>/dev/null
+		mv $outdir/$file2base.noprimers.fastq $out2 2>/dev/null
 		rm $outdir/$file1base.temp.fastq
 		rm $outdir/$file2base.temp.fastq
 		fi
@@ -500,8 +500,8 @@ $emptycount empty fastq records found. Filtering from read pairs and indexes." >
 		( filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4 ) &
 		( filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n --sample_id_fp $empty4 ) &
 		wait
-		mv $outdir/$file1base.noprimers.fastq $out1
-		mv $outdir/$idx1base.noprimers.fastq $outdir/$idx1base.noprimers.$idx1ext
+		mv $outdir/$file1base.noprimers.fastq $out1 2>/dev/null
+		mv $outdir/$idx1base.noprimers.fastq $outdir/$idx1base.noprimers.$idx1ext 2>/dev/null
 		rm $outdir/$file1base.temp.fastq
 		rm $outdir/$idx1base.temp.fastq
 		fi
@@ -514,9 +514,9 @@ $emptycount empty fastq records found. Filtering from read pairs and indexes." >
 		( filter_fasta.py -f $outdir/$file2base.temp.fastq -o $outdir/$file2base.noprimers.fastq -n --sample_id_fp $empty4 ) &
 		( filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n --sample_id_fp $empty4 ) &
 		wait
-		mv $outdir/$file1base.noprimers.fastq $out1
-		mv $outdir/$file2base.noprimers.fastq $out2
-		mv $outdir/$idx1base.noprimers.fastq $outdir/$idx1base.noprimers.$idx1ext
+		mv $outdir/$file1base.noprimers.fastq $out1 2>/dev/null
+		mv $outdir/$file2base.noprimers.fastq $out2 2>/dev/null
+		mv $outdir/$idx1base.noprimers.fastq $outdir/$idx1base.noprimers.$idx1ext 2>/dev/null
 		rm $outdir/$file1base.temp.fastq
 		rm $outdir/$file2base.temp.fastq
 		rm $outdir/$idx1base.temp.fastq
@@ -530,9 +530,9 @@ $emptycount empty fastq records found. Filtering from read pairs and indexes." >
 		( filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n --sample_id_fp $empty4 ) &
 		( filter_fasta.py -f $outdir/$idx2base.temp.fastq -o $outdir/$idx2base.noprimers.fastq -n --sample_id_fp $empty4 ) &
 		wait
-		mv $outdir/$file1base.noprimers.fastq $out1
-		mv $outdir/$idx1base.noprimers.fastq $outdir/$idx1base.noprimers.$idx1ext
-		mv $outdir/$idx2base.noprimers.fastq $outdir/$idx2base.noprimers.$idx2ext
+		mv $outdir/$file1base.noprimers.fastq $out1 2>/dev/null
+		mv $outdir/$idx1base.noprimers.fastq $outdir/$idx1base.noprimers.$idx1ext 2>/dev/null
+		mv $outdir/$idx2base.noprimers.fastq $outdir/$idx2base.noprimers.$idx2ext 2>/dev/null
 		rm $outdir/$file1base.temp.fastq
 		rm $outdir/$idx1base.temp.fastq
 		rm $outdir/$idx2base.temp.fastq
@@ -548,10 +548,10 @@ $emptycount empty fastq records found. Filtering from read pairs and indexes." >
 		( filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n --sample_id_fp $empty4 ) &
 		( filter_fasta.py -f $outdir/$idx2base.temp.fastq -o $outdir/$idx2base.noprimers.fastq -n --sample_id_fp $empty4 ) &
 		wait
-		mv $outdir/$file1base.noprimers.fastq $out1
-		mv $outdir/$file2base.noprimers.fastq $out2
-		mv $outdir/$idx1base.noprimers.fastq $outdir/$idx1base.noprimers.$idx1ext
-		mv $outdir/$idx2base.noprimers.fastq $outdir/$idx2base.noprimers.$idx2ext
+		mv $outdir/$file1base.noprimers.fastq $out1 2>/dev/null
+		mv $outdir/$file2base.noprimers.fastq $out2 2>/dev/null
+		mv $outdir/$idx1base.noprimers.fastq $outdir/$idx1base.noprimers.$idx1ext 2>/dev/null
+		mv $outdir/$idx2base.noprimers.fastq $outdir/$idx2base.noprimers.$idx2ext 2>/dev/null
 		rm $outdir/$file1base.temp.fastq
 		rm $outdir/$file2base.temp.fastq
 		rm $outdir/$idx1base.temp.fastq
