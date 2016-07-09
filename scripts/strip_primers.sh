@@ -142,7 +142,10 @@ No valid primers in primer file. Exiting.
 
 ## Check for valid mode1 or else exit.
 	if [[ "$mode0" == "03" ]] || [[ "$mode0" == "05" ]] || [[ "$mode0" == "0B" ]] || [[ "$mode0" == "13" ]] || [[ "$mode0" == "15" ]] || [[ "$mode0" == "1B" ]] || [[ "$mode0" == "23" ]] || [[ "$mode0" == "25" ]] || [[ "$mode0" == "2B" ]]; then
-	echo "Selected mode: ${bold}${mode0}${normal}
+	echo "
+${bold}akutils strip_primers command${normal}
+
+Selected mode: ${bold}${mode0}${normal}
 Index files supplied: ${bold}${mode1}${normal}"
 		if [[ "$mode2" == "3" ]]; then
 		echo "Trimming mode: ${bold}3-prime${normal} (should be using reverse/complemented primer sequences)"
@@ -290,8 +293,7 @@ Primers to filter from reads:" >> $log
 
 ## 3' trimming (mode2 = 3)
 if [[ "$mode2" == "3" ]]; then
-	echo "
-Issuing cutadapt command. This can take a while, so please be patient.
+	echo "Issuing cutadapt command. This can take a while, so please be patient.
 
 ${bold}Command:${normal}"
 
@@ -343,8 +345,7 @@ fi
 
 ## 5' trimming (mode2 = 5)
 if [[ "$mode2" == "5" ]]; then
-	echo "
-Issuing cutadapt command. This can take a while, so please be patient.
+	echo "Issuing cutadapt command. This can take a while, so please be patient.
 
 ${bold}Command:${normal}"
 
@@ -396,8 +397,7 @@ fi
 
 ## Trimming from both ends (mode2 = B)
 if [[ "$mode2" == "B" ]]; then
-	echo "
-Issuing cutadapt command. This can take a while, so please be patient.
+	echo "Issuing cutadapt command. This can take a while, so please be patient.
 
 ${bold}Command:${normal}"
 
