@@ -13,11 +13,26 @@ akutils strip_primers <mode> <read1> <read2> <index1> <index2>
 	Requires a primer file to be present (primer_file.txt).
 		-- only processes up to the first two primers in the file.
 	Must supply at least one valid fastq file with .fq or .fastq extension.
-	<mode> -- 0, 1, or 2. This indicates the number of index files supplied.
+	<mode> -- Two digits denoting trimming mode and count of supplied indexes.
+		First digit:	0, 1, or 2 -- the number of index files supplied.
+		Second digit:	3, 5, or B -- end to trim primers from.
 
 Output:
 Resulting files will be output to a subdirectory called strip_primers_out
 and appended with the primers issued with the command.
+
+Examples:
+akutils strip_primers 13 read1.fq read2.fq index1.fq
+
+	13 denotes a single index file and 3' trimming (most common)
+
+akutils strip_primers 25 read1.fq read2.fq index1.fq index2.fq
+
+	25 denotes two index files and anchored 5' trimming
+
+akutils strip_primers 1B read1.fq read2.fq index1.fq
+
+	1B denotes a single index file and primer trimming at both ends
 
 Requires primer_file.txt to function. If not present, will call the primer_file
 function in akutils to produce one. Can modify this file further (or create a
@@ -27,6 +42,13 @@ new one) with the the primer_file command:
 If removing primers from 3' end of reads, use reverse/complemented sequences. In
 the akutils primer database these have the "rc" suffix. This is the most common
 usage.
+
+5' trimming should use forward sequences. 5' trimming is needed when the start
+of your sequence contains a PCR primer. This happens when "universal" sequencing
+primers are used.
+
+If your sequence could occur on either end, use the "B" option. Will search the
+same sequence on both ends (does not reverse complement).
 
 Configurable settings (akutils config file):
 	Cutadapt_errors		-- Amount of primer mismatch allowed (decimal)
