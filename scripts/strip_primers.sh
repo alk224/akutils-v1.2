@@ -61,7 +61,7 @@ trap finish EXIT
 	stderr="$2"
 	randcode="$3"
 	config="$4"
-	mode="$5"
+	mode0="$5"
 	fastq1="$6"
 	fastq2="$7"
 	fastq3="$8"
@@ -69,6 +69,9 @@ trap finish EXIT
 
 	fastqext="${fastq1##*.}"
 	fastqbase=$(basename $fastq1 .$fastqext)
+
+	mode1=${mode0:0:1}
+	mode2=${mode0:1:2}
 
 	bold=$(tput bold)
 	normal=$(tput sgr0)
@@ -89,6 +92,15 @@ or simply call the correct module. Exiting.
 	"
 	exit 1
 	fi
+
+		## Parse trimming mode (3, 5, or B)
+		if [[ "$mode2" == "3" ]]; then
+		trim="3prime"
+		elif [[ "$mode2" == "5" ]]; then
+		trim="5prime-anchored"
+		elif [[ "$mode2" == "B" ]]; then
+		trim="both-ends"
+		fi
 
 ## Check for presence of primer file. Exit if not present and suggest primer_file command.
 	if [[ ! -f "primer_file.txt" ]]; then
@@ -115,8 +127,8 @@ No valid primers in primer file. Exiting.
 		primer1=$(head -1 $primers | cut -f2)
 		primer1name=$(head -1 $primers | cut -f1)
 
-		## Set output directory with primer names
-		outdir="$workdir/strip_primers_out_${primer1name}"
+		## Set output directory with primer names and trimming mode
+		outdir="$workdir/strip_primers_out_${primer1name}_${trim}"
 		elif [[ "$primercount" -eq "2" ]]; then
 		primer1=$(head -1 $primers | cut -f2)
 		primer1name=$(head -1 $primers | cut -f1)
@@ -124,16 +136,26 @@ No valid primers in primer file. Exiting.
 		primer2name=$(head -2 $primers | tail -1 | cut -f1)
 
 		## Set output directory with primer names
-		outdir="$workdir/strip_primers_out_${primer1name}-${primer2name}"
+		outdir="$workdir/strip_primers_out_${primer1name}-${primer2name}_${trim}"
 		fi
 	fi
 
-## Check for valid mode or else exit.
-	if [[ "$mode" == "0" ]] || [[ "$mode" == "1" ]] || [[ "$mode" == "2" ]]; then
-	echo "Selected mode: ${bold}${mode} index files${normal}"
+## Check for valid mode1 or else exit.
+	if [[ "$mode0" == "03" ]] || [[ "$mode0" == "05" ]] || [[ "$mode0" == "0B" ]] || [[ "$mode0" == "13" ]] || [[ "$mode0" == "15" ]] || [[ "$mode0" == "1B" ]] || [[ "$mode0" == "23" ]] || [[ "$mode0" == "25" ]] || [[ "$mode0" == "2B" ]]; then
+	echo "Selected mode: ${bold}${mode0}${normal}
+Index files supplied: ${bold}${mode1}${normal}"
+		if [[ "$mode2" == "3" ]]; then
+		echo "Trimming mode: ${bold}3-prime${normal} (should be using reverse/complemented primer sequences)"
+		elif [[ "$mode2" == "5" ]]; then
+		echo "Trimming mode: ${bold}5-prime anchored${normal} (forward primer should begin the read)"
+		elif [[ "$mode2" == "B" ]]; then
+		echo "Trimming mode: ${bold}Bidirectional${normal}"
+		fi
+
 	else
 	echo "
-Invalid mode set. Must be ${bold}0, 1 or 2${normal}. Exiting.
+Invalid mode set. Must be ${bold}03, 05, 0B, 13, 15, 1B, 23, 25, or 2B${normal}.
+Exiting.
 	"
 	cat $repodir/docs/strip_primers.usage
 	exit 1
@@ -167,7 +189,7 @@ Check these files and try again:"
 	incount=$(cat $fqtemp | wc -l)
 
 ## Count number of files to filter and make list
-	fcount=$(($incount-$mode))
+	fcount=$(($incount-$mode1))
 	if [[ "$fcount" -ge "3" ]]; then
 	filtercount="2"
 	else
@@ -183,13 +205,13 @@ No files identified for primer removal. Exiting.
 	filterlist="$tempdir/${randcode}_filterlist"
 	head -${filtercount} $fqtemp >> $filterlist
 	indexlist="$tempdir/${randcode}_indexlist"
-	tail -${mode} $fqtemp >> $indexlist
-	if [[ "$mode" == "1" ]]; then
+	tail -${mode1} $fqtemp >> $indexlist
+	if [[ "$mode1" == "1" ]]; then
 	idx1=$(head -1 $indexlist)
 	idx1ext="${idx1##*.}"
 	idx1base=$(basename $idx1 .$idx1ext)
 	fi
-	if [[ "$mode" == "2" ]]; then
+	if [[ "$mode1" == "2" ]]; then
 	idx1=$(head -1 $indexlist)
 	idx1ext="${idx1##*.}"
 	idx1base=$(basename $idx1 .$idx1ext)
@@ -225,7 +247,7 @@ No files identified for primer removal. Exiting.
 
 ## Set output variable.
 
-	output="$outdir/$fastqbase.${primer}-removed.${mode}prime.$fastqext"
+	output="$outdir/$fastqbase.${primer}-removed.${mode1}prime.$fastqext"
 
 ## Check for output directory.
 	if [[ -d $outdir ]]; then
@@ -251,7 +273,7 @@ Input file(s):" >> $log
 Read file(s) to filter primers against:" >> $log
 	cat $filterlist >> $log
 	echo "
-Mode: $mode index file(s)" >> $log
+Mode: $mode1 index file(s)" >> $log
 	echo "Index file(s) to be filtered against read files after primer trimming:" >> $log
 	cat $indexlist >> $log
 	echo "
@@ -265,6 +287,115 @@ Primers to filter from reads:" >> $log
 	echo ""
 
 ## Cutadapt command
+
+## 3' trimming (mode2 = 3)
+if [[ "$mode2" == "3" ]]; then
+	echo "
+Issuing cutadapt command. This can take a while, so please be patient.
+
+${bold}Command:${normal}"
+
+	if [[ "$filtercount" == "1" ]] && [[ "$primercount" == "1" ]]; then
+		echo "
+Cutadapt command:
+	cutadapt -e $errors -a $primer1 -o $out1 $file1
+" >> $log
+		echo "
+	cutadapt -e $errors -a $primer1 -o $out1 $file1"
+	cutadapt -e $errors -a $primer1 -o $out1 $file1 1>$stdout 2>$stderr
+	wait
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
+	fi
+	if [[ "$filtercount" == "1" ]] && [[ "$primercount" == "2" ]]; then
+		echo "
+Cutadapt command:
+	cutadapt -e $errors -a $primer1 -a $primer2 -o $out1 $file1
+" >> $log
+		echo "
+	cutadapt -e $errors -a $primer1 -a $primer2 -o $out1 $file1"
+	cutadapt -e $errors -a $primer1 -a $primer2 -o $out1 $file1 1>$stdout 2>$stderr
+	wait
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
+	fi
+	if [[ "$filtercount" == "2" ]] && [[ "$primercount" == "1" ]]; then
+		echo "
+Cutadapt command:
+	cutadapt -e $errors -a $primer1 -A $primer1 -o $out1 -p $out2 $file1 $file2
+" >> $log
+		echo "
+	cutadapt -e $errors -a $primer1 -A $primer1 -o $out1 -p $out2 $file1 $file2"
+	cutadapt -e $errors -a $primer1 -A $primer1 -o $out1 -p $out2 $file1 $file2 1>$stdout 2>$stderr
+	wait
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
+	fi
+	if [[ "$filtercount" == "2" ]] && [[ "$primercount" == "2" ]]; then
+		echo "
+Cutadapt command:
+	cutadapt -e $errors -a $primer2 -A $primer1 -o $out1 -p $out2 $file1 $file2
+" >> $log
+		echo "
+	cutadapt -e $errors -a $primer2 -A $primer1 -o $out1 -p $out2 $file1 $file2"
+	cutadapt -e $errors -a $primer2 -A $primer1 -o $out1 -p $out2 $file1 $file2 1>$stdout 2>$stderr
+	wait
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
+	fi
+fi
+
+## 5' trimming (mode2 = 5)
+if [[ "$mode2" == "5" ]]; then
+	echo "
+Issuing cutadapt command. This can take a while, so please be patient.
+
+${bold}Command:${normal}"
+
+	if [[ "$filtercount" == "1" ]] && [[ "$primercount" == "1" ]]; then
+		echo "
+Cutadapt command:
+	cutadapt -e $errors -g ^${primer1} -o $out1 $file1
+" >> $log
+		echo "
+	cutadapt -e $errors -g ^${primer1} -o $out1 $file1"
+	cutadapt -e $errors -g ^${primer1} -o $out1 $file1 1>$stdout 2>$stderr
+	wait
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
+	fi
+	if [[ "$filtercount" == "1" ]] && [[ "$primercount" == "2" ]]; then
+		echo "
+Cutadapt command:
+	cutadapt -e $errors -g ^${primer1} -g ^${primer2} -o $out1 $file1
+" >> $log
+		echo "
+	cutadapt -e $errors -g ^${primer1} -g ^${primer2} -o $out1 $file1"
+	cutadapt -e $errors -g ^${primer1} -g ^${primer2} -o $out1 $file1 1>$stdout 2>$stderr
+	wait
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
+	fi
+	if [[ "$filtercount" == "2" ]] && [[ "$primercount" == "1" ]]; then
+		echo "
+Cutadapt command:
+	cutadapt -e $errors -g ^${primer1} -G ^${primer1} -o $out1 -p $out2 $file1 $file2
+" >> $log
+		echo "
+	cutadapt -e $errors -g ^${primer1} -G ^${primer1} -o $out1 -p $out2 $file1 $file2"
+	cutadapt -e $errors -g ^${primer1} -G ^${primer1} -o $out1 -p $out2 $file1 $file2 1>$stdout 2>$stderr
+	wait
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
+	fi
+	if [[ "$filtercount" == "2" ]] && [[ "$primercount" == "2" ]]; then
+		echo "
+Cutadapt command:
+	cutadapt -e $errors -g ^${primer1} -G ^${primer2} -o $out1 -p $out2 $file1 $file2
+" >> $log
+		echo "
+	cutadapt -e $errors -g ^${primer1} -G ^${primer2} -o $out1 -p $out2 $file1 $file2"
+	cutadapt -e $errors -g ^${primer1} -G ^${primer2} -o $out1 -p $out2 $file1 $file2 1>$stdout 2>$stderr
+	wait
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
+	fi
+fi
+
+## Trimming from both ends (mode2 = B)
+if [[ "$mode2" == "B" ]]; then
 	echo "
 Issuing cutadapt command. This can take a while, so please be patient.
 
@@ -314,6 +445,7 @@ Cutadapt command:
 	wait
 	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	fi
+fi
 
 ## Count empty fastq records from output and filter if necessary
 	empty1="$tempdir/${randcode}_empty1"
@@ -332,89 +464,89 @@ Cutadapt command:
 	fi
 
 	if [[ -s $empty3 ]]; then
-	emptycount=$(cat $empty3 | wc -l)
+	sort $empty3 | uniq > $empty4
+	sed -i "s/^@//g" $empty4
+	emptycount=$(cat $empty4 | wc -l)
 	echo "
 ${bold}$emptycount empty fastq records found.${normal} Filtering from read pairs and indexes."
 	echo "
 $emptycount empty fastq records found. Filtering from read pairs and indexes." >> $log
-	sort $empty3 | uniq > $empty4
-	sed -i "s/^@//g" $empty4
 
-		if [[ "$mode" == "0" ]] && [[ "$filtercount" == "1" ]]; then
+		if [[ "$mode1" == "0" ]] && [[ "$filtercount" == "1" ]]; then
 		mv $out1 $outdir/$file1base.temp.fastq
-		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n $empty4
+		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4
 		mv $outdir/$file1base.noprimers.fastq $out1
 		rm $outdir/$file1base.temp.fastq
 		fi
 
-		if [[ "$mode" == "0" ]] && [[ "$filtercount" == "2" ]]; then
+		if [[ "$mode1" == "0" ]] && [[ "$filtercount" == "2" ]]; then
 		mv $out1 $outdir/$file1base.temp.fastq
 		mv $out2 $outdir/$file2base.temp.fastq
-		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n $empty4
+		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4
 		mv $outdir/$file1base.noprimers.fastq $out1
 		rm $outdir/$file1base.temp.fastq
 		mv $out2 $outdir/$file2base.temp.fastq
-		filter_fasta.py -f $outdir/$file2base.temp.fastq -o $outdir/$file2base.noprimers.fastq -n $empty4
+		filter_fasta.py -f $outdir/$file2base.temp.fastq -o $outdir/$file2base.noprimers.fastq -n --sample_id_fp $empty4
 		mv $outdir/$file2base.noprimers.fastq $out2
 		rm $outdir/$file2base.temp.fastq
 		fi
 
-		if [[ "$mode" == "1" ]] && [[ "$filtercount" == "1" ]]; then
+		if [[ "$mode1" == "1" ]] && [[ "$filtercount" == "1" ]]; then
 		mv $out1 $outdir/$file1base.temp.fastq
-		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n $empty4
+		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4
 		mv $outdir/$file1base.noprimers.fastq $out1
 		rm $outdir/$file1base.temp.fastq
 		cp $idx1 $outdir/$idx1base.temp.fastq
-		filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n $empty4
+		filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n --sample_id_fp $empty4
 		mv $outdir/$idx1base.noprimers.fastq $outdir/$idx1base.noprimers.$idx1ext
 		rm $outdir/$idx1base.temp.fastq
 		fi
 
-		if [[ "$mode" == "1" ]] && [[ "$filtercount" == "2" ]]; then
+		if [[ "$mode1" == "1" ]] && [[ "$filtercount" == "2" ]]; then
 		mv $out1 $outdir/$file1base.temp.fastq
-		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n $empty4
+		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4
 		mv $outdir/$file1base.noprimers.fastq $out1
 		rm $outdir/$file1base.temp.fastq
 		mv $out2 $outdir/$file2base.temp.fastq
-		filter_fasta.py -f $outdir/$file2base.temp.fastq -o $outdir/$file2base.noprimers.fastq -n $empty4
+		filter_fasta.py -f $outdir/$file2base.temp.fastq -o $outdir/$file2base.noprimers.fastq -n --sample_id_fp $empty4
 		mv $outdir/$file2base.noprimers.fastq $out2
 		rm $outdir/$file2base.temp.fastq
 		cp $idx1 $outdir/$idx1base.temp.fastq
-		filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n $empty4
+		filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n --sample_id_fp $empty4
 		mv $outdir/$idx1base.noprimers.fastq $outdir/$idx1base.noprimers.$idx1ext
 		rm $outdir/$idx1base.temp.fastq
 		fi
 
-		if [[ "$mode" == "2" ]] && [[ "$filtercount" == "1" ]]; then
+		if [[ "$mode1" == "2" ]] && [[ "$filtercount" == "1" ]]; then
 		mv $out1 $outdir/$file1base.temp.fastq
-		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n $empty4
+		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4
 		mv $outdir/$file1base.noprimers.fastq $out1
 		rm $outdir/$file1base.temp.fastq
 		cp $idx1 $outdir/$idx1base.temp.fastq
-		filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n $empty4
+		filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n --sample_id_fp $empty4
 		mv $outdir/$idx1base.noprimers.fastq $outdir/$idx1base.noprimers.$idx1ext
 		rm $outdir/$idx1base.temp.fastq
 		cp $idx2 $outdir/$idx2base.temp.fastq
-		filter_fasta.py -f $outdir/$idx2base.temp.fastq -o $outdir/$idx2base.noprimers.fastq -n $empty4
+		filter_fasta.py -f $outdir/$idx2base.temp.fastq -o $outdir/$idx2base.noprimers.fastq -n --sample_id_fp $empty4
 		mv $outdir/$idx2base.noprimers.fastq $outdir/$idx2base.noprimers.$idx2ext
 		rm $outdir/$idx2base.temp.fastq
 		fi
 
-		if [[ "$mode" == "2" ]] && [[ "$filtercount" == "2" ]]; then
+		if [[ "$mode1" == "2" ]] && [[ "$filtercount" == "2" ]]; then
 		mv $out1 $outdir/$file1base.temp.fastq
-		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n $empty4
+		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4
 		mv $outdir/$file1base.noprimers.fastq $out1
 		rm $outdir/$file1base.temp.fastq
 		mv $out2 $outdir/$file2base.temp.fastq
-		filter_fasta.py -f $outdir/$file2base.temp.fastq -o $outdir/$file2base.noprimers.fastq -n $empty4
+		filter_fasta.py -f $outdir/$file2base.temp.fastq -o $outdir/$file2base.noprimers.fastq -n --sample_id_fp $empty4
 		mv $outdir/$file2base.noprimers.fastq $out2
 		rm $outdir/$file2base.temp.fastq
 		cp $idx1 $outdir/$idx1base.temp.fastq
-		filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n $empty4
+		filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n --sample_id_fp $empty4
 		mv $outdir/$idx1base.noprimers.fastq $outdir/$idx1base.noprimers.$idx1ext
 		rm $outdir/$idx1base.temp.fastq
 		cp $idx2 $outdir/$idx2base.temp.fastq
-		filter_fasta.py -f $outdir/$idx2base.temp.fastq -o $outdir/$idx2base.noprimers.fastq -n $empty4
+		filter_fasta.py -f $outdir/$idx2base.temp.fastq -o $outdir/$idx2base.noprimers.fastq -n --sample_id_fp $empty4
 		mv $outdir/$idx2base.noprimers.fastq $outdir/$idx2base.noprimers.$idx2ext
 		rm $outdir/$idx2base.temp.fastq
 		fi
@@ -427,10 +559,10 @@ No filter required."
 No empty fastq records found. Copying index files to output.
 No filter required." >> $log
 
-		if [[ "$mode" == "1" ]]; then
+		if [[ "$mode1" == "1" ]]; then
 		cp $idx1 $outdir/$idx1base.noprimers.$idx1ext
 		fi
-		if [[ "$mode" == "2" ]]; then
+		if [[ "$mode1" == "2" ]]; then
 		cp $idx1 $outdir/$idx1base.noprimers.$idx1ext
 		cp $idx2 $outdir/$idx2base.noprimers.$idx2ext
 		fi
