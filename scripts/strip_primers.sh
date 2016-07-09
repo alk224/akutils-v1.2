@@ -477,6 +477,7 @@ $emptycount empty fastq records found. Filtering from read pairs and indexes." >
 		if [[ "$mode1" == "0" ]] && [[ "$filtercount" == "1" ]]; then
 		mv $out1 $outdir/$file1base.temp.fastq
 		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4
+		wait
 		mv $outdir/$file1base.noprimers.fastq $out1
 		rm $outdir/$file1base.temp.fastq
 		fi
@@ -484,72 +485,76 @@ $emptycount empty fastq records found. Filtering from read pairs and indexes." >
 		if [[ "$mode1" == "0" ]] && [[ "$filtercount" == "2" ]]; then
 		mv $out1 $outdir/$file1base.temp.fastq
 		mv $out2 $outdir/$file2base.temp.fastq
-		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4
+		( filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4 ) &
+		( filter_fasta.py -f $outdir/$file2base.temp.fastq -o $outdir/$file2base.noprimers.fastq -n --sample_id_fp $empty4 ) &
+		wait
 		mv $outdir/$file1base.noprimers.fastq $out1
-		rm $outdir/$file1base.temp.fastq
-		mv $out2 $outdir/$file2base.temp.fastq
-		filter_fasta.py -f $outdir/$file2base.temp.fastq -o $outdir/$file2base.noprimers.fastq -n --sample_id_fp $empty4
 		mv $outdir/$file2base.noprimers.fastq $out2
+		rm $outdir/$file1base.temp.fastq
 		rm $outdir/$file2base.temp.fastq
 		fi
 
 		if [[ "$mode1" == "1" ]] && [[ "$filtercount" == "1" ]]; then
 		mv $out1 $outdir/$file1base.temp.fastq
-		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4
-		mv $outdir/$file1base.noprimers.fastq $out1
-		rm $outdir/$file1base.temp.fastq
 		cp $idx1 $outdir/$idx1base.temp.fastq
-		filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n --sample_id_fp $empty4
+		( filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4 ) &
+		( filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n --sample_id_fp $empty4 ) &
+		wait
+		mv $outdir/$file1base.noprimers.fastq $out1
 		mv $outdir/$idx1base.noprimers.fastq $outdir/$idx1base.noprimers.$idx1ext
+		rm $outdir/$file1base.temp.fastq
 		rm $outdir/$idx1base.temp.fastq
 		fi
 
 		if [[ "$mode1" == "1" ]] && [[ "$filtercount" == "2" ]]; then
 		mv $out1 $outdir/$file1base.temp.fastq
-		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4
-		mv $outdir/$file1base.noprimers.fastq $out1
-		rm $outdir/$file1base.temp.fastq
 		mv $out2 $outdir/$file2base.temp.fastq
-		filter_fasta.py -f $outdir/$file2base.temp.fastq -o $outdir/$file2base.noprimers.fastq -n --sample_id_fp $empty4
-		mv $outdir/$file2base.noprimers.fastq $out2
-		rm $outdir/$file2base.temp.fastq
 		cp $idx1 $outdir/$idx1base.temp.fastq
-		filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n --sample_id_fp $empty4
+		( filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4 ) &
+		( filter_fasta.py -f $outdir/$file2base.temp.fastq -o $outdir/$file2base.noprimers.fastq -n --sample_id_fp $empty4 ) &
+		( filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n --sample_id_fp $empty4 ) &
+		wait
+		mv $outdir/$file1base.noprimers.fastq $out1
+		mv $outdir/$file2base.noprimers.fastq $out2
 		mv $outdir/$idx1base.noprimers.fastq $outdir/$idx1base.noprimers.$idx1ext
+		rm $outdir/$file1base.temp.fastq
+		rm $outdir/$file2base.temp.fastq
 		rm $outdir/$idx1base.temp.fastq
 		fi
 
 		if [[ "$mode1" == "2" ]] && [[ "$filtercount" == "1" ]]; then
 		mv $out1 $outdir/$file1base.temp.fastq
-		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4
-		mv $outdir/$file1base.noprimers.fastq $out1
-		rm $outdir/$file1base.temp.fastq
 		cp $idx1 $outdir/$idx1base.temp.fastq
-		filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n --sample_id_fp $empty4
-		mv $outdir/$idx1base.noprimers.fastq $outdir/$idx1base.noprimers.$idx1ext
-		rm $outdir/$idx1base.temp.fastq
 		cp $idx2 $outdir/$idx2base.temp.fastq
-		filter_fasta.py -f $outdir/$idx2base.temp.fastq -o $outdir/$idx2base.noprimers.fastq -n --sample_id_fp $empty4
+		( filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4 ) &
+		( filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n --sample_id_fp $empty4 ) &
+		( filter_fasta.py -f $outdir/$idx2base.temp.fastq -o $outdir/$idx2base.noprimers.fastq -n --sample_id_fp $empty4 ) &
+		wait
+		mv $outdir/$file1base.noprimers.fastq $out1
+		mv $outdir/$idx1base.noprimers.fastq $outdir/$idx1base.noprimers.$idx1ext
 		mv $outdir/$idx2base.noprimers.fastq $outdir/$idx2base.noprimers.$idx2ext
+		rm $outdir/$file1base.temp.fastq
+		rm $outdir/$idx1base.temp.fastq
 		rm $outdir/$idx2base.temp.fastq
 		fi
 
 		if [[ "$mode1" == "2" ]] && [[ "$filtercount" == "2" ]]; then
 		mv $out1 $outdir/$file1base.temp.fastq
-		filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4
-		mv $outdir/$file1base.noprimers.fastq $out1
-		rm $outdir/$file1base.temp.fastq
 		mv $out2 $outdir/$file2base.temp.fastq
-		filter_fasta.py -f $outdir/$file2base.temp.fastq -o $outdir/$file2base.noprimers.fastq -n --sample_id_fp $empty4
-		mv $outdir/$file2base.noprimers.fastq $out2
-		rm $outdir/$file2base.temp.fastq
 		cp $idx1 $outdir/$idx1base.temp.fastq
-		filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n --sample_id_fp $empty4
-		mv $outdir/$idx1base.noprimers.fastq $outdir/$idx1base.noprimers.$idx1ext
-		rm $outdir/$idx1base.temp.fastq
 		cp $idx2 $outdir/$idx2base.temp.fastq
-		filter_fasta.py -f $outdir/$idx2base.temp.fastq -o $outdir/$idx2base.noprimers.fastq -n --sample_id_fp $empty4
+		( filter_fasta.py -f $outdir/$file1base.temp.fastq -o $outdir/$file1base.noprimers.fastq -n --sample_id_fp $empty4 ) &
+		( filter_fasta.py -f $outdir/$file2base.temp.fastq -o $outdir/$file2base.noprimers.fastq -n --sample_id_fp $empty4 ) &
+		( filter_fasta.py -f $outdir/$idx1base.temp.fastq -o $outdir/$idx1base.noprimers.fastq -n --sample_id_fp $empty4 ) &
+		( filter_fasta.py -f $outdir/$idx2base.temp.fastq -o $outdir/$idx2base.noprimers.fastq -n --sample_id_fp $empty4 ) &
+		wait
+		mv $outdir/$file1base.noprimers.fastq $out1
+		mv $outdir/$file2base.noprimers.fastq $out2
+		mv $outdir/$idx1base.noprimers.fastq $outdir/$idx1base.noprimers.$idx1ext
 		mv $outdir/$idx2base.noprimers.fastq $outdir/$idx2base.noprimers.$idx2ext
+		rm $outdir/$file1base.temp.fastq
+		rm $outdir/$file2base.temp.fastq
+		rm $outdir/$idx1base.temp.fastq
 		rm $outdir/$idx2base.temp.fastq
 		fi
 
