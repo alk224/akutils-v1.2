@@ -5,6 +5,8 @@ This is a collection of scripts I wrote to make myself more productive while doi
 
 [Also see the home page for short install instructions.](http://alk224.github.io/akutils-v1.2/)  
 
+If you like akutils, please Star this repository (Star button at top of page)
+
 **Getting akutils on your local system (workstation or VirtualBox):**
 
 **1)** Set up your system appropriately. I have done this on a large workstation as well as within a VirtualBox on my netbook. Install Ubuntu 14.04LTS. I have had trouble with 14.04.3 base installs so prefer 14.04.1 install ([download .iso here](http://old-releases.ubuntu.com/releases/14.04.2/ubuntu-14.04.1-desktop-amd64.iso)) and then update.
