@@ -52,7 +52,7 @@ pd
 permutest(pd, permutations = 999)
 
 ## Tukey HSD test and print to screen
-writeLines("\n********************************\nTukey's HSD test of dispersions across groups\n")
+writeLines("\n********************************\nTukey's HSD test of dispersions across groups:\n")
 pd.HSD <- TukeyHSD(pd)
 pd.HSD
 
