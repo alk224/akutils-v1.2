@@ -138,14 +138,14 @@ The following factors were not found in your mapping file:"
 	echo ""
 	exit 1
 	fi
-## Report start of script
 
+## Report start of script
 	echo "
 akutils two-way permanova script
 
-Supplied distance matrix: ${bold}${dm}${normal}
-Input factor 1: ${bold}${factor1}${normal}
-Input factor 2: ${bold}${factor2}${normal}
+Supplied distance matrix:	${bold}${dm}${normal}
+Input factor 1: 		${bold}${factor1}${normal}
+Input factor 2: 		${bold}${factor2}${normal}
 
 This will take a few moments.
 	"
@@ -170,7 +170,7 @@ This will take a few moments.
 
 ## Run adonis function in R (PerMANOVA test)
 	outdir="2way_permanova_${factor1}_by_${factor2}"
-	rm -r $outdir
+	rm -r $outdir 2>/dev/null
 	mkdir $outdir
 	outfile="$outdir/Statistical_summary.txt"
 	outfile0="Statistical_summary.txt"
@@ -194,12 +194,20 @@ PERMDISP results:" >> $outfile
 	wait
 	echo "" >> $outfile
 
+## Copy transformed files and R instructions into output directory
+	cp $maptemp0 $outdir/map.vegan.txt
+	cp $dmtemp0 $outdir/dm.vegan.txt
+	cp $repodir/akutils_resources/R-instructions_vegan.txt $outdir/
+
 ## Report end of script
 	echo "Analysis complete.
 
 Output directory: ${bold}${outdir}${normal}
 Statistics:	${bold}${outfile0}${normal}
 Plots:		${bold}Permdisp_plots.pdf${normal}
+Map file (R):	${bold}map.vegan.txt${normal}
+Dis matrix (R):	${bold}dm.vegan.txt${normal}
+R instructions:	${bold}R-instructions_vegan.txt${normal}
 	"
 
 exit 0
