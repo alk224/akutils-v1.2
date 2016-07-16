@@ -168,26 +168,39 @@ This will take a few moments.
 	cat $maptemp0 | cut -f${f1col} > $f1temp
 	cat $maptemp0 | cut -f${f2col} > $f2temp
 
-## Run adonis function in R
-	outfile="2way_permanova_${factor1}_by_${factor2}.txt"
+## Run adonis function in R (PerMANOVA test)
+	outdir="2way_permanova_${factor1}_by_${factor2}"
+	rm -r $outdir
+	mkdir $outdir
+	outfile="$outdir/Statistical_summary.txt"
+	outfile0="Statistical_summary.txt"
 	echo "
-akutils two-way PerMANOVA script.
+akutils two-way PERMANOVA script.
 $date0
 dm: $dm
 f1: $factor1
-f2: $factor2" > $outfile
-	Rscript $scriptdir/two-way_permanova.r $maptemp0 $dmtemp0 $factor1 $factor2 $f1temp $f2temp $workdir 1>>$outfile 2>/dev/null
+f2: $factor2
+
+********************************
+PERMANOVA results:" > $outfile
+	Rscript $scriptdir/adonis.r $maptemp0 $dmtemp0 $factor1 $factor2 $f1temp $f2temp $outdir 1>>$outfile 2>/dev/null
+	wait
+
+## Run betadisper function in R (PERMDISP2 test)
+	echo "
+********************************
+PERMDISP results:" >> $outfile
+	Rscript $scriptdir/betadisper.r $maptemp0 $dmtemp0 $factor1 $factor2 $dm $f2temp $outdir 1>>$outfile 2>/dev/null
 	wait
 	echo "" >> $outfile
 
 ## Report end of script
 	echo "Analysis complete.
 
-Output file: ${bold}${outfile}${normal}
-	"
+Output directory: ${bold}${outdir}${normal}
+Statistics:	${bold}${outfile0}${normal}
+Plots:		${bold}Permdisp_plots.pdf${normal}
 
-## Add factor names to output
-#	sed -i "s/f1name/$factor1/g" $outfile
-#	sed -i "s/f2name/$factor2/g" $outfile
+	"
 
 exit 0
