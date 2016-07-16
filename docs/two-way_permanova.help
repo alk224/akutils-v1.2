@@ -22,8 +22,7 @@ vegan package in R. Output is a file called "2way_permanova_f1_by_f2.txt where
 f1 and f2 are the factors you supply. If you misspell a factor, the script will
 let you know and exit.
 
-Requires that vegan library be available in your R installation and datamash and
-biom commands in your PATH.
+Requires that vegan library be available in your R installation.
 
 Example:
 	two-way_permanova.sh map.txt bray_curtis_dm.txt Treatment1 Treatment2
