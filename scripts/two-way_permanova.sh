@@ -67,10 +67,6 @@ trap finish EXIT
 
 	f1temp="$tempdir/$randcode.f1.temp"
 	f2temp="$tempdir/$randcode.f2.temp"
-	tempfile3="$tempdir/$randcode.map.temp"
-	tempfile4="$tempdir/$randcode.convert4.temp"
-	tempfile5="$tempdir/$randcode.convert5.temp"
-	tempfile6="$tempdir/$randcode.convert6.temp"
 
 	map="$1"
 	dm="$2"
@@ -142,6 +138,17 @@ The following factors were not found in your mapping file:"
 	echo ""
 	exit 1
 	fi
+## Report start of script
+
+	echo "
+akutils two-way permanova script
+
+Supplied distance matrix: ${bold}${dm}${normal}
+Input factor 1: ${bold}${factor1}${normal}
+Input factor 2: ${bold}${factor2}${normal}
+
+This will take a few moments.
+	"
 
 ####################
 ## Start of data file transforms
@@ -172,6 +179,12 @@ f2: $factor2" > $outfile
 	Rscript $scriptdir/two-way_permanova.r $maptemp0 $dmtemp0 $factor1 $factor2 $f1temp $f2temp $workdir 1>>$outfile 2>/dev/null
 	wait
 	echo "" >> $outfile
+
+## Report end of script
+	echo "Analysis complete.
+
+Output file: ${bold}${outfile}${normal}
+	"
 
 ## Add factor names to output
 #	sed -i "s/f1name/$factor1/g" $outfile
