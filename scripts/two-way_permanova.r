@@ -26,7 +26,7 @@
 ## Recieve input files from bash
 args <- commandArgs(TRUE)
 map=(args[1])
-dm=(args[2])
+dmfile=(args[2])
 factor1=(args[3])
 factor2=(args[4])
 f1temp=(args[5])
@@ -39,14 +39,14 @@ library(vegan)
 
 ## Read in data
 mapfile <- read.csv(map, sep="\t", header=TRUE)
-dmfile <- read.csv(dm, sep="\t", header=TRUE)
-#factor1 <- mapfile[,f1col]
-#factor2 <- mapfile[,f2col]
+dm <- read.csv(dmfile, sep="\t", header=TRUE)
+f1 <- mapfile[,factor1]
+f2 <- mapfile[,factor2]
 #factor1 <- read.csv(f1temp, sep="\t", header=TRUE)
 #factor2 <- read.csv(f2temp, sep="\t", header=TRUE)
 
 ## Run permanova
-pm <- adonis(formula = dmfile ~ factor1 * factor2, permutations = 999)
+pm <- adonis(formula = dm ~ f1 * f2, permutations = 999)
 
 ## Print output to screen (change to file output)
 pm

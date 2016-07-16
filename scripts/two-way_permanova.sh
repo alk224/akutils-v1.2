@@ -80,7 +80,7 @@ trap finish EXIT
 	biompath="${biom%.*}"
 	biomname="${biompath##*/}"
 
-	date0=$(date +%Y%m%d_%I%M%p)
+	date0=$(date)
 
 	bold=$(tput bold)
 	normal=$(tput sgr0)
@@ -163,32 +163,18 @@ The following factors were not found in your mapping file:"
 
 ## Run adonis function in R
 	outfile="2way_permanova_${factor1}_by_${factor2}.txt"
-	Rscript $scriptdir/two-way_permanova.r $maptemp0 $dmtemp0 $factor1 $factor2 $f1temp $f2temp $workdir #1>$outfile 2>/dev/null
+	echo "
+akutils two-way PerMANOVA script.
+$date0
+dm: $dm
+f1: $factor1
+f2: $factor2" > $outfile
+	Rscript $scriptdir/two-way_permanova.r $maptemp0 $dmtemp0 $factor1 $factor2 $f1temp $f2temp $workdir 1>>$outfile 2>/dev/null
 	wait
-
-cp $f1temp ./
-cp $f2temp ./
+	echo "" >> $outfile
 
 ## Add factor names to output
 #	sed -i "s/f1name/$factor1/g" $outfile
 #	sed -i "s/f2name/$factor2/g" $outfile
-
-
-echo "R script complete
-"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 exit 0
