@@ -13,11 +13,7 @@ Usage:
 		<mapping_file> is QIIME-formatted sample mapping file
 		<distance_matrix> is a distance matrix file from QIIME (beta_diversity.py)
 		<factor1> and <factor2> are the metadata categories you wish to test
-			-- factors must be spelled EXACTLY correctly or script
-			will exit
-
-	Requires that vegan library be available in your R installation and
-	datamash and biom commands in your PATH.
+			-- factors must be spelled EXACTLY correctly or script will exit
 
 This script takes a QIIME mapping file and a corresponding distance matrix file
 output from QIIME (output from beta_diversity.py), plus two supplied factors
@@ -25,4 +21,13 @@ from the mapping file and runs two-way permanova with the adonis function in the
 vegan package in R. Output is a file called "2way_permanova_f1_by_f2.txt where
 f1 and f2 are the factors you supply. If you misspell a factor, the script will
 let you know and exit.
+
+Requires that vegan library be available in your R installation and datamash and
+biom commands in your PATH.
+
+Example:
+	two-way_permanova.sh map.txt bray_curtis_dm.txt Treatment1 Treatment2
+
+Output:
+	./2way_permanova_Treatment1_by_Treatment2.txt
 
