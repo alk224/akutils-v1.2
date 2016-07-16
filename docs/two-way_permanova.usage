@@ -10,6 +10,5 @@ Usage:
 			-- factors must be spelled EXACTLY correctly or script
 			will exit
 
-	Requires that vegan library be available in your R installation and
-	datamash and biom commands in your PATH.
+	Requires that vegan library be available in your R installation.
 
