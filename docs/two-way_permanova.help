@@ -1,42 +1,28 @@
 
-*********************
-***               ***
-***   ancomR.sh   ***
-***               ***
-*********************
+********************************
+***                          ***
+***   two-way_permanova.sh   ***
+***                          ***
+********************************
 
-Test of differential abundance in the R package ANCOM
+Two-way permanova using distance matrix output from QIIME
 
 Usage:
-	ancomR.sh <input.biom> <mapping_file> <factor>
+	two-way_permanova.sh <mapping_file> <distance_matrix> <factor1> <factor1>
 
-		<input.biom> must be biom-formatted OTU table with .biom extension
 		<mapping_file> is QIIME-formatted sample mapping file
-		<factor> is the metadata category you wish to test
+		<distance_matrix> is a distance matrix file from QIIME (beta_diversity.py)
+		<factor1> and <factor2> are the metadata categories you wish to test
+			-- factors must be spelled EXACTLY correctly or script
+			will exit
 
-This script takes a biom-formatted OTU table, a QIIME-formatted mapping file, 
-and a factor listed in the mapping file and performs tests of differential
-abundance across all OTUs. The test is conducted without multiple correction as
-well as with FDR correction. A text file will be output for each test that will
-have either a list of OTUs detected as significant (alpha = 0.05), or that no
-significant OTUs were detected. When significant OTUs are observed, a pdf file
-is also output with box plots of the significant comparisons. This script
-requires that you have ANCOM installed within your R framework, as well as the
-datamash utility and the biom command.
+	Requires that vegan library be available in your R installation and
+	datamash and biom commands in your PATH.
 
-Known issues:
- 1) when a pdf output is produced (significant OTUs present), there is sometimes
-a final page stating that no significant OTUs were detected. In fact, the plots
-are of significant OTUs, so ignore that last page.
-
- 2) OTU tables with few OTUS (~10 or less) will not produce output.
-
- 3) OTU IDs must not contain semicolons, while taxonomy must be delimited with
-semicolon.
-
-Citation:
-Mandal S., Van Treuren W., White RA., Eggesbø M., Knight R., Peddada SD. 2015. Analysis of composition of microbiomes: a novel method for studying microbial composition. Microbial ecology in health and disease 26:27663.
-
-Ancom.R website:
-https://www.niehs.nih.gov/research/resources/software/biostatistics/ancom/index.cfm
+This script takes a QIIME mapping file and a corresponding distance matrix file
+output from QIIME (output from beta_diversity.py), plus two supplied factors
+from the mapping file and runs two-way permanova with the adonis function in the
+vegan package in R. Output is a file called "2way_permanova_f1_by_f2.txt where
+f1 and f2 are the factors you supply. If you misspell a factor, the script will
+let you know and exit.
 
