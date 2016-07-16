@@ -200,7 +200,6 @@ PERMDISP results:" >> $outfile
 Output directory: ${bold}${outdir}${normal}
 Statistics:	${bold}${outfile0}${normal}
 Plots:		${bold}Permdisp_plots.pdf${normal}
-
 	"
 
 exit 0
