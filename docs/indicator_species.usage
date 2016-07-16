@@ -1,0 +1,14 @@
+
+indicator_species.sh - Indicator species analysis of QIIME data
+
+Usage:
+	indicator_species.sh <mapping_file> <OTU_table> <factor>
+
+		<mapping_file> is QIIME-formatted sample mapping file
+		<OTU_table> is a .biom-formatted OTU table from QIIME (make_otu_table.py)
+		<factor> is a metadata category with levels you wish to test
+			-- factor must be spelled EXACTLY correctly or script
+			will exit
+
+	Requires that indicspecies library be available in your R installation.
+
