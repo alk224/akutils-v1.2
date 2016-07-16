@@ -189,6 +189,7 @@ This will take a few moments.
 ## Set output directory and call indicator_species.r script
 	outdir="Indicspecies_${factor}_${biomname}"
 	outfile="$outdir/Statistical_summary.txt"
+	outfile0="Statistical_summary.txt"
 	rm -r $outdir 2>/dev/null
 	mkdir $outdir
 	echo "
@@ -200,15 +201,15 @@ Input factor: 		$factor" > $outfile
 	wait
 
 ## Copy transformed files and R instructions into output directory
-	cp maptemp0 $outdir/map.indicspecies.txt
-	cp biomtemp3 $outdir/otutable.indicspecies.txt
+	cp $maptemp0 $outdir/map.indicspecies.txt
+	cp $biomtemp3 $outdir/otutable.indicspecies.txt
 	cp $repodir/akutils_resources/R-instructions_indicspecies.txt $outdir/
 
 ## Report end of script
 	echo "Analysis complete.
 
 Output directory: ${bold}${outdir}${normal}
-Statistics:	${bold}${outfile}${normal}
+Statistics:	${bold}${outfile0}${normal}
 Map file (R):	${bold}map.indicspecies.txt${normal}
 Dis matrix (R):	${bold}otutable.indicspecies.txt${normal}
 R instructions:	${bold}R-instructions_indicspecies.txt${normal}
