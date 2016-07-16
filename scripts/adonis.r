@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 #
-#  two-way_permanova.r - R slave for two-way permanova analysis with R package vegan
+#  adonis.r - R slave for two-way permanova analysis with R package vegan
 #
 #  Version 1.0.0 (July, 15, 2016)
 #
