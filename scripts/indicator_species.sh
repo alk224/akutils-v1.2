@@ -203,7 +203,7 @@ Input factor: 		$factor" > $outfile
 ## Copy transformed files and R instructions into output directory
 	cp $maptemp0 $outdir/map.indicspecies.txt
 	cp $biomtemp3 $outdir/otutable.indicspecies.txt
-	cp $repodir/akutils_resources/R-instructions_indicspecies.txt $outdir/
+	cp $repodir/akutils_resources/R-instructions_indicspecies.r $outdir/
 
 ## Report end of script
 	echo "Analysis complete.
@@ -212,7 +212,7 @@ Output directory: ${bold}${outdir}${normal}
 Statistics:	${bold}${outfile0}${normal}
 Map file (R):	${bold}map.indicspecies.txt${normal}
 Dis matrix (R):	${bold}otutable.indicspecies.txt${normal}
-R instructions:	${bold}R-instructions_indicspecies.txt${normal}
+R instructions:	${bold}R-instructions_indicspecies.r${normal}
 	"
 
 exit 0
