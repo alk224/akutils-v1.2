@@ -45,6 +45,7 @@ summary(phi)
 
 coverage(biom, phi)
 
-## See the official indicspecies tutorial for more functionality:
+## See the official indicspecies documentation and tutorial for more functionality:
+## https://cran.r-project.org/web/packages/indicspecies/indicspecies.pdf
 ## https://cran.r-project.org/web/packages/indicspecies/vignettes/indicspeciesTutorial.pdf
 
