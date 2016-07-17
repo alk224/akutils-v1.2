@@ -43,3 +43,13 @@ Output:
 	./Indicspecies_OTU_table_Treatment/otutable.indicspecies.txt
 	./Indicspecies_OTU_table_Treatment/R-instructions_indicspecies.r
 
+References:
+	* De Cáceres, M. and Legendre, P. 2009. Associations between species and
+	groups of sites: indices and statistical inference. Ecology 90(12):
+	3566-3574.
+	* De Cáceres, M., Legendre, P., Moretti, M. 2010. Improving indicator
+	species analysis by combining groups of sites. Oikos 119(10): 1674-1684.
+	* Dufrêne, M. and P. Legendre. 1997. Species assemblages and indicator
+	species: The need for a flexible asymetrical approach. Ecological
+	Monographs 67:345-366.
+
