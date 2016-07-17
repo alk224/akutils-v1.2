@@ -197,7 +197,7 @@ PERMDISP results:" >> $outfile
 ## Copy transformed files and R instructions into output directory
 	cp $maptemp0 $outdir/map.vegan.txt
 	cp $dmtemp0 $outdir/dm.vegan.txt
-	cp $repodir/akutils_resources/R-instructions_vegan.txt $outdir/
+	cp $repodir/akutils_resources/R-instructions_vegan.r $outdir/
 
 ## Report end of script
 	echo "Analysis complete.
@@ -207,7 +207,7 @@ Statistics:	${bold}${outfile0}${normal}
 Plots:		${bold}Permdisp_plots.pdf${normal}
 Map file (R):	${bold}map.vegan.txt${normal}
 Dis matrix (R):	${bold}dm.vegan.txt${normal}
-R instructions:	${bold}R-instructions_vegan.txt${normal}
+R instructions:	${bold}R-instructions_vegan.r${normal}
 	"
 
 exit 0
