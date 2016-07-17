@@ -42,3 +42,9 @@ Output:
 	./2way_permanova_Treatment1_by_Treatment2/dm.vegan.txt
 	./2way_permanova_Treatment1_by_Treatment2/R-instructions_vegan.r
 
+References:
+	* Anderson, M.J. 2001. A new method for non-parametric multivariate
+	analysis of variance. Austral Ecology, 26: 32–46.
+	* Anderson, M.J., Ellingsen, K.E. & McArdle, B.H. (2006) Multivariate
+	dispersion as a measure of beta diversity. Ecology Letters 9, 683–693.
+
