@@ -18,11 +18,12 @@ Usage:
 
 This script takes a QIIME mapping file and a corresponding OTU table (.biom-
 formatted) output from QIIME (output from make_otu_table.py), plus one supplied
-factors from the mapping file and runs indicator species analysis with the
+factor from the mapping file and runs indicator species analysis with the
 multipatt function in the indicspecies package in R. The .biom file may be a
 table of OTUs, or one that has been summarized according to some taxonomic level.
-If you misspell a factor, the script  will let you know and exit. All output
-will go to a directorycalled:
+For brevity, taxa-summarized tables will report only the deepest taxonomic
+assignment rather than entire taxonomic strings. If you misspell a factor, the
+script  will let you know and exit. All output will go to a directorycalled:
 	"Indicspecies_factor_otutable"
 
 where factor is the factor you supply and otutable is the name of your input
