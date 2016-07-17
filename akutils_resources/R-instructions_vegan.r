@@ -58,7 +58,8 @@ plot(Permdisp, label.cex=0.5, ellipse=TRUE, hull=FALSE, seg.lty="dashed", cex=0.
 plot(Permdisp, label.cex=0.5, ellipse=TRUE, hull=FALSE, seg.lty="dashed", cex=0.5, sub=dmname, main="PCoA axes 2 vs 3", cex.main=1.5, cex.sub=1.25, cex.lab=1.1, axes=c(2,3))
 boxplot(pd, main="Boxplots of multivariate dispersions", sub="Categories", cex.axis=0.75, cex.main=1.5, cex.sub=1.25, cex.lab=1.25)
 
-## See the official vegan tutorials for more functionality:
+## See the official vegan documentation and tutorials for more functionality:
+## https://cran.r-project.org/web/packages/vegan/vegan.pdf
 ## https://cran.r-project.org/web/packages/vegan/vignettes/intro-vegan.pdf
 ## http://cc.oulu.fi/~jarioksa/opetus/metodi/vegantutor.pdf
 
