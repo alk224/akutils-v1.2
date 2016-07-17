@@ -41,5 +41,5 @@ Output:
 	./Indicspecies_OTU_table_Treatment/Statistical_summary.txt
 	./Indicspecies_OTU_table_Treatment/map.indicspecies.txt
 	./Indicspecies_OTU_table_Treatment/otutable.indicspecies.txt
-	./Indicspecies_OTU_table_Treatment/R-instructions_indicspecies.txt
+	./Indicspecies_OTU_table_Treatment/R-instructions_indicspecies.r
 
