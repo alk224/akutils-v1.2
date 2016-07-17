@@ -40,5 +40,5 @@ Output:
 	./2way_permanova_Treatment1_by_Treatment2/Permdisp_plots.txt
 	./2way_permanova_Treatment1_by_Treatment2/map.vegan.txt
 	./2way_permanova_Treatment1_by_Treatment2/dm.vegan.txt
-	./2way_permanova_Treatment1_by_Treatment2/R-instructions_vegan.txt
+	./2way_permanova_Treatment1_by_Treatment2/R-instructions_vegan.r
 
