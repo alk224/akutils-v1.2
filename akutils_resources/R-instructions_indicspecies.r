@@ -25,7 +25,7 @@ colnames(map)
 ## Read in your factor
 
 attach(map) ## so you can call your factor by name
-f1 <- map[,Moisture] ## if factor is "Moisture"
+f1 <- map[,"Moisture"] ## if factor is "Moisture"
 
 ## Indicator value analysis
 
