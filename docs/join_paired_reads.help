@@ -22,12 +22,16 @@ two index reads.
 Output will be 2 files, an index file (idx.fq) and a read file (rd.fq).
 
 Example:
-akutils join_paired_reads index1.fq read1.fq read2.fq 12 -m 30 -p 10
+akutils join_paired_reads index1.fq read1.fq read2.fq 12 -m 30 -p 30
 
 This example is joining fastq files read1.fq and read2.fq while keeping reads
 in sync with index1.fq.  The index read is 12 bases long, and it is calling
 options to the fastq-join command as -m 30 (minimum overlap of 30 bases) and
--p 10 (10 percent allowable mismatch).
+-p 30 (30 percent allowable mismatch). In my testing I find that being overly
+stringent (0-1% mismatch) or too relaxed (>45% mismatch) will give similarly
+poor results. Stringency can result in loss of data, while relaxing settings can
+result in subtle misalignments (~1-2 bases off). I prefer -m 30 and -p 30 as
+these return most of your data and doesn't result in an excess of misalignments.
 
 Requires the following dependencies to run:
 	1) ea-utils (https://code.google.com/p/ea-utils/)
