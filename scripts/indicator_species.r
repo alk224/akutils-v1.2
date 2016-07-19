@@ -29,9 +29,12 @@ mapfile=(args[1])
 biomfile=(args[2])
 factor=(args[3])
 outdir=(args[4])
+perms0=(args[5])
+perms <- as.integer(perms0)
 
 ## Load libraries
 library(indicspecies)
+options(width=300)
 
 ## Read in data
 map <- read.csv(mapfile, sep="\t", header=TRUE)
@@ -39,8 +42,9 @@ biom <- read.csv(biomfile, sep="\t", header=TRUE)
 f1 <- map[,factor]
 
 ## Run indval and print to screen
-writeLines("\n********************************\nIndicator value analysis summary (9999 permutations, uncorrected):")
-indval = multipatt(biom, f1, control=how(nperm=9999))
+invalperms <- paste("\n********************************\nIndicator value analysis summary\n(", perms, " permutations, uncorrected for multiple testing):", sep="")
+writeLines(invalperms)
+indval = multipatt(biom, f1, control=how(nperm=perms))
 summary(indval)
 
 ## Run coverage and print to screen
@@ -48,8 +52,9 @@ writeLines("\n********************************\nCoverage (IndVal):")
 coverage(biom, indval)
 
 ## Run phi and print to screen
-writeLines("\n********************************\nPearson's phi coefficient of association summary (9999 permutations, uncorrected):")
-phi = multipatt(biom, f1, func="r.g", control=how(nperm=9999))
+phiperms <- paste("\n********************************\nPearson's phi coefficient of association summary\n(", perms, " permutations, uncorrected for multiple testing):", sep="")
+writeLines(phiperms)
+phi = multipatt(biom, f1, func="r.g", control=how(nperm=perms))
 summary(phi)
 
 ## Run coverage and print to screen
@@ -67,19 +72,23 @@ fdr.p.value <- p.adjust(indval.all.pvals, method="fdr")
 indval.all.fdr <- cbind(indval.all, fdr.p.value)
 
 ## Omit NA values and print only those with p <= 0.05
-options(width=300)
-indval.all.fdr.nona <- na.omit(indval.all.fdr)
-writeLines("\n********************************\nIndVal results with FDR corrections (only valid p-values shown):\n")
-indval.all.fdr.nona
+attach(indval.all.fdr)
+indval.all.fdr.nona.sort <- indval.all.fdr[order(fdr.p.value, p.value, na.last=NA),]
+indvalfdrperms <- paste("\n********************************\nIndVal results with FDR corrections\n(only valid p-values shown, ", perms, " permutations):\n", sep="")
+writeLines(indvalfdrperms)
+indval.all.fdr.nona.sort
+detach(indval.all.fdr)
 
 ## Repeat FDR correction and NA omission for Phi output
 phi.all <- phi$sign
 phi.all.pvals <- phi.all[,"p.value"]
 fdr.p.value <- p.adjust(phi.all.pvals, method="fdr")
 phi.all.fdr <- cbind(phi.all, fdr.p.value)
-phi.all.fdr.nona <- na.omit(phi.all.fdr)
-writeLines("\n********************************\nPhi results with FDR corrections (only valid p-values shown):\n")
-phi.all.fdr.nona
+attach(phi.all.fdr)
+phi.all.fdr.nona.sort <- phi.all.fdr[order(fdr.p.value, p.value, na.last=NA),]
+phivalfdrperms <- paste("\n********************************\nPhi results with FDR corrections\n(only valid p-values shown, ", perms, " permutations):\n", sep="")
+writeLines(phivalfdrperms)
+phi.all.fdr.nona.sort
 
 ## Blank line at end of file
 writeLines("")
