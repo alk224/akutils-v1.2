@@ -24,7 +24,6 @@ colnames(map)
 
 ## Read in your factors
 
-attach(map) ## so you can call factors by name
 f1 <- map[,"Moisture"] ## if first factor is Moisture
 f2 <- map[,"Drought"] ## if second factor is Drought
 
