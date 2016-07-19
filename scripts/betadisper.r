@@ -32,6 +32,8 @@ factor2=(args[4])
 dmname=(args[5])
 f2temp=(args[6])
 outdir=(args[7])
+perms0=(args[8])
+perms <- as.integer(perms0)
 
 ## Load libraries
 library(vegan)
@@ -49,7 +51,7 @@ pd <- betadisper(dm, f3)
 pd
 
 ## Permutation test of dispersions, printing to screen
-permutest(pd, permutations = 9999)
+permutest(pd, permutations = perms)
 
 ## Tukey HSD test and print to screen
 writeLines("\n********************************\nTukey's HSD test of dispersions across groups:\n")
