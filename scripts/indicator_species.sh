@@ -77,6 +77,7 @@ trap finish EXIT
 	map="$1"
 	biom="$2"
 	factor="$3"
+	perms="$4"
 
 	biompath="${biom%.*}"
 	biomname="${biompath##*/}"
@@ -94,7 +95,7 @@ trap finish EXIT
 	fi
 
 ## If incorrect number of arguments supplied, display usage 
-	if [[ "$#" -ne 3 ]]; then 
+	if [[ "$#" -ne 4 ]]; then 
 	cat $repodir/docs/indicator_species.usage
 		exit 1
 	fi 
@@ -136,12 +137,23 @@ Your supplied factor was not found in your mapping file:"
 	exit 1
 	fi
 
+## Test if permutations is an integer
+	if ! [[ "$perms" =~ ^[0-9]+$ ]]; then
+	echo "
+You supplied something other than an integer for a permutations value.
+You supplied: ${bold}${perms}${normal}
+	"
+	cat $repodir/docs/indicator_species.usage
+	exit 1
+	fi
+
 ## Report start of script
 	echo "
 akutils indicator species analysis script
 
 Supplied OTU table:	${bold}${biom}${normal}
 Input factor:		${bold}${factor}${normal}
+Permutations:		${bold}${perms}${normal}
 
 This will take a few moments.
 	"
@@ -196,8 +208,9 @@ This will take a few moments.
 akutils indicator species analysis script.
 $date0
 Supplied OTU table:	$biom
-Input factor: 		$factor" > $outfile
-	Rscript $scriptdir/indicator_species.r $maptemp0 $biomtemp3 $factor $outdir 1>>$outfile 2>/dev/null
+Input factor: 		$factor
+Permutations:		$perms" > $outfile
+	Rscript $scriptdir/indicator_species.r $maptemp0 $biomtemp3 $factor $outdir $perms 1>>$outfile 2>/dev/null
 	wait
 
 ## Copy transformed files and R instructions into output directory
