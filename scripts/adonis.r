@@ -43,7 +43,7 @@ f1 <- mapfile[,factor1]
 f2 <- mapfile[,factor2]
 
 ## Run permanova and print to screen
-pm <- adonis(formula = dm ~ f1 * f2, permutations = 999)
+pm <- adonis(formula = dm ~ f1 * f2, permutations = 9999)
 pm
 
 ## End
