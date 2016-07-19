@@ -29,7 +29,7 @@ f1 <- map[,"Moisture"] ## if factor is "Moisture"
 
 ## Indicator value analysis
 
-indval = multipatt(biom, f1, control=how(nperm=999))
+indval = multipatt(biom, f1, control=how(nperm=9999))
 summary(indval)
 
 ## Assess coverage of indicator value analysis
@@ -38,7 +38,7 @@ coverage(biom, indval)
 
 ## Pearson's phi coefficient of association
 
-phi = multipatt(biom, f1, func="r.g", control=how(nperm=999))
+phi = multipatt(biom, f1, func="r.g", control=how(nperm=9999))
 summary(phi)
 
 ## Assess coverage of phi
