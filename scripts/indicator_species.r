@@ -39,7 +39,7 @@ biom <- read.csv(biomfile, sep="\t", header=TRUE)
 f1 <- map[,factor]
 
 ## Run indval and print to screen
-writeLines("\n********************************\nIndicator value analysis (9999 permutations):")
+writeLines("\n********************************\nIndicator value analysis summary (9999 permutations, uncorrected):")
 indval = multipatt(biom, f1, control=how(nperm=9999))
 summary(indval)
 
@@ -48,7 +48,7 @@ writeLines("\n********************************\nCoverage (IndVal):")
 coverage(biom, indval)
 
 ## Run phi and print to screen
-writeLines("\n********************************\nPearson's phi coefficient of association (9999 permutations):")
+writeLines("\n********************************\nPearson's phi coefficient of association summary (9999 permutations, uncorrected):")
 phi = multipatt(biom, f1, func="r.g", control=how(nperm=9999))
 summary(phi)
 
@@ -56,6 +56,32 @@ summary(phi)
 writeLines("\n********************************\nCoverage (Phi):")
 coverage(biom, phi)
 
+## Read all indval results to variable
+indval.all <- indval$sign
+
+## Extract p-values to separate vector
+indval.all.pvals <- indval.all[,"p.value"]
+
+## Correct p-values (FDR) and bind the result to original output
+fdr.p.value <- p.adjust(indval.all.pvals, method="fdr")
+indval.all.fdr <- cbind(indval.all, fdr.p.value)
+
+## Omit NA values and print only those with p <= 0.05
+options(width=300)
+indval.all.fdr.nona <- na.omit(indval.all.fdr)
+writeLines("\n********************************\nIndVal results with FDR corrections (only valid p-values shown):\n")
+indval.all.fdr.nona
+
+## Repeat FDR correction and NA omission for Phi output
+phi.all <- phi$sign
+phi.all.pvals <- phi.all[,"p.value"]
+fdr.p.value <- p.adjust(phi.all.pvals, method="fdr")
+phi.all.fdr <- cbind(phi.all, fdr.p.value)
+phi.all.fdr.nona <- na.omit(phi.all.fdr)
+writeLines("\n********************************\nPhi results with FDR corrections (only valid p-values shown):\n")
+phi.all.fdr.nona
+
+## Blank line at end of file
 writeLines("")
 ## End
 q()
