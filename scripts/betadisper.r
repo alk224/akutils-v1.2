@@ -49,7 +49,7 @@ pd <- betadisper(dm, f3)
 pd
 
 ## Permutation test of dispersions, printing to screen
-permutest(pd, permutations = 999)
+permutest(pd, permutations = 9999)
 
 ## Tukey HSD test and print to screen
 writeLines("\n********************************\nTukey's HSD test of dispersions across groups:\n")
