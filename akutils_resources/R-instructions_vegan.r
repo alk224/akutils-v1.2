@@ -30,7 +30,7 @@ f2 <- map[,"Drought"] ## if second factor is Drought
 
 ## Run adonis (permanova) and print to screen
 
-pm <- adonis(formula = dm ~ f1 * f2, permutations = 999)
+pm <- adonis(formula = dm ~ f1 * f2, permutations = 9999)
 pm
 
 ## Combine your factors for betadisper
@@ -44,7 +44,7 @@ pd
 
 ## Run permutation test of dispersions and print to screen
 
-permutest(pd, permutations = 999)
+permutest(pd, permutations = 9999)
 
 ## Run Tukey HSD test on dispersions and print to screen
 
