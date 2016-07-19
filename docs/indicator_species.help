@@ -8,13 +8,14 @@
 Indicator species analysis of QIIME data
 
 Usage:
-	indicator_species.sh <mapping_file> <OTU_table> <factor>
+	indicator_species.sh <mapping_file> <OTU_table> <factor> <permutations>
 
 		<mapping_file> is QIIME-formatted sample mapping file
 		<OTU_table> is a .biom-formatted OTU table from QIIME (make_otu_table.py)
 		<factor> is a metadata category with levels you wish to test
 			-- factor must be spelled EXACTLY correctly or script
 			will exit
+		<permutations> is an integer value (e.g., 99, 999, 9999)
 
 This script takes a QIIME mapping file and a corresponding OTU table (.biom-
 formatted) output from QIIME (output from make_otu_table.py), plus one supplied
@@ -36,7 +37,7 @@ provided, along with instructions to recreate the output of this script.
 Requires that indicspecies library be available in your R installation.
 
 Example:
-	indicator_species.sh map.txt OTU_table.biom Treatment
+	indicator_species.sh map.txt OTU_table.biom Treatment 9999
 
 Output:
 	./Indicspecies_OTU_table_Treatment/Statistical_summary.txt
