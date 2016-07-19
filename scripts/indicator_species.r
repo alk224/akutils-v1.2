@@ -39,8 +39,8 @@ biom <- read.csv(biomfile, sep="\t", header=TRUE)
 f1 <- map[,factor]
 
 ## Run indval and print to screen
-writeLines("\n********************************\nIndicator value analysis:")
-indval = multipatt(biom, f1, control=how(nperm=999))
+writeLines("\n********************************\nIndicator value analysis (9999 permutations):")
+indval = multipatt(biom, f1, control=how(nperm=9999))
 summary(indval)
 
 ## Run coverage and print to screen
@@ -48,8 +48,8 @@ writeLines("\n********************************\nCoverage (IndVal):")
 coverage(biom, indval)
 
 ## Run phi and print to screen
-writeLines("\n********************************\nPearson's phi coefficient of association:")
-phi = multipatt(biom, f1, func="r.g", control=how(nperm=999))
+writeLines("\n********************************\nPearson's phi coefficient of association (9999 permutations):")
+phi = multipatt(biom, f1, func="r.g", control=how(nperm=9999))
 summary(phi)
 
 ## Run coverage and print to screen
