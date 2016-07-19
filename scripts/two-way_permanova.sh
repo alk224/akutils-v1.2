@@ -95,19 +95,6 @@ trap finish EXIT
 		exit 1
 	fi 
 
-## Test for presence of datamash
-	dmtest=$(command -v datamash | wc -l)
-	if [[ "$dmtest" == "0" ]]; then
-	echo "
-This script requires the datamash utility to run. Ensure the command is in your
-PATH before running this script again.
-You can obtain datamash here: https://www.gnu.org/software/datamash/download/
-Or run (or rerun) the akutils_ubuntu_installer: https://github.com/alk224/akutils_ubuntu_installer
-Exiting.
-	"
-	exit 1
-	fi
-
 ## Test for presence of biom
 	biomtest=$(command -v biom | wc -l)
 	if [[ "$biomtest" == "0" ]]; then
