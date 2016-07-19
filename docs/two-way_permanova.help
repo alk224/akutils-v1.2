@@ -7,13 +7,14 @@
 
 Two-way permanova using distance matrix output from QIIME
 
-Usage:
-	two-way_permanova.sh <mapping_file> <distance_matrix> <factor1> <factor1>
+Usage  (order is important!!):
+	two-way_permanova.sh <mapping_file> <distance_matrix> <factor1> <factor1> <permutations>
 
 		<mapping_file> is QIIME-formatted sample mapping file
 		<distance_matrix> is a distance matrix file from QIIME (beta_diversity.py)
 		<factor1> and <factor2> are the metadata categories you wish to test
 			-- factors must be spelled EXACTLY correctly or script will exit
+		<permutations> is an integer value (e.g., 99, 999, 9999)
 
 This script takes a QIIME mapping file and a corresponding distance matrix file
 output from QIIME (output from beta_diversity.py), plus two supplied factors
@@ -33,7 +34,7 @@ provided, along with instructions to recreate the output of this script.
 Requires that vegan library be available in your R installation.
 
 Example:
-	two-way_permanova.sh map.txt bray_curtis_dm.txt Treatment1 Treatment2
+	two-way_permanova.sh map.txt bray_curtis_dm.txt Treatment1 Treatment2 9999
 
 Output:
 	./2way_permanova_Treatment1_by_Treatment2/Statistical_summary.txt
