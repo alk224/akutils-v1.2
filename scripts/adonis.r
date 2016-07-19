@@ -32,6 +32,8 @@ factor2=(args[4])
 f1temp=(args[5])
 f2temp=(args[6])
 outdir=(args[7])
+perms0=(args[8])
+perms <- as.integer(perms0)
 
 ## Load libraries
 library(vegan)
@@ -43,7 +45,7 @@ f1 <- mapfile[,factor1]
 f2 <- mapfile[,factor2]
 
 ## Run permanova and print to screen
-pm <- adonis(formula = dm ~ f1 * f2, permutations = 9999)
+pm <- adonis(formula = dm ~ f1 * f2, permutations = perms)
 pm
 
 ## End
