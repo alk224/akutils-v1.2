@@ -1,14 +1,15 @@
 
 two-way_permanova.sh - Two-way permanova analysis of QIIME data
 
-Usage:
-	two-way_permanova.sh <mapping_file> <distance_matrix> <factor1> <factor1>
+Usage (order is important!!):
+	two-way_permanova.sh <mapping_file> <distance_matrix> <factor1> <factor1> <permutations>
 
 		<mapping_file> is QIIME-formatted sample mapping file
 		<distance_matrix> is a distance matrix file from QIIME (beta_diversity.py)
 		<factor1> and <factor2> are the metadata categories you wish to test
 			-- factors must be spelled EXACTLY correctly or script
 			will exit
+		<permutations> is an integer value (e.g., 99, 999, 9999)
 
 	Requires that vegan library be available in your R installation.
 
