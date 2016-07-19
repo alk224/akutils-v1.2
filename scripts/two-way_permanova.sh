@@ -72,6 +72,7 @@ trap finish EXIT
 	dm="$2"
 	factor1="$3"
 	factor2="$4"
+	perms="$5"
 
 	biompath="${biom%.*}"
 	biomname="${biompath##*/}"
@@ -89,7 +90,7 @@ trap finish EXIT
 	fi
 
 ## If incorrect number of arguments supplied, display usage 
-	if [[ "$#" -ne 4 ]]; then 
+	if [[ "$#" -ne 5 ]]; then 
 	cat $repodir/docs/two-way_permanova.usage
 		exit 1
 	fi 
@@ -139,6 +140,16 @@ The following factors were not found in your mapping file:"
 	exit 1
 	fi
 
+## Test if permutations is an integer
+	if ! [[ "$perms" =~ ^[0-9]+$ ]]; then
+	echo "
+You supplied something other than an integer for a permutations value.
+You supplied: ${bold}${perms}${normal}
+	"
+	cat $repodir/docs/two-way_permanova.usage
+	exit 1
+	fi
+
 ## Report start of script
 	echo "
 akutils two-way permanova script
@@ -146,6 +157,7 @@ akutils two-way permanova script
 Supplied distance matrix:	${bold}${dm}${normal}
 Input factor 1: 		${bold}${factor1}${normal}
 Input factor 2: 		${bold}${factor2}${normal}
+Permutations:			${bold}${perms}${normal}
 
 This will take a few moments.
 	"
@@ -182,15 +194,17 @@ f1: $factor1
 f2: $factor2
 
 ********************************
-PERMANOVA results:" > $outfile
-	Rscript $scriptdir/adonis.r $maptemp0 $dmtemp0 $factor1 $factor2 $f1temp $f2temp $outdir 1>>$outfile 2>/dev/null
+PERMANOVA results
+$perms permutations:" > $outfile
+	Rscript $scriptdir/adonis.r $maptemp0 $dmtemp0 $factor1 $factor2 $f1temp $f2temp $outdir $perms 1>>$outfile 2>/dev/null
 	wait
 
 ## Run betadisper function in R (PERMDISP2 test)
 	echo "
 ********************************
-PERMDISP results:" >> $outfile
-	Rscript $scriptdir/betadisper.r $maptemp0 $dmtemp0 $factor1 $factor2 $dm $f2temp $outdir 1>>$outfile 2>/dev/null
+PERMDISP results
+$perms permutations:" >> $outfile
+	Rscript $scriptdir/betadisper.r $maptemp0 $dmtemp0 $factor1 $factor2 $dm $f2temp $outdir $perms 1>>$outfile 2>/dev/null
 	wait
 	echo "" >> $outfile
 
