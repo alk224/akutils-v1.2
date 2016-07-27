@@ -1,0 +1,13 @@
+
+filter_observations_by_sample.sh - filter an OTU table by sample rather than by table
+
+Usage (order is important!):
+filter_observations_by_sample.sh <mode> <otu_table> <filter> <share>
+
+	<mode>		"n" or "f" (no quotes)
+		n: Remove any OTU observed with <filter> counts or less
+		f: Remove any OTU observed with <filter> percent or less (as decimal)
+	<otu_table>	biom formatted OTU table to process
+	<filter>	If <mode> is "n", an integer, or if <mode> is "f", a decimal
+	<share>		An integer value (enter "1" for no effect)
+
