@@ -1,0 +1,45 @@
+
+********************************************
+***                                      ***
+***   filter_observations_by_sample.sh   ***
+***                                      ***
+********************************************
+
+Filter an OTU table by sample rather than by table.
+
+Usage (order is important!):
+filter_observations_by_sample.sh <mode> <otu_table> <filter> <share>
+
+	<mode>		"n" or "f" (no quotes)
+		n: Remove any OTU observed with <filter> counts or less
+		f: Remove any OTU observed with <filter> percent or less (as decimal)
+	<otu_table>	biom formatted OTU table to process
+	<filter>	If <mode> is "n", an integer, or if <mode> is "f", a decimal
+	<share>		An integer value (enter "1" for no effect)
+
+Output:
+Output will be to the directory containing the OTU table. Filtered table will
+have the same name as original table with mode, filter, and share values
+appended (see examples). Script will process hdf5 or json formatted biom tables.
+
+Example (remove singletons by sample):
+
+Command:
+	filter_observations_by_sample.sh n otu_table.biom 1 1
+Output:
+	otu_table_n1_s1.biom
+
+Example (remove OTUs below 0.1% by sample):
+
+Command:
+	filter_observations_by_sample.sh f otu_table.biom 0.001 1
+Output:
+	otu_table_f0.001_s1.biom
+
+Example (remove singletons by sample and OTUs not shared by at least 5 samples):
+
+Command:
+	filter_observations_by_sample.sh n otu_table.biom 1 5
+Output:
+	otu_table_n1_s5.biom
+
