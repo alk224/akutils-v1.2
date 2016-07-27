@@ -22,14 +22,32 @@
 #     misrepresented as being the original software.
 #  3. This notice may not be removed or altered from any source distribution.
 #
-## Find scripts location
-scriptdir="$( cd "$( dirname "$0" )" && pwd )"
-repodir=`dirname $scriptdir`
-workdir=$(pwd)
+## Trap function on exit.
+function finish {
 
-## Usage and help
-usage="$repodir/docs/template.usage"
-help="$repodir/docs/template.help"
+if [[ -f $tempfile1 ]]; then
+	rm $tempfile1
+fi
+}
+trap finish EXIT
+
+## Set variables
+	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
+	repodir=$(dirname $scriptdir)
+	workdir=$(pwd)
+	tempdir="$repodir/temp"
+	randcode=`cat /dev/urandom |tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1` 2>/dev/null
+
+	tempfile1="$tempdir/$randcode.tempfile1.temp"
+
+	arg1="$1"
+	arg2="$2"
+
+	date0=$(date)
+
+	bold=$(tput bold)
+	normal=$(tput sgr0)
+	underline=$(tput smul)
 
 ## Check whether user had supplied -h or --help. If yes display help 
 	if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
@@ -39,7 +57,7 @@ help="$repodir/docs/template.help"
 
 ## If other than SOMENUMBEROF arguments supplied, display usage
 	if [[ "$#" -ne 2 ]]; then 
-	cat $usage
+	cat $repodir/docs/template.usage
 	fi
 
 exit 0
