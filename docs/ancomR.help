@@ -8,30 +8,30 @@
 Test of differential abundance in the R package ANCOM
 
 Usage:
-	ancomR.sh <input.biom> <mapping_file> <factor>
+	ancomR.sh <input.biom> <mapping_file> <factor> <alpha>
 
 		<input.biom> must be biom-formatted OTU table with .biom extension
 		<mapping_file> is QIIME-formatted sample mapping file
 		<factor> is the metadata category you wish to test
+		<alpha> is your chosen significance level (decimal from 0-1)
 
 This script takes a biom-formatted OTU table, a QIIME-formatted mapping file, 
 and a factor listed in the mapping file and performs tests of differential
-abundance across all OTUs. The test is conducted without multiple correction as
-well as with FDR correction. A text file will be output for each test that will
-have either a list of OTUs detected as significant (alpha = 0.05), or that no
-significant OTUs were detected. When significant OTUs are observed, a pdf file
-is also output with box plots of the significant comparisons. This script
-requires that you have ANCOM installed within your R framework, as well as the
-datamash utility and the biom command.
+abundance across all OTUs. You should supply your desired significance level
+(alpha). The test is conducted without multiple correction as well as with FDR
+correction under strict or relaxed control. This script requires that you have
+ANCOM installed within your R framework, as well as the datamash utility and the
+biom command available in your shell environment.
+
+Output (4 files) will go to a new subdirectory:
+ 1) Statistical_summary.txt -- list of significant groups plus ANCOM W stats
+ 2) Detection_plots.pdf -- boxplots of an signifiant groups
+ 3) otufile_for_ancom.txt -- your OTU data reformatted for processing with ancom.R
+ 4) R-instructions_ancom.r -- R code to run your data manually
 
 Known issues:
- 1) when a pdf output is produced (significant OTUs present), there is sometimes
-a final page stating that no significant OTUs were detected. In fact, the plots
-are of significant OTUs, so ignore that last page.
-
- 2) OTU tables with few OTUS (~10 or less) will not produce output.
-
- 3) OTU IDs must not contain semicolons, while taxonomy must be delimited with
+ 1) OTU tables with few OTUS (~10 or less) will not produce output.
+ 2) OTU IDs must not contain semicolons, while taxonomy must be delimited with
 semicolon.
 
 Citation:
