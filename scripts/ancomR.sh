@@ -133,7 +133,7 @@ Exiting.
 	inpath="${1%.*}"
 	inname="${inpath##*/}"
 	indir=$(dirname $1)
-	outdir="$workdir/ANCOM_${inbase}/"
+	outdir="$workdir/ANCOM_${inbase}_${factor}/"
 
 	mkdir -p $outdir
 
@@ -225,6 +225,12 @@ echo "Ancom-friendly conversion complete.
 Beginning statistical comparisons. Please be patient.
 "
 
+## Copy transformed OTU file and instructions into output directory
+	manfile0="otufile_for_ancom.txt"
+	manfile="$outdir/otufile_for_ancom.txt"
+	cp $tempfile6 $manfile
+	cp $repodir/akutils_resources/R-instructions_ancom.r $outdir
+
 ## Run ancom.R
 	Rscript $scriptdir/ancomR.r $tempfile6 $factor $outdir &>/dev/null
 	wait
@@ -254,6 +260,8 @@ Uncorrected results: $uncorout
 Uncorrected plots: $uncorpdf
 FDR-corrected output: $fdrout
 FDR-corrected plots: $fdrpdf
+OTU file for manual use: $manfile0
+R instructions (ancomR): R-instructions_ancom.r
 "
 
 exit 0
