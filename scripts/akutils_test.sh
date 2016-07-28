@@ -238,13 +238,13 @@ akutils strip_primers 1 $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq" 
 	fi
 
 	cd $testdir
-	akutils strip_primers 1 $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq 1>$testdir/std_out 2>$testdir/std_err || true
+	akutils strip_primers 13 $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq 1>$testdir/std_out 2>$testdir/std_err || true
 	wait
 
 	## Rename outputs for phix test
-	mv $testdir/strip_primers_out_515F-806R/index1.noprimers.fq $testdir/strip_primers_out_515F-806R/index1.noprimers.fastq
-	mv $testdir/strip_primers_out_515F-806R/read1.noprimers.fq $testdir/strip_primers_out_515F-806R/read1.noprimers.fastq
-	mv $testdir/strip_primers_out_515F-806R/read2.noprimers.fq $testdir/strip_primers_out_515F-806R/read2.noprimers.fastq
+	mv $testdir/strip_primers_out_515F-806R_3prime/index1.noprimers.fq $testdir/strip_primers_out_515F-806R_3prime/index1.noprimers.fastq
+	mv $testdir/strip_primers_out_515F-806R_3prime/read1.noprimers.fq $testdir/strip_primers_out_515F-806R_3prime/read1.noprimers.fastq
+	mv $testdir/strip_primers_out_515F-806R_3prime/read2.noprimers.fq $testdir/strip_primers_out_515F-806R_3prime/read2.noprimers.fastq
 
 	echo "
 ***** strip_primers std_out:
@@ -299,7 +299,7 @@ akutils phix_filtering $testdir/phix_filtering_out $testdir/map.test.txt $testdi
 	if [[ ! -f $testdir/map.test.txt ]]; then
 	cp $testdir/raw_data/map.mock.16S.nodils.txt $testdir/map.test.txt
 	fi
-	akutils phix_filtering $testdir/phix_filtering_out $testdir/map.test.txt $testdir/strip_primers_out_515F-806R/index1.noprimers.fastq $testdir/strip_primers_out_515F-806R/read1.noprimers.fastq $testdir/strip_primers_out_515F-806R/read2.noprimers.fastq 1>$testdir/std_out 2>$testdir/std_err 2>&1 || true
+	akutils phix_filtering $testdir/phix_filtering_out $testdir/map.test.txt $testdir/strip_primers_out_515F-806R_3prime/index1.noprimers.fastq $testdir/strip_primers_out_515F-806R_3prime/read1.noprimers.fastq $testdir/strip_primers_out_515F-806R_3prime/read2.noprimers.fastq 1>$testdir/std_out 2>$testdir/std_err 2>&1 || true
 	wait
 	echo "
 ***** phix_filtering std_out:
