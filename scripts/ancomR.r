@@ -39,17 +39,36 @@ otus <- read.table(otufile, sep="\t", header=TRUE)
 ancom.out <- ANCOM(real.data=otus,sig=0.05,multcorr=3)
 detections <- ancom.out$detected
 write(detections, paste0(outdir, "ANCOM_detections_", factor, "_uncorrected.txt"))
-plot <- plot_ancom(ancom.out)
+plot.un <- plot_ancom(ancom.out)
 pdf(paste0(outdir, "ANCOM_", factor, "_uncorrected.pdf"))
-plot(plot)
+plot.un
 
-## Run ancom with FDR correction
-ancom.out.fdr <- ANCOM(real.data=otus,sig=0.05,multcorr=2)
-detections.fdr <- ancom.out.fdr$detected
-write(detections.fdr, paste0(outdir, "ANCOM_detections_", factor, "_FDRcorrected.txt"))
-plot.fdr <- plot_ancom(ancom.out.fdr)
-pdf(paste0(outdir, "ANCOM_", factor, "_FDRcorrected.pdf"))
-plot(plot.fdr)
+## Run ancom with FDR correction (relaxed)
+ancom.out.fdr.2 <- ANCOM(real.data=otus,sig=0.05,multcorr=2)
+detections.fdr.2 <- ancom.out.fdr.2$detected
+write(detections.fdr.2, paste0(outdir, "ANCOM_detections_", factor, "_FDRrelaxed.txt"))
+plot.fdr.2 <- plot_ancom(ancom.out.fdr.2)
+pdf(paste0(outdir, "ANCOM_", factor, "_FDRrelaxed.pdf"))
+plot.fdr.2
+
+## Run ancom with FDR correction (strict)
+ancom.out.fdr.1 <- ANCOM(real.data=otus,sig=0.05,multcorr=1)
+detections.fdr.1 <- ancom.out.fdr.1$detected
+write(detections.fdr.1, paste0(outdir, "ANCOM_detections_", factor, "_FDRstrict.txt"))
+plot.fdr.1 <- plot_ancom(ancom.out.fdr.1)
+pdf(paste0(outdir, "ANCOM_", factor, "_FDRstrict.pdf"))
+plot.fdr.1
+
+## Produce statistical summary
+names0 <- colnames(otus)
+counts0 <- ncol(otus)
+counts1 <- counts0-1
+Group <- names0[1:counts1]
+WStat_NoCorrection <- ancom.out$W
+WStat_Correction1 <- ancom.out.fdr.1$W
+WStat_Correction2 <- ancom.out.fdr.2$W
+Result <- cbind(Group,WStat_NoCorrection,WStat_Correction1,WStat_Correction2)
+write.table(Result, paste0(outdir, "Statistical_summary.txt"), sep="\t", row.names=FALSE, quote=FALSE)
 
 ## End
 q()
