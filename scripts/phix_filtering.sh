@@ -122,6 +122,9 @@ PhiX filtering workflow beginning in paired read mode."
 	date "+%a %b %d %I:%M %p %Z %Y" >> $log
 	res1=$(date +%s.%N)
 
+## Remove any blank lines from map file (will break fastq-multx)
+	sed -i '/^$/d' $mapfile
+
 ## Make output directory for fastq-multx step
 	mkdir $outdir/fastq-multx_output
 
