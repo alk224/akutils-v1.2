@@ -71,6 +71,7 @@ trap finish EXIT
 	input="$1"
 	map="$2"
 	factor="$3"
+	alpha="$4"
 
 	date0=$(date +%Y%m%d_%I%M%p)
 
@@ -85,7 +86,7 @@ trap finish EXIT
 	fi
 
 ## If incorrect number of arguments supplied, display usage 
-	if [[ "$#" -ne 3 ]]; then 
+	if [[ "$#" -ne 4 ]]; then 
 	cat $repodir/docs/ancomR.usage
 		exit 1
 	fi 
@@ -169,6 +170,14 @@ command. Exiting.
 		"
 		exit 1
 	fi
+## Check if supplied alpha is a decimal or exit
+	if ! [[ "$alpha" =~ ^[0]+(\.[0-9]+)$ ]]; then
+		echo "
+Supplied alpha level is not a decimal between 0 and 1. You supplied ${bold}${alpha}${normal}.
+Exiting.
+		"
+		exit 1
+	fi
 
 ## Convert biom file to txt and copy to tempdir for processing
 	biomtotxt.sh $input &>/dev/null
@@ -223,6 +232,7 @@ command. Exiting.
 
 echo "Ancom-friendly conversion complete.
 Beginning statistical comparisons. Please be patient.
+User-defined significance level: ${bold}${alpha}${normal}
 "
 
 ## Copy transformed OTU file and instructions into output directory
@@ -232,20 +242,24 @@ Beginning statistical comparisons. Please be patient.
 	cp $repodir/akutils_resources/R-instructions_ancom.r $outdir
 
 ## Run ancom.R
-	Rscript $scriptdir/ancomR.r $tempfile6 $factor $outdir &>/dev/null
+	Rscript $scriptdir/ancomR.r $tempfile6 $factor $outdir $alpha &>/dev/null
 	wait
 
 ## Collate Detections and statistical summary
 	uncorout="$outdir/ANCOM_detections_${factor}_uncorrected.txt"
 	fdr1="$outdir/ANCOM_detections_${factor}_FDRstrict.txt"
 	fdr2="$outdir/ANCOM_detections_${factor}_FDRrelaxed.txt"
-	uncorpdf="ANCOM_${factor}_uncorrected.pdf"
-	fdrpdf1="ANCOM_${factor}_FDRstrict.pdf"
-	fdrpdf2="ANCOM_${factor}_FDRrelaxed.pdf"
+	uncorpdf="ANCOM_${factor}_1.pdf"
+	fdrpdf1="ANCOM_${factor}_2.pdf"
+	fdrpdf2="ANCOM_${factor}_3.pdf"
 
 	echo "
-Uncorrected detections:" >> $outdir/Statistical_summary.txt
-	cat $uncorout >> $outdir/Statistical_summary.txt
+ANCOM citation:
+Mandal S., Van Treuren W., White RA., Eggesbø M., Knight R., Peddada SD. 2015.
+Analysis of composition of microbiomes: a novel method for studying microbial
+composition. Microbial ecology in health and disease 26:27663." > $outdir/Statistical_summary.txt
+	echo "
+User-defined significance level = $alpha" >> $outdir/Statistical_summary.txt
 	echo "
 Corrected detections (strict FDR):" >> $outdir/Statistical_summary.txt
 	cat $fdr1 >> $outdir/Statistical_summary.txt
@@ -253,40 +267,27 @@ Corrected detections (strict FDR):" >> $outdir/Statistical_summary.txt
 Corrected detections (relaxed FDR):" >> $outdir/Statistical_summary.txt
 	cat $fdr2 >> $outdir/Statistical_summary.txt
 	echo "
-ANCOM citation:
-Mandal S., Van Treuren W., White RA., Eggesbø M., Knight R., Peddada SD. 2015. Analysis of composition of microbiomes: a novel method for studying microbial composition. Microbial ecology in health and disease 26:27663.
-" >> $outdir/Statistical_summary.txt
+Uncorrected detections:" >> $outdir/Statistical_summary.txt
+	cat $uncorout >> $outdir/Statistical_summary.txt
+	echo "" >> $outdir/Statistical_summary.txt
+	cat $outdir/Rstats.txt >> $outdir/Statistical_summary.txt
 
 ## Test for output, print completion and outputs, remove unwanted files
 	uncortest=$(grep "No significant OTUs detected" $uncorout 2>/dev/null | wc -l)
 	fdrtest1=$(grep "No significant OTUs detected" $fdr1 2>/dev/null | wc -l)
 	fdrtest2=$(grep "No significant OTUs detected" $fdr2 2>/dev/null | wc -l)
-
-	if [[ "$uncortest" == 1 ]]; then
-		rm $outdir/$uncorpdf
-		uncorpdf="No significant OTUs detected"
-	fi
-	if [[ "$fdrtest1" == 1 ]]; then
-		rm $outdir/$fdrpdf1
-		fdrpdf1="No significant OTUs detected"
-	fi
-	if [[ "$fdrtest2" == 1 ]]; then
-		rm $outdir/$fdrpdf2
-		fdrpdf2="No significant OTUs detected"
-	fi
+	rm $outdir/Rstats.txt
 	if [[ -f "Rplots.pdf" ]]; then
-		rm Rplots.pdf
+		rm Rplots.pdf 2>/dev/null
 	fi
-	rm $uncorout $fdr1 $fdr2
+	rm $uncorout $fdr1 $fdr2 2>/dev/null
 
 echo "Comparisons complete.
-Output directory: $outdir
-Statistics (W) and detections: Statistical_summary.txt
-Uncorrected plots: $uncorpdf
-Strict FDR-corrected plots: $fdrpdf1
-Relaxed FDR-corrected plots: $fdrpdf2
-OTU file for manual use: $manfile0
-R instructions (ancomR): R-instructions_ancom.r
+Output directory: ${bold}${outdir}${normal}
+Statistics (W) and detections: ${bold}Statistical_summary.txt${normal}
+Detection plots: ${bold}Detection_plots.pdf${normal}
+OTU file for manual use: ${bold}${manfile0}${normal}
+R instructions (ancomR): ${bold}R-instructions_ancom.r${normal}
 "
 
 exit 0
