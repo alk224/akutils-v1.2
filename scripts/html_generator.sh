@@ -1,7 +1,27 @@
 #!/usr/bin/env bash
 #
 ## html_generator.sh - HTML generator for akutils core diversity workflow
-
+#
+#  Version 1.2 (July, 27, 2016)
+#
+#  Copyright (c) 2015-2016 Andrew Krohn
+#
+#  This software is provided 'as-is', without any express or implied
+#  warranty. In no event will the authors be held liable for any damages
+#  arising from the use of this software.
+#
+#  Permission is granted to anyone to use this software for any purpose,
+#  including commercial applications, and to alter it and redistribute it
+#  freely, subject to the following restrictions:
+#
+#  1. The origin of this software must not be misrepresented; you must not
+#     claim that you wrote the original software. If you use this software
+#     in a product, an acknowledgment in the product documentation would be
+#     appreciated but is not required.
+#  2. Altered source versions must be plainly marked as such, and must not be
+#     misrepresented as being the original software.
+#  3. This notice may not be removed or altered from any source distribution.
+#
 ## Trap function on exit.
 function finish {
 if [[ -f $anchor01temp ]]; then
@@ -67,6 +87,24 @@ fi
 if [[ -f $anchor21temp ]]; then
 	rm $anchor21temp
 fi
+if [[ -f $anchor0004temp ]]; then
+	rm $anchor0004temp
+fi
+if [[ -f $anchor0006temp ]]; then
+	rm $anchor0006temp
+fi
+if [[ -f $anchor0007temp ]]; then
+	rm $anchor0007temp
+fi
+if [[ -f $anchor0008temp ]]; then
+	rm $anchor0008temp
+fi
+if [[ -f $anchor0009temp ]]; then
+	rm $anchor0009temp
+fi
+if [[ -f $anchor0010temp ]]; then
+	rm $anchor0010temp
+fi
 }
 trap finish EXIT
 
@@ -103,6 +141,12 @@ anchor18temp="${tempdir}/${randcode}_anchor18.temp"
 anchor19temp="${tempdir}/${randcode}_anchor19.temp"
 anchor20temp="${tempdir}/${randcode}_anchor20.temp"
 anchor21temp="${tempdir}/${randcode}_anchor21.temp"
+anchor0004temp="${tempdir}/${randcode}_anchor0004.temp"
+anchor0006temp="${tempdir}/${randcode}_anchor0006.temp"
+anchor0007temp="${tempdir}/${randcode}_anchor0007.temp"
+anchor0008temp="${tempdir}/${randcode}_anchor0008.temp"
+anchor0009temp="${tempdir}/${randcode}_anchor0009.temp"
+anchor0010temp="${tempdir}/${randcode}_anchor0010.temp"
 
 ## Copy blank outputs:
 	cp $repodir/akutils_resources/html_template/index.html $outdir
@@ -120,8 +164,9 @@ log=`ls $outdir/log_core_diversity* 2>/dev/null`
 logfile=$(basename $log)
 
 ## Set table name
-	## Find anchor in template and send table name
-	sed -i "s/<!--anchor001-->/${inputbase}.biom/" $outdir/index.html
+	## Find anchor in template and send table name and rarefaction depth
+	sed -i "s/<!--anchor001-->/${inputbase}.biom/" $outdir/index.html 2>/dev/null
+	sed -i "s/<!--anchor001a-->/${depth}/" $outdir/index.html 2>/dev/null
 
 ## Build anchor01temp (Run summary data)
 	## Master log file
@@ -141,10 +186,13 @@ fi
 if [[ -f $outdir/OTU_tables/CSS_table.summary ]]; then
 echo "<tr><td> CSS-normalized OTU table statistics </td><td> <a href=\"./OTU_tables/CSS_table.summary\" target=\"_blank\"> CSS_table.summary </a></td></tr>" >> $anchor01temp
 fi
+if [[ -f $outdir/OTU_tables/DESeq2_table.summary ]]; then
+echo "<tr><td> DESeq2-normalized OTU table statistics </td><td> <a href=\"./OTU_tables/DESeq2_table.summary\" target=\"_blank\"> DESeq2_table.summary </a></td></tr>" >> $anchor01temp
+fi
 echo "</table>" >> $anchor01temp
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor01/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor01/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor01temp" $outdir/index.html
 
 ## Build anchor02temp (OTU table links)
@@ -157,10 +205,10 @@ echo "<tr><td> Input metadata mapping file </td><td> <a href=\"./OTU_tables/inpu
 fi
 echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Input OTU table </td></tr>" >> $anchor02temp
 if [[ -f $outdir/OTU_tables/${inputbase}.biom ]]; then
-echo "<tr><td> Input OTU table (BIOM format) </td><td> <a href=\"./OTU_tables/${inputbase}.biom\" target=\"_blank\"> ${inputbase}.biom </a></td></tr>" >> $anchor02temp
+echo "<tr><td> Input OTU table (BIOM format, zero count OTUs removed) </td><td> <a href=\"./OTU_tables/${inputbase}.biom\" target=\"_blank\"> ${inputbase}.biom </a></td></tr>" >> $anchor02temp
 fi
 if [[ -f $outdir/OTU_tables/${inputbase}.txt ]]; then
-echo "<tr><td> Input OTU table (tab-delimited format) </td><td> <a href=\"./OTU_tables/${inputbase}.txt\" target=\"_blank\"> ${inputbase}.txt </a></td></tr>" >> $anchor02temp
+echo "<tr><td> Input OTU table (tab-delimited format, zero count OTUs removed) </td><td> <a href=\"./OTU_tables/${inputbase}.txt\" target=\"_blank\"> ${inputbase}.txt </a></td></tr>" >> $anchor02temp
 fi
 echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Rarefied OTU tables (depth = ${depth}) </td></tr>" >> $anchor02temp
 if [[ -f $outdir/OTU_tables/rarefied_table_sorted.biom ]]; then
@@ -194,35 +242,49 @@ fi
 if [[ -f $outdir/OTU_tables/sample_filtered_table.txt ]]; then
 echo "<tr><td> Sample-filtered table (input for normalization, tab-delimited format) </td><td> <a href=\"./OTU_tables/sample_filtered_table.txt\" target=\"_blank\"> sample_filtered_table.txt </a></td></tr>" >> $anchor02temp
 fi
-echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Normalized OTU tables (CSS transformation of sample-filtered table) </td></tr>" >> $anchor02temp
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> CSS-normalized OTU tables (CSS transformation of sample-filtered table) </td></tr>" >> $anchor02temp
 if [[ -f $outdir/OTU_tables/CSS_table_sorted.biom ]]; then
-echo "<tr><td> Normalized OTU table (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted.biom\" target=\"_blank\"> CSS_table_sorted.biom </a></td></tr>" >> $anchor02temp
+echo "<tr><td> CSS-normalized OTU table (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted.biom\" target=\"_blank\"> CSS_table_sorted.biom </a></td></tr>" >> $anchor02temp
 fi
 if [[ -f $outdir/OTU_tables/CSS_table_sorted_with_metadata.biom ]]; then
-echo "<tr><td> Normalized OTU table with metadata (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_with_metadata.biom\" target=\"_blank\"> CSS_table_sorted_with_metadata.biom </a></td></tr>" >> $anchor02temp
+echo "<tr><td> CSS-normalized OTU table with metadata (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_with_metadata.biom\" target=\"_blank\"> CSS_table_sorted_with_metadata.biom </a></td></tr>" >> $anchor02temp
 fi
 if [[ -f $outdir/OTU_tables/CSS_table_sorted.txt ]]; then
-echo "<tr><td> Normalized OTU table (tab-delimited format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted.txt\" target=\"_blank\"> CSS_table_sorted.txt </a></td></tr>" >> $anchor02temp
+echo "<tr><td> CSS-normalized OTU table (tab-delimited format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted.txt\" target=\"_blank\"> CSS_table_sorted.txt </a></td></tr>" >> $anchor02temp
 fi
-#if [[ -f $outdir/OTU_tables/CSS_table_sorted_with_metadata.txt ]]; then
-#echo "<tr><td> Normalized OTU table with metadata (tab-delimited format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_with_metadata.txt\" target=\"_blank\"> CSS_table_sorted_with_metadata.txt </a></td></tr>" >> $anchor02temp
-#fi
 if [[ -f $outdir/OTU_tables/CSS_table_sorted_relativized.biom ]]; then
-echo "<tr><td> Normalized OTU table, relativized (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_relativized.biom\" target=\"_blank\"> CSS_table_sorted_relativized.biom </a></td></tr>" >> $anchor02temp
+echo "<tr><td> CSS-normalized OTU table, relativized (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_relativized.biom\" target=\"_blank\"> CSS_table_sorted_relativized.biom </a></td></tr>" >> $anchor02temp
 fi
 if [[ -f $outdir/OTU_tables/CSS_table_sorted_relativized_with_metadata.biom ]]; then
-echo "<tr><td> Normalized OTU table, relativized with metadata (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_relativized_with_metadata.biom\" target=\"_blank\"> CSS_table_sorted_relativized_with_metadata.biom </a></td></tr>" >> $anchor02temp
+echo "<tr><td> CSS-normalized OTU table, relativized with metadata (BIOM format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_relativized_with_metadata.biom\" target=\"_blank\"> CSS_table_sorted_relativized_with_metadata.biom </a></td></tr>" >> $anchor02temp
 fi
 if [[ -f $outdir/OTU_tables/CSS_table_sorted_relativized.txt ]]; then
-echo "<tr><td> Normalized OTU table, relativized (tab-delimited format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_relativized.txt\" target=\"_blank\"> CSS_table_sorted_relativized.txt </a></td></tr>" >> $anchor02temp
+echo "<tr><td> CSS-normalized OTU table, relativized (tab-delimited format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_relativized.txt\" target=\"_blank\"> CSS_table_sorted_relativized.txt </a></td></tr>" >> $anchor02temp
 fi
-#if [[ -f $outdir/OTU_tables/CSS_table_sorted_relativized_with_metadata.txt ]]; then
-#echo "<tr><td> Normalized OTU table, relativized with metadata (tab-delimited format) </td><td> <a href=\"./OTU_tables/CSS_table_sorted_relativized_with_metadata.txt\" target=\"_blank\"> CSS_table_sorted_relativized_with_metadata.txt </a></td></tr>" >> $anchor02temp
-#fi
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> DESeq2-normalized OTU tables (DESeq2 transformation of sample-filtered table) </td></tr>" >> $anchor02temp
+if [[ -f $outdir/OTU_tables/DESeq2_table_sorted.biom ]]; then
+echo "<tr><td> DESeq2-normalized OTU table (BIOM format) </td><td> <a href=\"./OTU_tables/DESeq2_table_sorted.biom\" target=\"_blank\"> DESeq2_table_sorted.biom </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/DESeq2_table_sorted_with_metadata.biom ]]; then
+echo "<tr><td> DESeq2-normalized OTU table with metadata (BIOM format) </td><td> <a href=\"./OTU_tables/DESeq2_table_sorted_with_metadata.biom\" target=\"_blank\"> DESeq2_table_sorted_with_metadata.biom </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/DESeq2_table_sorted.txt ]]; then
+echo "<tr><td> DESeq2-normalized OTU table (tab-delimited format) </td><td> <a href=\"./OTU_tables/DESeq2_table_sorted.txt\" target=\"_blank\"> DESeq2_table_sorted.txt </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/DESeq2_table_sorted_relativized.biom ]]; then
+echo "<tr><td> DESeq2-normalized OTU table, relativized (BIOM format) </td><td> <a href=\"./OTU_tables/DESeq2_table_sorted_relativized.biom\" target=\"_blank\"> DESeq2_table_sorted_relativized.biom </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/DESeq2_table_sorted_relativized_with_metadata.biom ]]; then
+echo "<tr><td> DESeq2-normalized OTU table, relativized with metadata (BIOM format) </td><td> <a href=\"./OTU_tables/DESeq2_table_sorted_relativized_with_metadata.biom\" target=\"_blank\"> DESeq2_table_sorted_relativized_with_metadata.biom </a></td></tr>" >> $anchor02temp
+fi
+if [[ -f $outdir/OTU_tables/DESeq2_table_sorted_relativized.txt ]]; then
+echo "<tr><td> DESeq2-normalized OTU table, relativized (tab-delimited format) </td><td> <a href=\"./OTU_tables/DESeq2_table_sorted_relativized.txt\" target=\"_blank\"> DESeq2_table_sorted_relativized.txt </a></td></tr>" >> $anchor02temp
+fi
+
 echo "</table>" >> $anchor02temp
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor02/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor02/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor02temp" $outdir/index.html
 
 ## Build anchor03temp (L7 summary data)
@@ -248,7 +310,7 @@ echo "<table class=\"center\" border=1>
 	fi
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor03/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor03/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor03temp" $outdir/index.html
 
 ## Build anchor20temp (phylogenetic tree data)
@@ -265,7 +327,7 @@ echo "</table>" >> $anchor20temp
 	fi
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor20/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor20/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor20temp" $outdir/index.html
 
 ## Build anchor21temp (network plots)
@@ -279,97 +341,96 @@ echo "</table>" >> $anchor21temp
 	fi
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor21/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor21/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor21temp" $outdir/index.html
 
-## Build anchor04temp (normalized taxa plots)
+## Build anchor04temp (CSS normalized taxa plots)
 ## Taxa plots by sample
-	if [[ -d $outdir/Normalized_output/taxa_plots ]]; then
+	if [[ -d $outdir/CSS_normalized_output/taxa_plots ]]; then
 echo "<table class=\"center\" border=1>" > $anchor04temp
-echo "<tr><td> Taxa summary bar plots (by sample) </td><td> <a href=\"./Normalized_output/taxa_plots/taxa_summary_plots/bar_charts.html\" target=\"_blank\"> bar_charts.html </a></td></tr>" >> $anchor04temp
+echo "<tr><td> Taxa summary bar plots (by sample) </td><td> <a href=\"./CSS_normalized_output/taxa_plots/taxa_summary_plots/bar_charts.html\" target=\"_blank\"> bar_charts.html </a></td></tr>" >> $anchor04temp
 
 ## Taxa plots by category
 	for line in `cat $catlist`; do
-	if [[ -d $outdir/Normalized_output/taxa_plots_${line} ]]; then
-echo "<tr><td> Taxa summary bar plots (${line}) </td><td> <a href=\"./Normalized_output/taxa_plots_${line}/taxa_summary_plots/bar_charts.html\" target=\"_blank\"> bar_charts.html </a></td></tr>
-<tr><td> Taxa summary pie plots (${line}) </td><td> <a href=\"./Normalized_output/taxa_plots_$line/taxa_summary_plots/pie_charts.html\" target=\"_blank\"> pie_charts.html </a></td></tr>" >> $anchor04temp
+	if [[ -d $outdir/CSS_normalized_output/taxa_plots_${line} ]]; then
+echo "<tr><td> Taxa summary bar plots (${line}) </td><td> <a href=\"./CSS_normalized_output/taxa_plots_${line}/taxa_summary_plots/bar_charts.html\" target=\"_blank\"> bar_charts.html </a></td></tr>
+<tr><td> Taxa summary pie plots (${line}) </td><td> <a href=\"./CSS_normalized_output/taxa_plots_$line/taxa_summary_plots/pie_charts.html\" target=\"_blank\"> pie_charts.html </a></td></tr>" >> $anchor04temp
 	fi
 	done
 echo "</table>" >> $anchor04temp
 	fi
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor04/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor04/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor04temp" $outdir/index.html
 
-## Build anchor06temp (normalized beta diversity)
-## Normalized beta diversity results
-	if [[ -d $outdir/Normalized_output/beta_diversity ]]; then
+## Build anchor06temp (CSS normalized beta diversity)
+## CSS normalized beta diversity results
+	if [[ -d $outdir/CSS_normalized_output/beta_diversity ]]; then
 echo "<table class=\"center\" border=1>" > $anchor06temp
-echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Beta diversity comparisons (normalized) </td></tr>
-<tr><td> Anosim results (normalized) </td><td> <a href=\"./Normalized_output/beta_diversity/anosim_results_collated.txt\" target=\"_blank\"> anosim_results_collated.txt -- NORMALIZED DATA </a></td></tr>
-<tr><td> Adonis results (normalized) </td><td> <a href=\"./Normalized_output/beta_diversity/adonis_results_collated.txt\" target=\"_blank\"> adonis_results_collated.txt -- NORMALIZED DATA </a></td></tr>
-<tr><td> DB-RDA results (normalized) </td><td> <a href=\"./Normalized_output/beta_diversity/dbrda_results_collated.txt\" target=\"_blank\"> dbrda_results_collated.txt -- NORMALIZED DATA </a></td></tr>
-<tr><td> Permanova results (normalized) </td><td> <a href=\"./Normalized_output/beta_diversity/permanova_results_collated.txt\" target=\"_blank\"> permanova_results_collated.txt -- NORMALIZED DATA </a></td></tr>
-<tr><td> Permdisp results (normalized) </td><td> <a href=\"./Normalized_output/beta_diversity/permdisp_results_collated.txt\" target=\"_blank\"> permdisp_results_collated.txt -- NORMALIZED DATA </a></td></tr>" >> $anchor06temp
-	for dm in $outdir/Normalized_output/beta_diversity/*_dm.txt; do
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Beta diversity comparisons (CSS normalized) </td></tr>
+<tr><td> Anosim results (CSS normalized) </td><td> <a href=\"./CSS_normalized_output/beta_diversity/anosim_results_collated.txt\" target=\"_blank\"> anosim_results_collated.txt -- CSS NORMALIZED DATA </a></td></tr>
+<tr><td> Adonis results (CSS normalized) </td><td> <a href=\"./CSS_normalized_output/beta_diversity/adonis_results_collated.txt\" target=\"_blank\"> adonis_results_collated.txt -- CSS NORMALIZED DATA </a></td></tr>
+<tr><td> DB-RDA results (CSS normalized) </td><td> <a href=\"./CSS_normalized_output/beta_diversity/dbrda_results_collated.txt\" target=\"_blank\"> dbrda_results_collated.txt -- CSS NORMALIZED DATA </a></td></tr>
+<tr><td> Permanova results (CSS normalized) </td><td> <a href=\"./CSS_normalized_output/beta_diversity/permanova_results_collated.txt\" target=\"_blank\"> permanova_results_collated.txt -- CSS NORMALIZED DATA </a></td></tr>
+<tr><td> Permdisp results (CSS normalized) </td><td> <a href=\"./CSS_normalized_output/beta_diversity/permdisp_results_collated.txt\" target=\"_blank\"> permdisp_results_collated.txt -- CSS NORMALIZED DATA </a></td></tr>" >> $anchor06temp
+	for dm in $outdir/CSS_normalized_output/beta_diversity/*_dm.txt; do
 	dmbase=`basename $dm _dm.txt`
 echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> ${dmbase} </td></tr>" >> $anchor06temp
 	for line in `cat $catlist`; do
-echo "<tr><td> Distance boxplots (${line}, ${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/${dmbase}_boxplots/${line}_Distances.pdf\" target=\"_blank\"> ${line}_Distances.pdf </a></td></tr>
-<tr><td> Distance boxplots statistics (${line}, ${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/${dmbase}_boxplots/${line}_Stats.txt\" target=\"_blank\"> ${line}_Stats.txt </a></td></tr>" >> $anchor06temp
+echo "<tr><td> Distance boxplots (${line}, ${dmbase}) </td><td> <a href=\"./CSS_normalized_output/beta_diversity/${dmbase}_boxplots/${line}_Distances.pdf\" target=\"_blank\"> ${line}_Distances.pdf </a></td></tr>
+<tr><td> Distance boxplots statistics (${line}, ${dmbase}) </td><td> <a href=\"./CSS_normalized_output/beta_diversity/${dmbase}_boxplots/${line}_Stats.txt\" target=\"_blank\"> ${line}_Stats.txt </a></td></tr>" >> $anchor06temp
 
 	done
-	nmsstress=`grep -e "^stress\s" $outdir/Normalized_output/beta_diversity/${dmbase}_nmds.txt 2>/dev/null || true | cut -f2`
-echo "<tr><td> 3D PCoA plot (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/${dmbase}_emperor_pcoa_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
-<tr><td> 2D PCoA plot (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/2D_PCoA_bdiv_plots/${dmbase}_pc_2D_PCoA_plots.html\" target=\"_blank\"> index.html </a></td></tr>
-<tr><td> 3D NMDS plot (${dmbase}, $nmsstress) </td><td> <a href=\"./Normalized_output/beta_diversity/${dmbase}_emperor_nmds_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
-<tr><td> DB-RDA plot (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/dbrda_out/\" target=\"_blank\"> dbrda_plot_directory </a></td></tr>" >> $anchor06temp
-echo "<tr><td> Distance matrix (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/${dmbase}_dm.txt\" target=\"_blank\"> ${dmbase}_dm.txt </a></td></tr>
-<tr><td> Principal coordinate matrix (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/${dmbase}_pc.txt\" target=\"_blank\"> ${dmbase}_pc.txt </a></td></tr>
-<tr><td> NMDS coordinates (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/${dmbase}_nmds.txt\" target=\"_blank\"> ${dmbase}_nmds.txt </a></td></tr>" >> $anchor06temp
+	nmsstress=`grep -e "^stress\s" $outdir/CSS_normalized_output/beta_diversity/${dmbase}_nmds.txt 2>/dev/null || true | cut -f2`
+echo "<tr><td> 3D PCoA plot (${dmbase}) </td><td> <a href=\"./CSS_normalized_output/beta_diversity/${dmbase}_emperor_pcoa_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
+<tr><td> 2D PCoA plot (${dmbase}) </td><td> <a href=\"./CSS_normalized_output/beta_diversity/2D_PCoA_bdiv_plots/${dmbase}_pc_2D_PCoA_plots.html\" target=\"_blank\"> index.html </a></td></tr>
+<tr><td> 3D NMDS plot (${dmbase}, $nmsstress) </td><td> <a href=\"./CSS_normalized_output/beta_diversity/${dmbase}_emperor_nmds_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
+<tr><td> DB-RDA plot (${dmbase}) </td><td> <a href=\"./CSS_normalized_output/beta_diversity/dbrda_out/\" target=\"_blank\"> dbrda_plot_directory </a></td></tr>" >> $anchor06temp
+echo "<tr><td> Distance matrix (${dmbase}) </td><td> <a href=\"./CSS_normalized_output/beta_diversity/${dmbase}_dm.txt\" target=\"_blank\"> ${dmbase}_dm.txt </a></td></tr>
+<tr><td> Principal coordinate matrix (${dmbase}) </td><td> <a href=\"./CSS_normalized_output/beta_diversity/${dmbase}_pc.txt\" target=\"_blank\"> ${dmbase}_pc.txt </a></td></tr>
+<tr><td> NMDS coordinates (${dmbase}) </td><td> <a href=\"./CSS_normalized_output/beta_diversity/${dmbase}_nmds.txt\" target=\"_blank\"> ${dmbase}_nmds.txt </a></td></tr>" >> $anchor06temp
 	done
 	fi
 echo "</table>" >> $anchor06temp
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor06/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor06/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor06temp" $outdir/index.html
 
-
-## Build anchor07temp (normalized group significance)
+## Build anchor07temp (CSS normalized group significance)
 ## Kruskal-Wallis results
-	if [[ -d $outdir/Normalized_output/KruskalWallis ]]; then
+	if [[ -d $outdir/CSS_normalized_output/KruskalWallis ]]; then
 echo "<table class=\"center\" border=1>" > $anchor07temp
 echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Group Significance Results (Kruskal-Wallis - nonparametric ANOVA) <br><br> All mean values are percent of total counts by sample (relative OTU abundances) </td></tr>" >> $anchor07temp
 	for line in `cat $catlist`; do
-	if [[ -f $outdir/Normalized_output/KruskalWallis/kruskalwallis_${line}_OTU.txt ]]; then
-echo "<tr><td> Kruskal-Wallis results - ${line} - OTU level </td><td> <a href=\"./Normalized_output/KruskalWallis/kruskalwallis_${line}_OTU.txt\" target=\"_blank\"> kruskalwallis_${line}_OTU.txt </a></td></tr>" >> $anchor07temp
+	if [[ -f $outdir/CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_OTU.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - OTU level </td><td> <a href=\"./CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_OTU.txt\" target=\"_blank\"> kruskalwallis_${line}_OTU.txt </a></td></tr>" >> $anchor07temp
 	fi
 	done
 	for line in `cat $catlist`; do
-	if [[ -f $outdir/Normalized_output/KruskalWallis/kruskalwallis_${line}_L7.txt ]]; then
-echo "<tr><td> Kruskal-Wallis results - ${line} - species level (L7) </td><td> <a href=\"./Normalized_output/KruskalWallis/kruskalwallis_${line}_L7.txt\" target=\"_blank\"> kruskalwallis_${line}_L7.txt </a></td></tr>" >> $anchor07temp
+	if [[ -f $outdir/CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L7.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - species level (L7) </td><td> <a href=\"./CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L7.txt\" target=\"_blank\"> kruskalwallis_${line}_L7.txt </a></td></tr>" >> $anchor07temp
 	fi
 	done
 	for line in `cat $catlist`; do
-	if [[ -f $outdir/Normalized_output/KruskalWallis/kruskalwallis_${line}_L6.txt ]]; then
-echo "<tr><td> Kruskal-Wallis results - ${line} - genus level (L6) </td><td> <a href=\"./Normalized_output/KruskalWallis/kruskalwallis_${line}_L6.txt\" target=\"_blank\"> kruskalwallis_${line}_L6.txt </a></td></tr>" >> $anchor07temp
+	if [[ -f $outdir/CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L6.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - genus level (L6) </td><td> <a href=\"./CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L6.txt\" target=\"_blank\"> kruskalwallis_${line}_L6.txt </a></td></tr>" >> $anchor07temp
 	fi
 	done
 	for line in `cat $catlist`; do
-	if [[ -f $outdir/Normalized_output/KruskalWallis/kruskalwallis_${line}_L5.txt ]]; then
-echo "<tr><td> Kruskal-Wallis results - ${line} - family level (L5) </td><td> <a href=\"./Normalized_output/KruskalWallis/kruskalwallis_${line}_L5.txt\" target=\"_blank\"> kruskalwallis_${line}_L5.txt </a></td></tr>" >> $anchor07temp
+	if [[ -f $outdir/CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L5.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - family level (L5) </td><td> <a href=\"./CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L5.txt\" target=\"_blank\"> kruskalwallis_${line}_L5.txt </a></td></tr>" >> $anchor07temp
 	fi
 	done
 	for line in `cat $catlist`; do
-	if [[ -f $outdir/Normalized_output/KruskalWallis/kruskalwallis_${line}_L4.txt ]]; then
-echo "<tr><td> Kruskal-Wallis results - ${line} - order level (L4) </td><td> <a href=\"./Normalized_output/KruskalWallis/kruskalwallis_${line}_L4.txt\" target=\"_blank\"> kruskalwallis_${line}_L4.txt </a></td></tr>" >> $anchor07temp
+	if [[ -f $outdir/CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L4.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - order level (L4) </td><td> <a href=\"./CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L4.txt\" target=\"_blank\"> kruskalwallis_${line}_L4.txt </a></td></tr>" >> $anchor07temp
 	fi
 	done
 	for line in `cat $catlist`; do
-	if [[ -f $outdir/Normalized_output/KruskalWallis/kruskalwallis_${line}_L3.txt ]]; then
-echo "<tr><td> Kruskal-Wallis results - ${line} - class level (L3) </td><td> <a href=\"./Normalized_output/KruskalWallis/kruskalwallis_${line}_L3.txt\" target=\"_blank\"> kruskalwallis_${line}_L3.txt </a></td></tr>" >> $anchor07temp
+	if [[ -f $outdir/CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L3.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - class level (L3) </td><td> <a href=\"./CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L3.txt\" target=\"_blank\"> kruskalwallis_${line}_L3.txt </a></td></tr>" >> $anchor07temp
 	fi
 	done
 	for line in `cat $catlist`; do
@@ -381,57 +442,57 @@ echo "</table>" >> $anchor07temp
 	fi
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor07/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor07/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor07temp" $outdir/index.html
 
-## Build anchor08temp (normalized rank abundance)
-	if [[ -d $outdir/Normalized_output/RankAbundance ]]; then
+## Build anchor08temp (CSS normalized rank abundance)
+	if [[ -d $outdir/CSS_normalized_output/RankAbundance ]]; then
 echo "<table class=\"center\" border=1>" > $anchor08temp
 echo "
-<tr><td> Rank abundance (xlog-ylog) </td><td> <a href=\"./Normalized_output/RankAbundance/rankabund_xlog-ylog.pdf\" target=\"_blank\"> rankabund_xlog-ylog.pdf </a></td></tr>
-<tr><td> Rank abundance (xlinear-ylog) </td><td> <a href=\"./Normalized_output/RankAbundance/rankabund_xlinear-ylog.pdf\" target=\"_blank\"> rankabund_xlinear-ylog.pdf </a></td></tr>
-<tr><td> Rank abundance (xlog-ylinear) </td><td> <a href=\"./Normalized_output/RankAbundance/rankabund_xlog-ylinear.pdf\" target=\"_blank\"> rankabund_xlog-ylinear.pdf </a></td></tr>
-<tr><td> Rank abundance (xlinear-ylinear) </td><td> <a href=\"./Normalized_output/RankAbundance/rankabund_xlinear-ylinear.pdf\" target=\"_blank\"> rankabund_xlinear-ylinear.pdf </a></td></tr>
+<tr><td> Rank abundance (xlog-ylog) </td><td> <a href=\"./CSS_normalized_output/RankAbundance/rankabund_xlog-ylog.pdf\" target=\"_blank\"> rankabund_xlog-ylog.pdf </a></td></tr>
+<tr><td> Rank abundance (xlinear-ylog) </td><td> <a href=\"./CSS_normalized_output/RankAbundance/rankabund_xlinear-ylog.pdf\" target=\"_blank\"> rankabund_xlinear-ylog.pdf </a></td></tr>
+<tr><td> Rank abundance (xlog-ylinear) </td><td> <a href=\"./CSS_normalized_output/RankAbundance/rankabund_xlog-ylinear.pdf\" target=\"_blank\"> rankabund_xlog-ylinear.pdf </a></td></tr>
+<tr><td> Rank abundance (xlinear-ylinear) </td><td> <a href=\"./CSS_normalized_output/RankAbundance/rankabund_xlinear-ylinear.pdf\" target=\"_blank\"> rankabund_xlinear-ylinear.pdf </a></td></tr>
 </table>" >> $anchor08temp
 	fi
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor08/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor08/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor08temp" $outdir/index.html
 
-## Build anchor09temp (normalized supervised learning)
-## Supervised learning (normalized)
-	if [[ -d $outdir/Normalized_output/SupervisedLearning ]]; then
+## Build anchor09temp (CSS normalized supervised learning)
+## Supervised learning (CSS normalized)
+	if [[ -d $outdir/CSS_normalized_output/SupervisedLearning ]]; then
 echo "<table class=\"center\" border=1>
 <tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Supervised learning results <br><br> Out-of-bag analysis (oob) </td></tr>" > $anchor09temp
 	for category in `cat $catlist`; do
-echo "<tr><td> Summary (${category}) </td><td> <a href=\"./Normalized_output/SupervisedLearning/${category}/summary.txt\" target=\"_blank\"> summary.txt </a></td></tr>
-<tr><td> Mislabeling (${category}) </td><td> <a href=\"./Normalized_output/SupervisedLearning/${category}/mislabeling.txt\" target=\"_blank\"> mislabeling.txt </a></td></tr>
-<tr><td> Confusion Matrix (${category}) </td><td> <a href=\"./Normalized_output/SupervisedLearning/${category}/confusion_matrix.txt\" target=\"_blank\"> confusion_matrix.txt </a></td></tr>
-<tr><td> CV Probabilities (${category}) </td><td> <a href=\"./Normalized_output/SupervisedLearning/${category}/cv_probabilities.txt\" target=\"_blank\"> cv_probabilities.txt </a></td></tr>
-<tr><td> Feature Importance Scores (${category}) </td><td> <a href=\"./Normalized_output/SupervisedLearning/${category}/feature_importance_scores.txt\" target=\"_blank\"> feature_importance_scores.txt </a></td></tr>" >> $anchor09temp
+echo "<tr><td> Summary (${category}) </td><td> <a href=\"./CSS_normalized_output/SupervisedLearning/${category}/summary.txt\" target=\"_blank\"> summary.txt </a></td></tr>
+<tr><td> Mislabeling (${category}) </td><td> <a href=\"./CSS_normalized_output/SupervisedLearning/${category}/mislabeling.txt\" target=\"_blank\"> mislabeling.txt </a></td></tr>
+<tr><td> Confusion Matrix (${category}) </td><td> <a href=\"./CSS_normalized_output/SupervisedLearning/${category}/confusion_matrix.txt\" target=\"_blank\"> confusion_matrix.txt </a></td></tr>
+<tr><td> CV Probabilities (${category}) </td><td> <a href=\"./CSS_normalized_output/SupervisedLearning/${category}/cv_probabilities.txt\" target=\"_blank\"> cv_probabilities.txt </a></td></tr>
+<tr><td> Feature Importance Scores (${category}) </td><td> <a href=\"./CSS_normalized_output/SupervisedLearning/${category}/feature_importance_scores.txt\" target=\"_blank\"> feature_importance_scores.txt </a></td></tr>" >> $anchor09temp
 	done
 echo "</table>" >> $anchor09temp
 	fi
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor09/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor09/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor09temp" $outdir/index.html
 
-## Build anchor10temp (normalized biplots)
-## Biplots (normalized)
-	if [[ -d $outdir/Normalized_output/beta_diversity/biplots ]]; then
+## Build anchor10temp (CSS normalized biplots)
+## Biplots (CSS normalized)
+	if [[ -d $outdir/CSS_normalized_output/beta_diversity/biplots ]]; then
 echo "<table class=\"center\" border=1>
-<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Biplots -- NORMALIZED DATA </td></tr>" > $anchor10temp
+<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Biplots -- CSS NORMALIZED DATA </td></tr>" > $anchor10temp
 
-	for dm in $outdir/Normalized_output/beta_diversity/*_dm.txt; do
+	for dm in $outdir/CSS_normalized_output/beta_diversity/*_dm.txt; do
 	dmbase=`basename $dm _dm.txt`
-	for level in $outdir/Normalized_output/beta_diversity/biplots/${dmbase}/CSS_table_sorted_*/; do
+	for level in $outdir/CSS_normalized_output/beta_diversity/biplots/${dmbase}/CSS_table_sorted_*/; do
 	lev=`basename $level`
 	Lev=`echo $lev | sed 's/CSS_table_sorted_//'`
 	Level=`echo $Lev | sed 's/L/Level /'`
 
-echo "<tr><td> PCoA biplot, ${Level} (${dmbase}) </td><td> <a href=\"./Normalized_output/beta_diversity/biplots/${dmbase}/${lev}/index.html\" target=\"_blank\"> index.html </a></td></tr>" >> $anchor10temp
+echo "<tr><td> PCoA biplot, ${Level} (${dmbase}) </td><td> <a href=\"./CSS_normalized_output/beta_diversity/biplots/${dmbase}/${lev}/index.html\" target=\"_blank\"> index.html </a></td></tr>" >> $anchor10temp
 
 	done
 	done
@@ -439,8 +500,167 @@ echo "</table>" >> $anchor10temp
 	fi
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor10/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor10/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor10temp" $outdir/index.html
+
+## Build anchor04temp (DESeq2 normalized taxa plots)
+## Taxa plots by sample
+	if [[ -d $outdir/DESeq2_normalized_output/taxa_plots ]]; then
+echo "<table class=\"center\" border=1>" > $anchor0004temp
+echo "<tr><td> Taxa summary bar plots (by sample) </td><td> <a href=\"./DESeq2_normalized_output/taxa_plots/taxa_summary_plots/bar_charts.html\" target=\"_blank\"> bar_charts.html </a></td></tr>" >> $anchor0004temp
+
+## Taxa plots by category
+	for line in `cat $catlist`; do
+	if [[ -d $outdir/DESeq2_normalized_output/taxa_plots_${line} ]]; then
+echo "<tr><td> Taxa summary bar plots (${line}) </td><td> <a href=\"./DESeq2_normalized_output/taxa_plots_${line}/taxa_summary_plots/bar_charts.html\" target=\"_blank\"> bar_charts.html </a></td></tr>
+<tr><td> Taxa summary pie plots (${line}) </td><td> <a href=\"./DESeq2_normalized_output/taxa_plots_$line/taxa_summary_plots/pie_charts.html\" target=\"_blank\"> pie_charts.html </a></td></tr>" >> $anchor0004temp
+	fi
+	done
+echo "</table>" >> $anchor0004temp
+	fi
+
+	## Find anchor in template and send data
+	linenum=$(sed -n "/anchor0004/=" $outdir/index.html)
+	sed -i "${linenum}r $anchor0004temp" $outdir/index.html
+
+## Build anchor06temp (DESeq2 normalized beta diversity)
+## DESeq2 normalized beta diversity results
+	if [[ -d $outdir/DESeq2_normalized_output/beta_diversity ]]; then
+echo "<table class=\"center\" border=1>" > $anchor0006temp
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Beta diversity comparisons (DESeq2 normalized) </td></tr>
+<tr><td> Anosim results (DESeq2 normalized) </td><td> <a href=\"./DESeq2_normalized_output/beta_diversity/anosim_results_collated.txt\" target=\"_blank\"> anosim_results_collated.txt -- DESeq2 NORMALIZED DATA </a></td></tr>
+<tr><td> Adonis results (DESeq2 normalized) </td><td> <a href=\"./DESeq2_normalized_output/beta_diversity/adonis_results_collated.txt\" target=\"_blank\"> adonis_results_collated.txt -- DESeq2 NORMALIZED DATA </a></td></tr>
+<tr><td> DB-RDA results (DESeq2 normalized) </td><td> <a href=\"./DESeq2_normalized_output/beta_diversity/dbrda_results_collated.txt\" target=\"_blank\"> dbrda_results_collated.txt -- DESeq2 NORMALIZED DATA </a></td></tr>
+<tr><td> Permanova results (DESeq2 normalized) </td><td> <a href=\"./DESeq2_normalized_output/beta_diversity/permanova_results_collated.txt\" target=\"_blank\"> permanova_results_collated.txt -- DESeq2 NORMALIZED DATA </a></td></tr>
+<tr><td> Permdisp results (DESeq2 normalized) </td><td> <a href=\"./DESeq2_normalized_output/beta_diversity/permdisp_results_collated.txt\" target=\"_blank\"> permdisp_results_collated.txt -- DESeq2 NORMALIZED DATA </a></td></tr>" >> $anchor0006temp
+	for dm in $outdir/DESeq2_normalized_output/beta_diversity/*_dm.txt; do
+	dmbase=`basename $dm _dm.txt`
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> ${dmbase} </td></tr>" >> $anchor0006temp
+	for line in `cat $catlist`; do
+echo "<tr><td> Distance boxplots (${line}, ${dmbase}) </td><td> <a href=\"./DESeq2_normalized_output/beta_diversity/${dmbase}_boxplots/${line}_Distances.pdf\" target=\"_blank\"> ${line}_Distances.pdf </a></td></tr>
+<tr><td> Distance boxplots statistics (${line}, ${dmbase}) </td><td> <a href=\"./DESeq2_normalized_output/beta_diversity/${dmbase}_boxplots/${line}_Stats.txt\" target=\"_blank\"> ${line}_Stats.txt </a></td></tr>" >> $anchor0006temp
+
+	done
+	nmsstress=`grep -e "^stress\s" $outdir/DESeq2_normalized_output/beta_diversity/${dmbase}_nmds.txt 2>/dev/null || true | cut -f2`
+echo "<tr><td> 3D PCoA plot (${dmbase}) </td><td> <a href=\"./DESeq2_normalized_output/beta_diversity/${dmbase}_emperor_pcoa_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
+<tr><td> 2D PCoA plot (${dmbase}) </td><td> <a href=\"./DESeq2_normalized_output/beta_diversity/2D_PCoA_bdiv_plots/${dmbase}_pc_2D_PCoA_plots.html\" target=\"_blank\"> index.html </a></td></tr>
+<tr><td> 3D NMDS plot (${dmbase}, $nmsstress) </td><td> <a href=\"./DESeq2_normalized_output/beta_diversity/${dmbase}_emperor_nmds_plot/index.html\" target=\"_blank\"> index.html </a></td></tr>
+<tr><td> DB-RDA plot (${dmbase}) </td><td> <a href=\"./DESeq2_normalized_output/beta_diversity/dbrda_out/\" target=\"_blank\"> dbrda_plot_directory </a></td></tr>" >> $anchor0006temp
+echo "<tr><td> Distance matrix (${dmbase}) </td><td> <a href=\"./DESeq2_normalized_output/beta_diversity/${dmbase}_dm.txt\" target=\"_blank\"> ${dmbase}_dm.txt </a></td></tr>
+<tr><td> Principal coordinate matrix (${dmbase}) </td><td> <a href=\"./DESeq2_normalized_output/beta_diversity/${dmbase}_pc.txt\" target=\"_blank\"> ${dmbase}_pc.txt </a></td></tr>
+<tr><td> NMDS coordinates (${dmbase}) </td><td> <a href=\"./DESeq2_normalized_output/beta_diversity/${dmbase}_nmds.txt\" target=\"_blank\"> ${dmbase}_nmds.txt </a></td></tr>" >> $anchor0006temp
+	done
+	fi
+echo "</table>" >> $anchor0006temp
+
+	## Find anchor in template and send data
+	linenum=$(sed -n "/anchor0006/=" $outdir/index.html)
+	sed -i "${linenum}r $anchor0006temp" $outdir/index.html
+
+## Build anchor07temp (DESeq2 normalized group significance)
+## Kruskal-Wallis results
+	if [[ -d $outdir/DESeq2_normalized_output/KruskalWallis ]]; then
+echo "<table class=\"center\" border=1>" > $anchor0007temp
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Group Significance Results (Kruskal-Wallis - nonparametric ANOVA) <br><br> All mean values are percent of total counts by sample (relative OTU abundances) </td></tr>" >> $anchor0007temp
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/DESeq2_normalized_output/KruskalWallis/kruskalwallis_${line}_OTU.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - OTU level </td><td> <a href=\"./DESeq2_normalized_output/KruskalWallis/kruskalwallis_${line}_OTU.txt\" target=\"_blank\"> kruskalwallis_${line}_OTU.txt </a></td></tr>" >> $anchor0007temp
+	fi
+	done
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/DESeq2_normalized_output/KruskalWallis/kruskalwallis_${line}_L7.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - species level (L7) </td><td> <a href=\"./DESeq2_normalized_output/KruskalWallis/kruskalwallis_${line}_L7.txt\" target=\"_blank\"> kruskalwallis_${line}_L7.txt </a></td></tr>" >> $anchor0007temp
+	fi
+	done
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/DESeq2_normalized_output/KruskalWallis/kruskalwallis_${line}_L6.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - genus level (L6) </td><td> <a href=\"./DESeq2_normalized_output/KruskalWallis/kruskalwallis_${line}_L6.txt\" target=\"_blank\"> kruskalwallis_${line}_L6.txt </a></td></tr>" >> $anchor0007temp
+	fi
+	done
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/DESeq2_normalized_output/KruskalWallis/kruskalwallis_${line}_L5.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - family level (L5) </td><td> <a href=\"./DESeq2_normalized_output/KruskalWallis/kruskalwallis_${line}_L5.txt\" target=\"_blank\"> kruskalwallis_${line}_L5.txt </a></td></tr>" >> $anchor0007temp
+	fi
+	done
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/DESeq2_normalized_output/KruskalWallis/kruskalwallis_${line}_L4.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - order level (L4) </td><td> <a href=\"./DESeq2_normalized_output/KruskalWallis/kruskalwallis_${line}_L4.txt\" target=\"_blank\"> kruskalwallis_${line}_L4.txt </a></td></tr>" >> $anchor0007temp
+	fi
+	done
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/DESeq2_normalized_output/KruskalWallis/kruskalwallis_${line}_L3.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - class level (L3) </td><td> <a href=\"./DESeq2_normalized_output/KruskalWallis/kruskalwallis_${line}_L3.txt\" target=\"_blank\"> kruskalwallis_${line}_L3.txt </a></td></tr>" >> $anchor0007temp
+	fi
+	done
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/Normalized_output/KruskalWallis/kruskalwallis_${line}_L2.txt ]]; then
+echo "<tr><td> Kruskal-Wallis results - ${line} - phylum level (L2) </td><td> <a href=\"./Normalized_output/KruskalWallis/kruskalwallis_${line}_L2.txt\" target=\"_blank\"> kruskalwallis_${line}_L2.txt </a></td></tr>" >> $anchor0007temp
+	fi
+	done
+echo "</table>" >> $anchor0007temp
+	fi
+
+	## Find anchor in template and send data
+	linenum=$(sed -n "/anchor0007/=" $outdir/index.html)
+	sed -i "${linenum}r $anchor0007temp" $outdir/index.html
+
+## Build anchor08temp (DESeq2 normalized rank abundance)
+	if [[ -d $outdir/DESeq2_normalized_output/RankAbundance ]]; then
+echo "<table class=\"center\" border=1>" > $anchor0008temp
+echo "
+<tr><td> Rank abundance (xlog-ylog) </td><td> <a href=\"./DESeq2_normalized_output/RankAbundance/rankabund_xlog-ylog.pdf\" target=\"_blank\"> rankabund_xlog-ylog.pdf </a></td></tr>
+<tr><td> Rank abundance (xlinear-ylog) </td><td> <a href=\"./DESeq2_normalized_output/RankAbundance/rankabund_xlinear-ylog.pdf\" target=\"_blank\"> rankabund_xlinear-ylog.pdf </a></td></tr>
+<tr><td> Rank abundance (xlog-ylinear) </td><td> <a href=\"./DESeq2_normalized_output/RankAbundance/rankabund_xlog-ylinear.pdf\" target=\"_blank\"> rankabund_xlog-ylinear.pdf </a></td></tr>
+<tr><td> Rank abundance (xlinear-ylinear) </td><td> <a href=\"./DESeq2_normalized_output/RankAbundance/rankabund_xlinear-ylinear.pdf\" target=\"_blank\"> rankabund_xlinear-ylinear.pdf </a></td></tr>
+</table>" >> $anchor0008temp
+	fi
+
+	## Find anchor in template and send data
+	linenum=$(sed -n "/anchor0008/=" $outdir/index.html)
+	sed -i "${linenum}r $anchor0008temp" $outdir/index.html
+
+## Build anchor09temp (DESeq2 normalized supervised learning)
+## Supervised learning (DESeq2 normalized)
+	if [[ -d $outdir/DESeq2_normalized_output/SupervisedLearning ]]; then
+echo "<table class=\"center\" border=1>
+<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Supervised learning results <br><br> Out-of-bag analysis (oob) </td></tr>" > $anchor0009temp
+	for category in `cat $catlist`; do
+echo "<tr><td> Summary (${category}) </td><td> <a href=\"./DESeq2_normalized_output/SupervisedLearning/${category}/summary.txt\" target=\"_blank\"> summary.txt </a></td></tr>
+<tr><td> Mislabeling (${category}) </td><td> <a href=\"./DESeq2_normalized_output/SupervisedLearning/${category}/mislabeling.txt\" target=\"_blank\"> mislabeling.txt </a></td></tr>
+<tr><td> Confusion Matrix (${category}) </td><td> <a href=\"./DESeq2_normalized_output/SupervisedLearning/${category}/confusion_matrix.txt\" target=\"_blank\"> confusion_matrix.txt </a></td></tr>
+<tr><td> CV Probabilities (${category}) </td><td> <a href=\"./DESeq2_normalized_output/SupervisedLearning/${category}/cv_probabilities.txt\" target=\"_blank\"> cv_probabilities.txt </a></td></tr>
+<tr><td> Feature Importance Scores (${category}) </td><td> <a href=\"./DESeq2_normalized_output/SupervisedLearning/${category}/feature_importance_scores.txt\" target=\"_blank\"> feature_importance_scores.txt </a></td></tr>" >> $anchor0009temp
+	done
+echo "</table>" >> $anchor0009temp
+	fi
+
+	## Find anchor in template and send data
+	linenum=$(sed -n "/anchor0009/=" $outdir/index.html)
+	sed -i "${linenum}r $anchor0009temp" $outdir/index.html
+
+## Build anchor10temp (DESeq2 normalized biplots)
+## Biplots (DESeq2 normalized)
+	if [[ -d $outdir/DESeq2_normalized_output/beta_diversity/biplots ]]; then
+echo "<table class=\"center\" border=1>
+<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Biplots -- DESeq2 NORMALIZED DATA </td></tr>" > $anchor0010temp
+
+	for dm in $outdir/DESeq2_normalized_output/beta_diversity/*_dm.txt; do
+	dmbase=`basename $dm _dm.txt`
+	for level in $outdir/DESeq2_normalized_output/beta_diversity/biplots/${dmbase}/DESeq2_table_sorted_*/; do
+	lev=`basename $level`
+	Lev=`echo $lev | sed 's/DESeq2_table_sorted_//'`
+	Level=`echo $Lev | sed 's/L/Level /'`
+
+echo "<tr><td> PCoA biplot, ${Level} (${dmbase}) </td><td> <a href=\"./DESeq2_normalized_output/beta_diversity/biplots/${dmbase}/${lev}/index.html\" target=\"_blank\"> index.html </a></td></tr>" >> $anchor0010temp
+
+	done
+	done
+echo "</table>" >> $anchor0010temp
+	fi
+
+	## Find anchor in template and send data
+	linenum=$(sed -n "/anchor0010/=" $outdir/index.html)
+	sed -i "${linenum}r $anchor0010temp" $outdir/index.html
 
 ## Build anchor11temp (rarefied taxa plots)
 ## Taxa plots by sample
@@ -459,7 +679,7 @@ echo "</table>" >> $anchor11temp
 	fi
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor11/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor11/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor11temp" $outdir/index.html
 
 ## Build anchor12temp (rarefied alpha diversity)
@@ -481,7 +701,7 @@ echo "</table>" >> $anchor12temp
 	fi
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor12/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor12/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor12temp" $outdir/index.html
 
 ## Build anchor13temp (rarefied beta diversity)
@@ -514,7 +734,7 @@ echo "</table>" >> $anchor13temp
 	fi
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor13/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor13/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor13temp" $outdir/index.html
 
 ## Build anchor14temp (rarefied group significance)
@@ -561,7 +781,7 @@ echo "</table>" >> $anchor14temp
 	fi
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor14/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor14/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor14temp" $outdir/index.html
 
 ## Build anchor15temp (rarefied rank abundance)
@@ -576,7 +796,7 @@ echo "<tr><td> Rank abundance (xlog-ylog) </td><td> <a href=\"./Rarefied_output/
 	fi
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor15/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor15/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor15temp" $outdir/index.html
 
 ## Build anchor16temp (rarefied supervised learning)
@@ -595,7 +815,7 @@ echo "</table>" >> $anchor16temp
 	fi
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor16/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor16/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor16temp" $outdir/index.html
 
 ## Build anchor17temp (rarefied biplots)
@@ -619,7 +839,7 @@ echo "</table>" >> $anchor17temp
 	fi
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor17/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor17/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor17temp" $outdir/index.html
 
 
@@ -638,7 +858,7 @@ echo "<tr><td><font size="1"><a href=\"./Representative_sequences/L7_sequences_b
 echo "</table>" >> $anchor18temp
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor18/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor18/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor18temp" $outdir/index.html
 
 ## Build anchor19temp (aligned sequences)
@@ -655,7 +875,7 @@ echo "<tr><td><font size="1"><a href=\"./Representative_sequences/L7_sequences_b
 echo "</table>" >> $anchor19temp
 
 	## Find anchor in template and send data
-	linenum=`sed -n "/anchor19/=" $outdir/index.html`
+	linenum=$(sed -n "/anchor19/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor19temp" $outdir/index.html
 
 	fi
