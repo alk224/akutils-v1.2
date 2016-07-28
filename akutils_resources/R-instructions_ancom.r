@@ -14,9 +14,12 @@ library(ancom.R)
 otufile="otufile_for_ancom.txt"
 otus <- read.table(otufile, sep="\t", header=TRUE)
 
+## Set alpha level (significance)
+alpha="0.5"
+
 ## Run ancom without multiple corrections
 ## Significance level is set at 0.05
-ancom.out <- ANCOM(real.data=otus,sig=0.05,multcorr=3)
+ancom.out <- ANCOM(real.data=otus,sig=alpha,multcorr=3)
 detections <- ancom.out$detected
 plot.un <- plot_ancom(ancom.out)
 
@@ -26,7 +29,7 @@ plot.un
 
 ## Run ancom with relaxed FDR correction -- note that multcorr=2 is less stringent than multcorr=1
 ## Significance level is set at 0.05
-ancom.out.fdr.2 <- ANCOM(real.data=otus,sig=0.05,multcorr=2) 
+ancom.out.fdr.2 <- ANCOM(real.data=otus,sig=alpha,multcorr=2) 
 detections.fdr.2 <- ancom.out.fdr.2$detected
 plot.fdr.2 <- plot_ancom(ancom.out.fdr.2)
 
@@ -36,7 +39,7 @@ plot.fdr.2
 
 ## Run ancom with strict FDR correction
 ## Significance level is set at 0.05
-ancom.out.fdr.1 <- ANCOM(real.data=otus,sig=0.05,multcorr=1) 
+ancom.out.fdr.1 <- ANCOM(real.data=otus,sig=alpha,multcorr=1) 
 detections.fdr.1 <- ancom.out.fdr.1$detected
 plot.fdr.1 <- plot_ancom(ancom.out.fdr.1)
 
@@ -49,13 +52,14 @@ names0 <- colnames(otus)
 counts0 <- ncol(otus)
 counts1 <- counts0-1
 Group <- names0[1:counts1]
-WStat_NoCorrection <- ancom.out$W
-WStat_Correction1 <- ancom.out.fdr.1$W
-WStat_Correction2 <- ancom.out.fdr.2$W
-Result <- cbind(Group,WStat_NoCorrection,WStat_Correction1,WStat_Correction2)
+ancom.W <- ancom.out$W
+ancom.W.FDRstrict <- ancom.out.fdr.1$W
+ancom.W.FDR <- ancom.out.fdr.2$W
+Result <- cbind(Group,ancom.W,ancom.W.FDR,ancom.W.FDRstrict)
+Result.sort <- Result[order(-ancom.W.FDRstrict, -ancom.W.FDR, -ancom.W, na.last=NA),]
 
-## View Statistics
-Result
+## View Statistics (sorted by W value)
+Result.sort
 
 ## See the ancom.R documentation for more functionality:
 ## http://www.niehs.nih.gov/research/resources/software/biostatistics/ancom/index.cfm
