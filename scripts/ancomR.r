@@ -28,7 +28,7 @@ args <- commandArgs(TRUE)
 otufile=(args[1])
 factor=(args[2])
 outdir=(args[3])
-
+alpha=(args[4])
 ## Load libraries
 library(ancom.R)
 
@@ -36,39 +36,47 @@ library(ancom.R)
 otus <- read.table(otufile, sep="\t", header=TRUE)
 
 ## Run ancom without multiple corrections
-ancom.out <- ANCOM(real.data=otus,sig=0.05,multcorr=3)
+ancom.out <- ANCOM(real.data=otus,sig=alpha,multcorr=3)
 detections <- ancom.out$detected
-write(detections, paste0(outdir, "ANCOM_detections_", factor, "_uncorrected.txt"))
 plot.un <- plot_ancom(ancom.out)
-pdf(paste0(outdir, "ANCOM_", factor, "_uncorrected.pdf"))
-plot.un
+write(detections, paste0(outdir, "ANCOM_detections_", factor, "_uncorrected.txt"))
 
 ## Run ancom with FDR correction (relaxed)
-ancom.out.fdr.2 <- ANCOM(real.data=otus,sig=0.05,multcorr=2)
+ancom.out.fdr.2 <- ANCOM(real.data=otus,sig=alpha,multcorr=2)
 detections.fdr.2 <- ancom.out.fdr.2$detected
-write(detections.fdr.2, paste0(outdir, "ANCOM_detections_", factor, "_FDRrelaxed.txt"))
 plot.fdr.2 <- plot_ancom(ancom.out.fdr.2)
-pdf(paste0(outdir, "ANCOM_", factor, "_FDRrelaxed.pdf"))
-plot.fdr.2
+write(detections.fdr.2, paste0(outdir, "ANCOM_detections_", factor, "_FDRrelaxed.txt"))
 
 ## Run ancom with FDR correction (strict)
-ancom.out.fdr.1 <- ANCOM(real.data=otus,sig=0.05,multcorr=1)
+ancom.out.fdr.1 <- ANCOM(real.data=otus,sig=alpha,multcorr=1)
 detections.fdr.1 <- ancom.out.fdr.1$detected
-write(detections.fdr.1, paste0(outdir, "ANCOM_detections_", factor, "_FDRstrict.txt"))
 plot.fdr.1 <- plot_ancom(ancom.out.fdr.1)
-pdf(paste0(outdir, "ANCOM_", factor, "_FDRstrict.pdf"))
+write(detections.fdr.1, paste0(outdir, "ANCOM_detections_", factor, "_FDRstrict.txt"))
+
+## Write pdf output
+pdf(paste0(outdir, "Detection_plots.pdf"),width=12,height=12)
+plot.new()
+mtext(text="Uncorrected detections plots",cex=3)
+plot.un
+plot.new()
+mtext(text="Relaxed FDR corrected detections plots",cex=3)
+plot.fdr.2
+plot.new()
+mtext(text="Strict FDR corrected detections plots",cex=3)
 plot.fdr.1
+dev.off()
 
 ## Produce statistical summary
 names0 <- colnames(otus)
 counts0 <- ncol(otus)
 counts1 <- counts0-1
 Group <- names0[1:counts1]
-WStat_NoCorrection <- ancom.out$W
-WStat_Correction1 <- ancom.out.fdr.1$W
-WStat_Correction2 <- ancom.out.fdr.2$W
-Result <- cbind(Group,WStat_NoCorrection,WStat_Correction1,WStat_Correction2)
-write.table(Result, paste0(outdir, "Statistical_summary.txt"), sep="\t", row.names=FALSE, quote=FALSE)
+ancom.W <- ancom.out$W
+ancom.W.FDRstrict <- ancom.out.fdr.1$W
+ancom.W.FDR <- ancom.out.fdr.2$W
+Result <- cbind(Group,ancom.W,ancom.W.FDR,ancom.W.FDRstrict)
+Result.sort <- Result[order(-ancom.W.FDRstrict, -ancom.W.FDR, -ancom.W, na.last=NA),]
+write.table(Result.sort, paste0(outdir, "Rstats.txt"), sep="\t", row.names=FALSE, quote=FALSE)
 
 ## End
 q()
