@@ -399,12 +399,12 @@ Normalizing sample-filtered table with CSS transformation:
 			csstemp0="$tempdir/${randcode}_temp_css0.biom"
 			csstemp1="$tempdir/${randcode}_temp_css0.txt"
 			taxtemp00="$tempdir/${randcode}_temp_tax00.txt"
-			cp $filtertable $csstemp0
+			cp $filtertable $csstemp0 2>/dev/null
 			biomtotxt.sh $csstemp0  &>/dev/null
 			column0=`awk -v table="$csstemp1" '{ for(i=1;i<=NF;i++){if ($i ~ /taxonomy/) {print i}}}' $csstemp1`
 			column1=`expr $column0 - 2`
 			taxcol=`expr $column0 - 1`
-			cat $csstemp1 &>/dev/null | cut -f${taxcol} > $taxtemp00
+			cat $csstemp1 2>/dev/null | cut -f${taxcol} > $taxtemp00
 			if [[ ! -f $CSStable ]]; then
 			normalize_table.py -i $filtertable -o $CSStable -a CSS 1> $stdout 2> $stderr || true
 			bash $scriptdir/log_slave.sh $stdout $stderr $log
@@ -415,10 +415,10 @@ Normalizing sample-filtered table with CSS transformation:
 			csstemp4="$tempdir/${randcode}_temp_css4.txt"
 			csstemp5="$tempdir/${randcode}_temp_css4.biom"
 			csstemp6="$tempdir/${randcode}_temp_css6.biom"
-			cp $CSStable $csstemp2 &>/dev/null
+			cp $CSStable $csstemp2 2>/dev/null
 			biomtotxt.sh $csstemp2 &>/dev/null
-			cat $csstemp3 &>/dev/null | cut -f1-${column1} > $csstemp3a &>/dev/null
-			paste $csstemp3a $taxtemp00 > $csstemp4 &>/dev/null
+			cat $csstemp3 2>/dev/null | cut -f1-${column1} > $csstemp3a
+			paste $csstemp3a $taxtemp00 > $csstemp4
 			txttobiom.sh $csstemp4 &>/dev/null
 			filter_otus_from_otu_table.py -i $csstemp5 -o $csstemp6 -n 1 &>/dev/null
 			cp $csstemp6 $CSStable &>/dev/null
@@ -448,12 +448,12 @@ Normalizing sample-filtered table with DESeq2 transformation (converting neg val
 			destemp0="$tempdir/${randcode}_temp_des0.biom"
 			destemp1="$tempdir/${randcode}_temp_des0.txt"
 			taxtemp0="$tempdir/${randcode}_temp_tax0.txt"
-			cp $filtertable $destemp0
+			cp $filtertable $destemp0 2>/dev/null
 			biomtotxt.sh $destemp0  &>/dev/null
 			column0=`awk -v table="$destemp1" '{ for(i=1;i<=NF;i++){if ($i ~ /taxonomy/) {print i}}}' $destemp1`
 			column1=`expr $column0 - 2`
 			taxcol=`expr $column0 - 1`
-			cat $destemp1 &>/dev/null | cut -f${taxcol} > $taxtemp0 &>/dev/null
+			cat $destemp1 2>/dev/null | cut -f${taxcol} > $taxtemp0
 			if [[ ! -f $DESeq2table ]]; then
 			normalize_table.py -i $filtertable -o $DESeq2table -a DESeq2 -z 1> $stdout 2> $stderr || true
 			bash $scriptdir/log_slave.sh $stdout $stderr $log
@@ -464,13 +464,13 @@ Normalizing sample-filtered table with DESeq2 transformation (converting neg val
 			destemp4="$tempdir/${randcode}_temp_des4.txt"
 			destemp5="$tempdir/${randcode}_temp_des4.biom"
 			destemp6="$tempdir/${randcode}_temp_des6.biom"
-			cp $DESeq2table $destemp2 &>/dev/null
+			cp $DESeq2table $destemp2 2>/dev/null
 			biomtotxt.sh $destemp2 &>/dev/null
-			cat $destemp3 &>/dev/null | cut -f1-${column1} > $destemp3a &>/dev/null
-			paste $destemp3a $taxtemp0 > $destemp4 &>/dev/null
+			cat $destemp3 2>/dev/null | cut -f1-${column1} > $destemp3a
+			paste $destemp3a $taxtemp0 > $destemp4
 			txttobiom.sh $destemp4  &>/dev/null
 			filter_otus_from_otu_table.py -i $destemp5 -o $destemp6 -n 1 &>/dev/null
-			cp $destemp6 $DESeq2table &>/dev/null
+			cp $destemp6 $DESeq2table 2>/dev/null
 			fi
 			if [[ ! -f "$DESeq2table" ]]; then
 			echo "
