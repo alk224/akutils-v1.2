@@ -235,31 +235,56 @@ Beginning statistical comparisons. Please be patient.
 	Rscript $scriptdir/ancomR.r $tempfile6 $factor $outdir &>/dev/null
 	wait
 
+## Collate Detections and statistical summary
+	uncorout="$outdir/ANCOM_detections_${factor}_uncorrected.txt"
+	fdr1="$outdir/ANCOM_detections_${factor}_FDRstrict.txt"
+	fdr2="$outdir/ANCOM_detections_${factor}_FDRrelaxed.txt"
+	uncorpdf="ANCOM_${factor}_uncorrected.pdf"
+	fdrpdf1="ANCOM_${factor}_FDRstrict.pdf"
+	fdrpdf2="ANCOM_${factor}_FDRrelaxed.pdf"
+
+	echo "
+Uncorrected detections:" >> $outdir/Statistical_summary.txt
+	cat $uncorout >> $outdir/Statistical_summary.txt
+	echo "
+Corrected detections (strict FDR):" >> $outdir/Statistical_summary.txt
+	cat $fdr1 >> $outdir/Statistical_summary.txt
+	echo "
+Corrected detections (relaxed FDR):" >> $outdir/Statistical_summary.txt
+	cat $fdr2 >> $outdir/Statistical_summary.txt
+	echo "
+ANCOM citation:
+Mandal S., Van Treuren W., White RA., Eggesbø M., Knight R., Peddada SD. 2015. Analysis of composition of microbiomes: a novel method for studying microbial composition. Microbial ecology in health and disease 26:27663.
+" >> $outdir/Statistical_summary.txt
+
 ## Test for output, print completion and outputs, remove unwanted files
-	uncortest=$(grep "No significant OTUs detected" $outdir/ANCOM_detections_${factor}_uncorrected.txt 2>/dev/null | wc -l)
-	fdrtest=$(grep "No significant OTUs detected" $outdir/ANCOM_detections_${factor}_FDRcorrected.txt 2>/dev/null | wc -l)
-		uncorout="ANCOM_${factor}_uncorrected.pdf"
-		uncorpdf="ANCOM_${factor}_uncorrected.pdf"
-		fdrout="ANCOM_${factor}_FDRcorrected.pdf"
-		fdrpdf="ANCOM_${factor}_FDRcorrected.pdf"
+	uncortest=$(grep "No significant OTUs detected" $uncorout 2>/dev/null | wc -l)
+	fdrtest1=$(grep "No significant OTUs detected" $fdr1 2>/dev/null | wc -l)
+	fdrtest2=$(grep "No significant OTUs detected" $fdr2 2>/dev/null | wc -l)
+
 	if [[ "$uncortest" == 1 ]]; then
 		rm $outdir/$uncorpdf
 		uncorpdf="No significant OTUs detected"
 	fi
-	if [[ "$fdrtest" == 1 ]]; then
-		rm $outdir/$fdrpdf
-		fdrpdf="No significant OTUs detected"
+	if [[ "$fdrtest1" == 1 ]]; then
+		rm $outdir/$fdrpdf1
+		fdrpdf1="No significant OTUs detected"
+	fi
+	if [[ "$fdrtest2" == 1 ]]; then
+		rm $outdir/$fdrpdf2
+		fdrpdf2="No significant OTUs detected"
 	fi
 	if [[ -f "Rplots.pdf" ]]; then
 		rm Rplots.pdf
 	fi
+	rm $uncorout $fdr1 $fdr2
 
 echo "Comparisons complete.
 Output directory: $outdir
-Uncorrected results: $uncorout
+Statistics (W) and detections: Statistical_summary.txt
 Uncorrected plots: $uncorpdf
-FDR-corrected output: $fdrout
-FDR-corrected plots: $fdrpdf
+Strict FDR-corrected plots: $fdrpdf1
+Relaxed FDR-corrected plots: $fdrpdf2
 OTU file for manual use: $manfile0
 R instructions (ancomR): R-instructions_ancom.r
 "
