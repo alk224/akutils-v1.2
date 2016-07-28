@@ -44,7 +44,7 @@ pdf(paste0(outdir, "ANCOM_", factor, "_uncorrected.pdf"))
 plot(plot)
 
 ## Run ancom with FDR correction
-ancom.out.fdr <- ANCOM(real.data=otus,sig=0.05,multcorr=1)
+ancom.out.fdr <- ANCOM(real.data=otus,sig=0.05,multcorr=2)
 detections.fdr <- ancom.out.fdr$detected
 write(detections.fdr, paste0(outdir, "ANCOM_detections_", factor, "_FDRcorrected.txt"))
 plot.fdr <- plot_ancom(ancom.out.fdr)
