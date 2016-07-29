@@ -105,6 +105,24 @@ fi
 if [[ -f $anchor0010temp ]]; then
 	rm $anchor0010temp
 fi
+if [[ -f $anchor0077temp ]]; then
+	rm $anchor0077temp
+fi
+if [[ -f $anchor77temp ]]; then
+	rm $anchor77temp
+fi
+if [[ -f $anchor714temp ]]; then
+	rm $anchor714temp
+fi
+if [[ -f $anchor87temp ]]; then
+	rm $anchor87temp
+fi
+if [[ -f $anchor0087temp ]]; then
+	rm $anchor0087temp
+fi
+if [[ -f $anchor814temp ]]; then
+	rm $anchor814temp
+fi
 }
 trap finish EXIT
 
@@ -147,6 +165,12 @@ anchor0007temp="${tempdir}/${randcode}_anchor0007.temp"
 anchor0008temp="${tempdir}/${randcode}_anchor0008.temp"
 anchor0009temp="${tempdir}/${randcode}_anchor0009.temp"
 anchor0010temp="${tempdir}/${randcode}_anchor0010.temp"
+anchor77temp="${tempdir}/${randcode}_anchor77.temp"
+anchor0077temp="${tempdir}/${randcode}_anchor0077.temp"
+anchor714temp="${tempdir}/${randcode}_anchor714.temp"
+anchor87temp="${tempdir}/${randcode}_anchor87.temp"
+anchor0087temp="${tempdir}/${randcode}_anchor0087.temp"
+anchor814temp="${tempdir}/${randcode}_anchor814.temp"
 
 ## Copy blank outputs:
 	cp $repodir/akutils_resources/html_template/index.html $outdir
@@ -407,43 +431,119 @@ echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Gro
 	if [[ -f $outdir/CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_OTU.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - OTU level </td><td> <a href=\"./CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_OTU.txt\" target=\"_blank\"> kruskalwallis_${line}_OTU.txt </a></td></tr>" >> $anchor07temp
 	fi
-	done
-	for line in `cat $catlist`; do
 	if [[ -f $outdir/CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L7.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - species level (L7) </td><td> <a href=\"./CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L7.txt\" target=\"_blank\"> kruskalwallis_${line}_L7.txt </a></td></tr>" >> $anchor07temp
 	fi
-	done
-	for line in `cat $catlist`; do
 	if [[ -f $outdir/CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L6.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - genus level (L6) </td><td> <a href=\"./CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L6.txt\" target=\"_blank\"> kruskalwallis_${line}_L6.txt </a></td></tr>" >> $anchor07temp
 	fi
-	done
-	for line in `cat $catlist`; do
 	if [[ -f $outdir/CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L5.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - family level (L5) </td><td> <a href=\"./CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L5.txt\" target=\"_blank\"> kruskalwallis_${line}_L5.txt </a></td></tr>" >> $anchor07temp
 	fi
-	done
-	for line in `cat $catlist`; do
 	if [[ -f $outdir/CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L4.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - order level (L4) </td><td> <a href=\"./CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L4.txt\" target=\"_blank\"> kruskalwallis_${line}_L4.txt </a></td></tr>" >> $anchor07temp
 	fi
-	done
-	for line in `cat $catlist`; do
 	if [[ -f $outdir/CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L3.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - class level (L3) </td><td> <a href=\"./CSS_normalized_output/KruskalWallis/kruskalwallis_${line}_L3.txt\" target=\"_blank\"> kruskalwallis_${line}_L3.txt </a></td></tr>" >> $anchor07temp
 	fi
-	done
-	for line in `cat $catlist`; do
 	if [[ -f $outdir/Normalized_output/KruskalWallis/kruskalwallis_${line}_L2.txt ]]; then
 echo "<tr><td> Kruskal-Wallis results - ${line} - phylum level (L2) </td><td> <a href=\"./Normalized_output/KruskalWallis/kruskalwallis_${line}_L2.txt\" target=\"_blank\"> kruskalwallis_${line}_L2.txt </a></td></tr>" >> $anchor07temp
 	fi
 	done
 echo "</table>" >> $anchor07temp
 	fi
-
 	## Find anchor in template and send data
 	linenum=$(sed -n "/anchor07/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor07temp" $outdir/index.html
+
+## ANCOM results
+	if [[ -d $outdir/CSS_normalized_output/ANCOM ]]; then
+echo "<table class=\"center\" border=1>" > $anchor77temp
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Group Significance Results (ANCOM - Analysis of Composition of Microbiomes - alpha = 0.05) <br><br> ANCOM tends to fail when there are few OTUs or taxa considered (such as L2 tables) </td></tr>" >> $anchor77temp
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - OTU level </td><td> <a href=\"./CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor77temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - OTU level </td><td> <a href=\"./CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor77temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L7_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - species level (L7) </td><td> <a href=\"./CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L7_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor77temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L7_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - species level (L7) </td><td> <a href=\"./CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L7_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor77temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L6_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - genus level (L6) </td><td> <a href=\"./CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L6_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor77temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L6_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - genus level (L6) </td><td> <a href=\"./CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L6_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor77temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L5_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - family level (L5) </td><td> <a href=\"./CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L5_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor77temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L5_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - family level (L5) </td><td> <a href=\"./CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L5_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor77temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L4_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - order level (L4) </td><td> <a href=\"./CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L4_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor77temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L4_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - order level (L4) </td><td> <a href=\"./CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L4_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor77temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L3_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - class level (L3) </td><td> <a href=\"./CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L3_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor77temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L3_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - class level (L3) </td><td> <a href=\"./CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L3_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor77temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L2_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - phylum level (L2) </td><td> <a href=\"./CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L2_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor77temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L2_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - phylum level (L2) </td><td> <a href=\"./CSS_normalized_output/ANCOM/ANCOM_CSS_table_sorted_L2_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor77temp
+	fi
+	done
+echo "</table>" >> $anchor77temp
+	fi
+
+	## Find anchor in template and send data
+	linenum=$(sed -n "/anchor77/=" $outdir/index.html)
+	sed -i "${linenum}r $anchor77temp" $outdir/index.html
+
+## Indicator species results
+	if [[ -d $outdir/CSS_normalized_output/Indicator_species ]]; then
+echo "<table class=\"center\" border=1>" > $anchor87temp
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Group Significance Results (Indicator species analysis - 9999 permutations) <br></td></tr>" >> $anchor87temp
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/CSS_normalized_output/Indicator_species/Indicspecies_${line}_CSS_table_sorted/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - OTU level </td><td> <a href=\"./CSS_normalized_output/Indicator_species/Indicspecies_${line}_CSS_table_sorted/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor87temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/Indicator_species/Indicspecies_${line}_CSS_table_sorted_L7/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - species level (L7) </td><td> <a href=\"./CSS_normalized_output/Indicator_species/Indicspecies_${line}_CSS_table_sorted_L7/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor87temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/Indicator_species/Indicspecies_${line}_CSS_table_sorted_L6/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - genus level (L6) </td><td> <a href=\"./CSS_normalized_output/Indicator_species/Indicspecies_${line}_CSS_table_sorted_L6/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor87temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/Indicator_species/Indicspecies_${line}_CSS_table_sorted_L5/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - family level (L5) </td><td> <a href=\"./CSS_normalized_output/Indicator_species/Indicspecies_${line}_CSS_table_sorted_L5/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor87temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/Indicator_species/Indicspecies_${line}_CSS_table_sorted_L4/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - order level (L4) </td><td> <a href=\"./CSS_normalized_output/Indicator_species/Indicspecies_${line}_CSS_table_sorted_L4/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor87temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/Indicator_species/Indicspecies_${line}_CSS_table_sorted_L3/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - class level (L3) </td><td> <a href=\"./CSS_normalized_output/Indicator_species/Indicspecies_${line}_CSS_table_sorted_L3/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor87temp
+	fi
+	if [[ -f $outdir/CSS_normalized_output/Indicator_species/Indicspecies_${line}_CSS_table_sorted_L2/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - phylum level (L2) </td><td> <a href=\"./CSS_normalized_output/Indicator_species/Indicspecies_${line}_CSS_table_sorted_L2/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor87temp
+	fi
+	done
+echo "</table>" >> $anchor87temp
+	fi
+
+	## Find anchor in template and send data
+	linenum=$(sed -n "/anchor87/=" $outdir/index.html)
+	sed -i "${linenum}r $anchor87temp" $outdir/index.html
 
 ## Build anchor08temp (CSS normalized rank abundance)
 	if [[ -d $outdir/CSS_normalized_output/RankAbundance ]]; then
@@ -603,6 +703,95 @@ echo "</table>" >> $anchor0007temp
 	## Find anchor in template and send data
 	linenum=$(sed -n "/anchor0007/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor0007temp" $outdir/index.html
+
+## ANCOM results
+	if [[ -d $outdir/DESeq2_normalized_output/ANCOM ]]; then
+echo "<table class=\"center\" border=1>" > $anchor0077temp
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Group Significance Results (ANCOM - Analysis of Composition of Microbiomes - alpha = 0.05) <br><br> ANCOM tends to fail when there are few OTUs or taxa considered (such as L2 tables) </td></tr>" >> $anchor0077temp
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - OTU level </td><td> <a href=\"./DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor0077temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - OTU level </td><td> <a href=\"./DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor0077temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L7_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - species level (L7) </td><td> <a href=\"./DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L7_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor0077temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L7_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - species level (L7) </td><td> <a href=\"./DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L7_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor0077temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L6_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - genus level (L6) </td><td> <a href=\"./DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L6_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor0077temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L6_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - genus level (L6) </td><td> <a href=\"./DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L6_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor0077temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L5_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - family level (L5) </td><td> <a href=\"./DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L5_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor0077temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L5_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - family level (L5) </td><td> <a href=\"./DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L5_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor0077temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L4_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - order level (L4) </td><td> <a href=\"./DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L4_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor0077temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L4_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - order level (L4) </td><td> <a href=\"./DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L4_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor0077temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L3_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - class level (L3) </td><td> <a href=\"./DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L3_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor0077temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L3_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - class level (L3) </td><td> <a href=\"./DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L3_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor0077temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L2_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - phylum level (L2) </td><td> <a href=\"./DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L2_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor0077temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L2_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - phylum level (L2) </td><td> <a href=\"./DESeq2_normalized_output/ANCOM/ANCOM_DESeq2_table_sorted_L2_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor0077temp
+	fi
+	done
+echo "</table>" >> $anchor0077temp
+	fi
+
+	## Find anchor in template and send data
+	linenum=$(sed -n "/anchor0077/=" $outdir/index.html)
+	sed -i "${linenum}r $anchor0077temp" $outdir/index.html
+
+## Indicator species results
+	if [[ -d $outdir/DESeq2_normalized_output/Indicator_species ]]; then
+echo "<table class=\"center\" border=1>" > $anchor0087temp
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Group Significance Results (Indicator species analysis - 9999 permutations) <br></td></tr>" >> $anchor0087temp
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/DESeq2_normalized_output/Indicator_species/Indicspecies_${line}_DESeq2_table_sorted/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - OTU level </td><td> <a href=\"./DESeq2_normalized_output/Indicator_species/Indicspecies_${line}_DESeq2_table_sorted/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor0087temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/Indicator_species/Indicspecies_${line}_DESeq2_table_sorted_L7/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - species level (L7) </td><td> <a href=\"./DESeq2_normalized_output/Indicator_species/Indicspecies_${line}_DESeq2_table_sorted_L7/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor0087temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/Indicator_species/Indicspecies_${line}_DESeq2_table_sorted_L6/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - genus level (L6) </td><td> <a href=\"./DESeq2_normalized_output/Indicator_species/Indicspecies_${line}_DESeq2_table_sorted_L6/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor0087temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/Indicator_species/Indicspecies_${line}_DESeq2_table_sorted_L5/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - family level (L5) </td><td> <a href=\"./DESeq2_normalized_output/Indicator_species/Indicspecies_${line}_DESeq2_table_sorted_L5/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor0087temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/Indicator_species/Indicspecies_${line}_DESeq2_table_sorted_L4/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - order level (L4) </td><td> <a href=\"./DESeq2_normalized_output/Indicator_species/Indicspecies_${line}_DESeq2_table_sorted_L4/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor0087temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/Indicator_species/Indicspecies_${line}_DESeq2_table_sorted_L3/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - class level (L3) </td><td> <a href=\"./DESeq2_normalized_output/Indicator_species/Indicspecies_${line}_DESeq2_table_sorted_L3/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor0087temp
+	fi
+	if [[ -f $outdir/DESeq2_normalized_output/Indicator_species/Indicspecies_${line}_DESeq2_table_sorted_L2/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - phylum level (L2) </td><td> <a href=\"./DESeq2_normalized_output/Indicator_species/Indicspecies_${line}_DESeq2_table_sorted_L2/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor0087temp
+	fi
+	done
+echo "</table>" >> $anchor0087temp
+	fi
+
+	## Find anchor in template and send data
+	linenum=$(sed -n "/anchor0087/=" $outdir/index.html)
+	sed -i "${linenum}r $anchor0087temp" $outdir/index.html
 
 ## Build anchor08temp (DESeq2 normalized rank abundance)
 	if [[ -d $outdir/DESeq2_normalized_output/RankAbundance ]]; then
@@ -783,6 +972,95 @@ echo "</table>" >> $anchor14temp
 	## Find anchor in template and send data
 	linenum=$(sed -n "/anchor14/=" $outdir/index.html)
 	sed -i "${linenum}r $anchor14temp" $outdir/index.html
+
+## ANCOM results
+	if [[ -d $outdir/Rarefied_output/ANCOM ]]; then
+echo "<table class=\"center\" border=1>" > $anchor714temp
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Group Significance Results (ANCOM - Analysis of Composition of Microbiomes - alpha = 0.05) <br><br> ANCOM tends to fail when there are few OTUs or taxa considered (such as L2 tables) </td></tr>" >> $anchor714temp
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - OTU level </td><td> <a href=\"./Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor714temp
+	fi
+	if [[ -f $outdir/Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - OTU level </td><td> <a href=\"./Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor714temp
+	fi
+	if [[ -f $outdir/Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L7_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - species level (L7) </td><td> <a href=\"./Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L7_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor714temp
+	fi
+	if [[ -f $outdir/Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L7_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - species level (L7) </td><td> <a href=\"./Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L7_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor714temp
+	fi
+	if [[ -f $outdir/Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L6_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - genus level (L6) </td><td> <a href=\"./Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L6_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor714temp
+	fi
+	if [[ -f $outdir/Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L6_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - genus level (L6) </td><td> <a href=\"./Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L6_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor714temp
+	fi
+	if [[ -f $outdir/Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L5_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - family level (L5) </td><td> <a href=\"./Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L5_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor714temp
+	fi
+	if [[ -f $outdir/Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L5_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - family level (L5) </td><td> <a href=\"./Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L5_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor714temp
+	fi
+	if [[ -f $outdir/Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L4_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - order level (L4) </td><td> <a href=\"./Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L4_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor714temp
+	fi
+	if [[ -f $outdir/Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L4_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - order level (L4) </td><td> <a href=\"./Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L4_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor0077temp
+	fi
+	if [[ -f $outdir/Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L3_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - class level (L3) </td><td> <a href=\"./Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L3_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor0077temp
+	fi
+	if [[ -f $outdir/Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L3_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - class level (L3) </td><td> <a href=\"./Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L3_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor714temp
+	fi
+	if [[ -f $outdir/Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L2_${line}/Statistical_summary.txt ]]; then
+echo "<tr><td> ANCOM results - ${line} - phylum level (L2) </td><td> <a href=\"./Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L2_${line}/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor714temp
+	fi
+	if [[ -f $outdir/Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L2_${line}/Detection_plots.pdf ]]; then
+echo "<tr><td> ANCOM boxplots - ${line} - phylum level (L2) </td><td> <a href=\"./Rarefied_output/ANCOM/ANCOM_rarefied_table_sorted_L2_${line}/Detection_plots.pdf\" target=\"_blank\"> Detection_plots.pdf </a></td></tr>" >> $anchor714temp
+	fi
+	done
+echo "</table>" >> $anchor714temp
+	fi
+
+	## Find anchor in template and send data
+	linenum=$(sed -n "/anchor714/=" $outdir/index.html)
+	sed -i "${linenum}r $anchor714temp" $outdir/index.html
+
+## Indicator species results
+	if [[ -d $outdir/Rarefied_output/Indicator_species ]]; then
+echo "<table class=\"center\" border=1>" > $anchor814temp
+echo "<tr colspan=2 align=center bgcolor=#e8e8e8><td colspan=2 align=center> Group Significance Results (Indicator species analysis - 9999 permutations) <br></td></tr>" >> $anchor814temp
+	for line in `cat $catlist`; do
+	if [[ -f $outdir/Rarefied_output/Indicator_species/Indicspecies_${line}_rarefied_table_sorted/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - OTU level </td><td> <a href=\"./Rarefied_output/Indicator_species/Indicspecies_${line}_rarefied_table_sorted/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor814temp
+	fi
+	if [[ -f $outdir/Rarefied_output/Indicator_species/Indicspecies_${line}_rarefied_table_sorted_L7/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - species level (L7) </td><td> <a href=\"./Rarefied_output/Indicator_species/Indicspecies_${line}_rarefied_table_sorted_L7/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor814temp
+	fi
+	if [[ -f $outdir/Rarefied_output/Indicator_species/Indicspecies_${line}_rarefied_table_sorted_L6/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - genus level (L6) </td><td> <a href=\"./Rarefied_output/Indicator_species/Indicspecies_${line}_rarefied_table_sorted_L6/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor814temp
+	fi
+	if [[ -f $outdir/Rarefied_output/Indicator_species/Indicspecies_${line}_rarefied_table_sorted_L5/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - family level (L5) </td><td> <a href=\"./Rarefied_output/Indicator_species/Indicspecies_${line}_rarefied_table_sorted_L5/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor814temp
+	fi
+	if [[ -f $outdir/Rarefied_output/Indicator_species/Indicspecies_${line}_rarefied_table_sorted_L4/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - order level (L4) </td><td> <a href=\"./Rarefied_output/Indicator_species/Indicspecies_${line}_rarefied_table_sorted_L4/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor814temp
+	fi
+	if [[ -f $outdir/Rarefied_output/Indicator_species/Indicspecies_${line}_rarefied_table_sorted_L3/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - class level (L3) </td><td> <a href=\"./Rarefied_output/Indicator_species/Indicspecies_${line}_rarefied_table_sorted_L3/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor814temp
+	fi
+	if [[ -f $outdir/Rarefied_output/Indicator_species/Indicspecies_${line}_rarefied_table_sorted_L2/Statistical_summary.txt ]]; then
+echo "<tr><td> Indicator species results - ${line} - phylum level (L2) </td><td> <a href=\"./Rarefied_output/Indicator_species/Indicspecies_${line}_rarefied_table_sorted_L2/Statistical_summary.txt\" target=\"_blank\"> Statistical_summary.txt </a></td></tr>" >> $anchor814temp
+	fi
+	done
+echo "</table>" >> $anchor814temp
+	fi
+
+	## Find anchor in template and send data
+	linenum=$(sed -n "/anchor814/=" $outdir/index.html)
+	sed -i "${linenum}r $anchor814temp" $outdir/index.html
 
 ## Build anchor15temp (rarefied rank abundance)
 ## Rank abundance plots (rarefied)
