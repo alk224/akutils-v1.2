@@ -220,14 +220,17 @@ for table in `cat $tablelist`; do
 		intable="$tabledir/$inputbase.biom"
 		insummary="$tabledir/$inputbase.summary"
 		mapfile="$tabledir/input_mapping_file.txt"
+		mapfileabs=$(readlink -m $mapfile)
 
 		## Find log file or set new one. 
 		rm log_core_diversity*~ 2>/dev/null
 		logcount=$(ls $outdir/log_core_diversity* 2>/dev/null | head -1 | wc -l)
 		if [[ "$logcount" -eq 1 ]]; then
-		log=`ls $outdir/log_core_diversity*.txt | head -1`
+		log0=`ls $outdir/log_core_diversity*.txt | head -1`
+		log=$(readlink -m $log0)
 		elif [[ "$logcount" -eq 0 ]]; then
-		log="$outdir/log_core_diversity_$date0.txt"
+		log0="$outdir/log_core_diversity_$date0.txt"
+		log=$(readlink -m $log0)
 		fi
 		echo "
 ${bold}akutils core_diversity workflow beginning.${normal}"
@@ -1196,7 +1199,7 @@ Summarize taxa commands by category \"$line\":
 ############################
 ## Group comparison steps
 
-## Group significance for each category (Kruskal-Wallis and nonparametric Ttest)
+## Group significance for each category (Kruskal-Wallis, ANCOM, indicator species)
 
 	## Kruskal-Wallis
 	kwout="$outdir/CSS_normalized_output/KruskalWallis/"
@@ -1294,6 +1297,101 @@ wait
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
+	## Make OTU table output with absolute counts
+	sumtables="$outdir/CSS_normalized_output/OTU_tables/"
+	sumtablesabs=$(readlink -m $sumtables)
+	if [[ ! -d "$sumtables" ]]; then
+		mkdir -p $sumtables
+	fi
+	rm $sumtables/* 2>/dev/null
+	if [[ -f "$outdir/OTU_tables/CSS_table_sorted.biom" ]]; then
+		cp $outdir/OTU_tables/CSS_table_sorted.biom $sumtables
+
+	## Summarize the sorted table and produce a list of tables to process in a variable
+		summarize_taxa.py -i $sumtables/CSS_table_sorted.biom -L 2,3,4,5,6,7 --suppress_classic_table_output -a -o $sumtables
+		wait
+	fi
+
+	## ANCOM
+	ancomtoprocess=$(ls $sumtables 2>/dev/null)
+	ancout="$outdir/CSS_normalized_output/ANCOM/"
+	if [[ ! -d "$ancout" ]]; then
+	echo "
+Calculating ANCOM test statistics when possible."
+
+	## Set up ANCOM output directory
+	antestcount=$(ls $ancout/ANCOM_* 2> /dev/null | wc -l)
+	if [[ $antestcount == 0 ]]; then
+	echo "
+ANCOM commands:" >> $log
+		if [[ ! -d $ancout ]]; then
+			mkdir -p $ancout
+		fi
+		cp $sumtables/*.biom $ancout/
+		cd $ancout
+		wait
+
+	## Nested for loops to process ANCOM stats
+	for line in `cat $catlist`; do
+		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+		sleep 1
+		done
+		for ancomtable in $ancomtoprocess; do
+		echo "ancomR.sh $ancomtable $mapfileabs $line 0.05" >> $log
+		( ancomR.sh $ancomtable $mapfileabs $line 0.05 ) >/dev/null 2>&1 || true &
+		done
+	done
+	wait
+	echo "" >> $log
+	rm *.biom
+	cd $workdir
+
+	fi
+	fi
+
+wait
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
+
+	## Indicator species analysis
+	cd $workdir
+	indicout="$outdir/CSS_normalized_output/Indicator_species/"
+	if [[ ! -d "$indicout" ]]; then
+	echo "
+Calculating indicator species analysis test statistics when possible."
+
+	## Set up Indicator species output directory
+	indictestcount=$(ls $indicout/Indicspecies_* 2> /dev/null | wc -l)
+	if [[ $indictestcount == 0 ]]; then
+	echo "
+Indicator species commands:" >> $log
+		if [[ ! -d $indicout ]]; then
+			mkdir -p $indicout
+		fi
+		cp $sumtables/*.biom $indicout
+		cd $indicout
+		wait
+
+	## Nested for loops to process Indicator species stats
+	for line in `cat $catlist`; do
+		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+		sleep 1
+		done
+		for indictable in $ancomtoprocess; do
+		echo "indicator_species.sh $mapfileabs $indictable $line 9999" >> $log
+		( indicator_species.sh $mapfileabs $indictable $line 9999 ) >/dev/null 2>&1 || true &
+		done
+	done
+	wait
+	echo "" >> $log
+	rm *.biom
+	cd $workdir
+	fi
+
+wait
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
+	fi
 
 echo "
 ********************************************************************************
@@ -1939,6 +2037,102 @@ wait
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
+	## Make OTU table output with absolute counts
+	sumtables="$outdir/DESeq2_normalized_output/OTU_tables/"
+	sumtablesabs=$(readlink -m $sumtables)
+	if [[ ! -d "$sumtables" ]]; then
+		mkdir -p $sumtables
+	fi
+	rm $sumtables/* 2>/dev/null
+	if [[ -f "$outdir/OTU_tables/DESeq2_table_sorted.biom" ]]; then
+		cp $outdir/OTU_tables/DESeq2_table_sorted.biom $sumtables
+
+	## Summarize the sorted table and produce a list of tables to process in a variable
+		summarize_taxa.py -i $sumtables/DESeq2_table_sorted.biom -L 2,3,4,5,6,7 --suppress_classic_table_output -a -o $sumtables
+		wait
+	fi
+
+	## ANCOM
+	ancomtoprocess=$(ls $sumtables 2>/dev/null)
+	ancout="$outdir/DESeq2_normalized_output/ANCOM/"
+	if [[ ! -d "$ancout" ]]; then
+	echo "
+Calculating ANCOM test statistics when possible."
+
+	## Set up ANCOM output directory
+	antestcount=$(ls $ancout/ANCOM_* 2> /dev/null | wc -l)
+	if [[ $antestcount == 0 ]]; then
+	echo "
+ANCOM commands:" >> $log
+		if [[ ! -d $ancout ]]; then
+			mkdir -p $ancout
+		fi
+		cp $sumtables/*.biom $ancout/
+		cd $ancout
+#		cp $sumtablesabs/*.biom ./
+		wait
+
+	## Nested for loops to process ANCOM stats
+	for line in `cat $catlist`; do
+		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+		sleep 1
+		done
+		for ancomtable in $ancomtoprocess; do
+		echo "ancomR.sh $ancomtable $mapfileabs $line 0.05" >> $log
+		( ancomR.sh $ancomtable $mapfileabs $line 0.05 ) >/dev/null 2>&1 || true &
+		done
+	done
+	wait
+	echo "" >> $log
+	rm *.biom
+	cd $workdir
+
+	fi
+	fi
+
+wait
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
+
+	## Indicator species analysis
+	cd $workdir
+	indicout="$outdir/DESeq2_normalized_output/Indicator_species/"
+	if [[ ! -d "$indicout" ]]; then
+	echo "
+Calculating indicator species analysis test statistics when possible."
+
+	## Set up Indicator species output directory
+	indictestcount=$(ls $indicout/Indicspecies_* 2> /dev/null | wc -l)
+	if [[ $indictestcount == 0 ]]; then
+	echo "
+Indicator species commands:" >> $log
+		if [[ ! -d $indicout ]]; then
+			mkdir -p $indicout
+		fi
+		cp $sumtables/*.biom $indicout
+		cd $indicout
+		wait
+
+	## Nested for loops to process Indicator species stats
+	for line in `cat $catlist`; do
+		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+		sleep 1
+		done
+		for indictable in $ancomtoprocess; do
+		echo "indicator_species.sh $mapfileabs $indictable $line 9999" >> $log
+		( indicator_species.sh $mapfileabs $indictable $line 9999 ) >/dev/null 2>&1 || true &
+		done
+	done
+	wait
+	echo "" >> $log
+	rm *.biom
+	cd $workdir
+	fi
+
+wait
+	## Update HTML output
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
+	fi
 
 echo "
 ********************************************************************************
@@ -2673,91 +2867,100 @@ wait
 	## Update HTML output
 		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
 
-#	## Nonparametric T-test
-#	if [[ ! -d $outdir/Nonparametric_ttest ]]; then
-#	mkdir $outdir/Nonparametric_ttest
-#	raresortrel="$outdir/OTU_tables/rarefied_table_sorted_relativized.biom"
-#	if [[ ! -f $raresortrel ]]; then
-#	echo "
-#Relativizing OTU table:
-#	relativize_otu_table.py -i $raresort" >> $log
-#	relativize_otu_table.py -i $raresort >/dev/null 2>&1 || true
-#	fi
-#	echo "
-#Calculating nonparametric T-test statistics when possible."
-#for line in `cat $catlist`; do
-#	if [[ ! -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_OTU.txt ]]; then
-#	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
-#	sleep 1
-#	done
-#	echo "	group_significance.py -i $raresortrel -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_OTU.txt -s nonparametric_t_test" >> $log
-#	( group_significance.py -i $raresortrel -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_OTU.txt -s nonparametric_t_test ) >/dev/null 2>&1 || true &
-#	fi
-#done
-#wait
-#for line in `cat $catlist`; do
-#	if [[ ! -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L2.txt ]]; then
-#	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
-#	sleep 1
-#	done
-#	echo "	group_significance.py -i $outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L2.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L2.txt -s nonparametric_t_test" >> $log
-#	( group_significance.py -i $outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L2.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L2.txt -s nonparametric_t_test ) >/dev/null 2>&1 || true &
-#	fi
-#done
-#wait
-#for line in `cat $catlist`; do
-#	if [[ ! -f $outdir/Nonparametric_ttest/nonparametric_ttest_$line\_L3.txt ]]; then
-#	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
-#	sleep 1
-#	done
-#	echo "	group_significance.py -i $outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L3.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L3.txt -s nonparametric_t_test" >> $log
-#	( group_significance.py -i $outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L3.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L3.txt -s nonparametric_t_test ) >/dev/null 2>&1 || true &
-#	fi
-#done
-#wait
-#for line in `cat $catlist`; do
-#	if [[ ! -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L4.txt ]]; then
-#	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
-#	sleep 1
-#	done
-#	echo "	group_significance.py -i $outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L4.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L4.txt -s nonparametric_t_test" >> $log
-#	( group_significance.py -i $outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L4.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L4.txt -s nonparametric_t_test ) >/dev/null 2>&1 || true &
-#	fi
-#done
-#wait
-#for line in `cat $catlist`; do
-#	if [[ ! -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L5.txt ]]; then
-#	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
-#	sleep 1
-#	done
-#	echo "	group_significance.py -i $outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L5.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L5.txt -s nonparametric_t_test" >> $log
-#	( group_significance.py -i $outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L5.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L5.txt -s nonparametric_t_test ) >/dev/null 2>&1 || true &
-#	fi
-#done
-#wait
-#for line in `cat $catlist`; do
-#	if [[ ! -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L6.txt ]]; then
-#	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
-#	sleep 1
-#	done
-#	echo "	group_significance.py -i $outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L6.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L6.txt -s nonparametric_t_test" >> $log
-#	( group_significance.py -i $outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L6.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L6.txt -s nonparametric_t_test ) >/dev/null 2>&1 || true &
-#	fi
-#done
-#wait
-#for line in `cat $catlist`; do
-#	if [[ ! -f $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L7.txt ]]; then
-#	while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
-#	sleep 1
-#	done
-#	echo "	group_significance.py -i $outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L7.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L7.txt -s nonparametric_t_test" >> $log
-#	( group_significance.py -i $outdir/Rarefied_output/beta_diversity/summarized_tables/rarefied_table_sorted_L7.biom -m $mapfile -c $line -o $outdir/Nonparametric_ttest/nonparametric_ttest_${line}_L7.txt -s nonparametric_t_test ) >/dev/null 2>&1 || true &
-#	fi
-#done
-#fi
-#wait
+	## Make OTU table output with absolute counts
+	sumtables="$outdir/Rarefied_output/OTU_tables/"
+	sumtablesabs=$(readlink -m $sumtables)
+	if [[ ! -d "$sumtables" ]]; then
+		mkdir -p $sumtables
+	fi
+	rm $sumtables/* 2>/dev/null
+	if [[ -f "$outdir/OTU_tables/rarefied_table_sorted.biom" ]]; then
+		cp $outdir/OTU_tables/rarefied_table_sorted.biom $sumtables
+
+	## Summarize the sorted table and produce a list of tables to process in a variable
+		summarize_taxa.py -i $sumtables/rarefied_table_sorted.biom -L 2,3,4,5,6,7 --suppress_classic_table_output -a -o $sumtables
+		wait
+	fi
+
+	## ANCOM
+	ancomtoprocess=$(ls $sumtables 2>/dev/null)
+	ancout="$outdir/Rarefied_output/ANCOM/"
+	if [[ ! -d "$ancout" ]]; then
+	echo "
+Calculating ANCOM test statistics when possible."
+
+	## Set up ANCOM output directory
+	antestcount=$(ls $ancout/ANCOM_* 2> /dev/null | wc -l)
+	if [[ $antestcount == 0 ]]; then
+	echo "
+ANCOM commands:" >> $log
+		if [[ ! -d $ancout ]]; then
+			mkdir -p $ancout
+		fi
+		cp $sumtables/*.biom $ancout/
+		cd $ancout
+#		cp $sumtablesabs/*.biom ./
+		wait
+
+	## Nested for loops to process ANCOM stats
+	for line in `cat $catlist`; do
+		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+		sleep 1
+		done
+		for ancomtable in $ancomtoprocess; do
+		echo "ancomR.sh $ancomtable $mapfileabs $line 0.05" >> $log
+		( ancomR.sh $ancomtable $mapfileabs $line 0.05 ) >/dev/null 2>&1 || true &
+		done
+	done
+	wait
+	echo "" >> $log
+	rm *.biom
+	cd $workdir
+
+	fi
+	fi
+
+wait
+
+	## Indicator species analysis
+	cd $workdir
+	indicout="$outdir/Rarefied_output/Indicator_species/"
+	if [[ ! -d "$indicout" ]]; then
+	echo "
+Calculating indicator species analysis test statistics when possible."
+
+	## Set up Indicator species output directory
+	indictestcount=$(ls $indicout/Indicspecies_* 2> /dev/null | wc -l)
+	if [[ $indictestcount == 0 ]]; then
+	echo "
+Indicator species commands:" >> $log
+		if [[ ! -d $indicout ]]; then
+			mkdir -p $indicout
+		fi
+		cp $sumtables/*.biom $indicout
+		cd $indicout
+		wait
+
+	## Nested for loops to process Indicator species stats
+	for line in `cat $catlist`; do
+		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do 
+		sleep 1
+		done
+		for indictable in $ancomtoprocess; do
+		echo "indicator_species.sh $mapfileabs $indictable $line 9999" >> $log
+		( indicator_species.sh $mapfileabs $indictable $line 9999 ) >/dev/null 2>&1 || true &
+		done
+	done
+	wait
+	echo "" >> $log
+	rm *.biom
+	cd $workdir
+	fi
+
+wait
 	## Update HTML output
-#		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
+		bash $scriptdir/html_generator.sh $inputbase $outdir $depth $catlist $alphatemp $randcode $tempdir $repodir $treebase $mapbase
+	fi
 
 ## Run match_reads_to_taxonomy if rep set present
 ## Automatically find merged_rep_set.fna file from existing akutils workflows
