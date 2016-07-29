@@ -50,6 +50,12 @@ fi
 if [[ -f $biomtemp ]]; then
 	rm $biomtemp
 fi
+if [[ -f $stdout ]]; then
+	rm $stdout
+fi
+if [[ -f $stderr ]]; then
+	rm $stderr
+fi
 
 }
 trap finish EXIT
@@ -68,6 +74,8 @@ trap finish EXIT
 	tempfile5="$tempdir/$randcode.convert5.temp"
 	tempfile6="$tempdir/$randcode.convert6.temp"
 	biomtemp="$tempdir/$randcode.biom.temp"
+	stdout="$tempdir/$randcode.stdout.temp"
+	stderr="$tempdir/$randcode.stderr.temp"
 	input="$1"
 	map="$2"
 	factor="$3"
@@ -242,7 +250,7 @@ User-defined significance level: ${bold}${alpha}${normal}
 	cp $repodir/akutils_resources/R-instructions_ancom.r $outdir
 
 ## Run ancom.R
-	Rscript $scriptdir/ancomR.r $tempfile6 $factor $outdir $alpha &>/dev/null
+	Rscript $scriptdir/ancomR.r $tempfile6 $factor $outdir $alpha 1> $stdout 2> $stderr
 	wait
 
 ## Collate Detections and statistical summary
@@ -262,21 +270,31 @@ composition. Microbial ecology in health and disease 26:27663." > $outdir/Statis
 User-defined significance level = $alpha" >> $outdir/Statistical_summary.txt
 	echo "
 Corrected detections (strict FDR):" >> $outdir/Statistical_summary.txt
-	cat $fdr1 >> $outdir/Statistical_summary.txt
+	cat $fdr1 >> $outdir/Statistical_summary.txt 2>/dev/null
 	echo "
 Corrected detections (relaxed FDR):" >> $outdir/Statistical_summary.txt
-	cat $fdr2 >> $outdir/Statistical_summary.txt
+	cat $fdr2 >> $outdir/Statistical_summary.txt 2>/dev/null
 	echo "
 Uncorrected detections:" >> $outdir/Statistical_summary.txt
-	cat $uncorout >> $outdir/Statistical_summary.txt
+	cat $uncorout >> $outdir/Statistical_summary.txt 2>/dev/null
 	echo "" >> $outdir/Statistical_summary.txt
-	cat $outdir/Rstats.txt >> $outdir/Statistical_summary.txt
+	cat $outdir/Rstats.txt >> $outdir/Statistical_summary.txt 2>/dev/null
+	echo "
+********************************************************************************
+R script logging below here.
+
+stdout:" >> $outdir/Statistical_summary.txt
+	cat $stdout >> $outdir/Statistical_summary.txt 2>/dev/null
+	echo "
+stderr:" >> $outdir/Statistical_summary.txt
+	cat $stderr >> $outdir/Statistical_summary.txt 2>/dev/null
+	echo "" >> $outdir/Statistical_summary.txt
 
 ## Test for output, print completion and outputs, remove unwanted files
 	uncortest=$(grep "No significant OTUs detected" $uncorout 2>/dev/null | wc -l)
 	fdrtest1=$(grep "No significant OTUs detected" $fdr1 2>/dev/null | wc -l)
 	fdrtest2=$(grep "No significant OTUs detected" $fdr2 2>/dev/null | wc -l)
-	rm $outdir/Rstats.txt
+	rm $outdir/Rstats.txt 2>/dev/null
 	if [[ -f "Rplots.pdf" ]]; then
 		rm Rplots.pdf 2>/dev/null
 	fi
