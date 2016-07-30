@@ -175,12 +175,14 @@ This will take a few moments.
 	else
 	cp $biomtemp0t $biomtemp1
 	fi
+	wait
 
 ## If this is a summarized table, remove all but the deepest taxonomic identifier (using semicolon as delimiter)
 	sctest=$(cat $biomtemp1 | cut -f1 | grep ";" | wc -l)
 	if [[ "$sctest" -ge "1" ]]; then
 		sed -i "s/^.\+;//g" $biomtemp1
 	fi
+	wait
 
 ## Transpose table
 	datamash transpose < $biomtemp1 > $biomtemp2
@@ -191,9 +193,11 @@ This will take a few moments.
 	for line in `cat $biomtemp2 | cut -f1`; do
 	grep -w "^$line" $map >> $maptemp0
 	done
+	wait
 
 ## Remove sample ID column from OTU table
 	cat $biomtemp2 | cut -f2- > $biomtemp3
+	wait
 
 ## Get factor column from map file
 	fcol=`awk -v factor="$factor" -v map="$maptemp0" '{ for(i=1;i<=NF;i++){if ($i == factor) {print i}}}' $map`
@@ -217,6 +221,7 @@ Permutations:		$perms" > $outfile
 	cp $maptemp0 $outdir/map.indicspecies.txt
 	cp $biomtemp3 $outdir/otutable.indicspecies.txt
 	cp $repodir/akutils_resources/R-instructions_indicspecies.r $outdir/
+	wait
 
 ## Report end of script
 	echo "Analysis complete.
