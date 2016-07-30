@@ -50,6 +50,9 @@ fi
 if [[ -f $biomtemp ]]; then
 	rm $biomtemp
 fi
+if [[ -f $biomtemp0 ]]; then
+	rm $biomtemp0
+fi
 if [[ -f $stdout ]]; then
 	rm $stdout
 fi
@@ -66,6 +69,7 @@ trap finish EXIT
 	workdir=$(pwd)
 	tempdir="$repodir/temp"
 	randcode=`cat /dev/urandom |tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1` 2>/dev/null
+	biomtemp0="$tempdir/$randcode.biomtemp0.biom"
 	tempfile0="$tempdir/$randcode.convert0.temp"
 	tempfile1="$tempdir/$randcode.convert1.temp"
 	tempfile2="$tempdir/$randcode.convert2.temp"
@@ -188,8 +192,12 @@ Exiting.
 	fi
 
 ## Convert biom file to txt and copy to tempdir for processing
-	biomtotxt.sh $input &>/dev/null
-	mv $indir/$inbase.txt $tempfile0
+	cp $input $biomtemp0
+	wait
+	biomtemp0base=$(basename $biomtemp0 .biom)
+	biomtotxt.sh $biomtemp0 &>/dev/null
+	wait
+	mv $tempdir/$biomtemp0base.txt $tempfile0
 	wait
 
 ## Test for initial header in some converted OTU tables and remove as necessary
@@ -197,9 +205,11 @@ Exiting.
 	if [[ "$headtest" -ge "1" ]]; then
 		sed -i '/# Constructed from biom file/d' $tempfile0
 	fi
+	wait
 
 ## Change OTU ID to Group
 	sed -i 's/#OTU ID/Group/' $tempfile0
+	wait
 
 ## Get column from OTU table that contains the taxonomy string
 	column0=`awk -v table="$tempfile0" '{ for(i=1;i<=NF;i++){if ($i ~ /taxonomy/) {print i}}}' $tempfile0`
@@ -209,15 +219,18 @@ Exiting.
 	fact=`awk -v factor="$factor" -v map="$map" '{ for(i=1;i<=NF;i++){if ($i == factor) {print i}}}' $map`
 
 	grep -v "#" $map | cut -f1,${fact} > $tempfile3
+	wait
 
 ## Remove taxonomy field
 	cat $tempfile0 | cut -f1-${column1} > $tempfile1
+	wait
 
 ## If this is a summarized table, remove all but the deepest taxonomic identifier (using semicolon as delimiter)
 	sctest=$(cat $tempfile1 | cut -f1 | grep ";" | wc -l)
 	if [[ "$sctest" -ge "1" ]]; then
 		sed -i "s/^.\+;//g" $tempfile1
 	fi
+	wait
 
 ## Transpose table
 	datamash transpose < $tempfile1 > $tempfile2
@@ -231,12 +244,15 @@ Exiting.
 		sed -i "s/^$line\s/$new\t/" $tempfile2
 		fi
 	done
+	wait
 
 ## Move first column to end, writing to output
 	numcols=`awk '{print NF}' $tempfile2 | tail -n1`
 	cat $tempfile2 | cut -f1 > $tempfile4
 	cat $tempfile2 | cut -f2-${numcols} > $tempfile5
+	wait
 	paste $tempfile5 $tempfile4 > $tempfile6
+	wait
 
 echo "Ancom-friendly conversion complete.
 Beginning statistical comparisons. Please be patient.
@@ -248,6 +264,16 @@ User-defined significance level: ${bold}${alpha}${normal}
 	manfile="$outdir/otufile_for_ancom.txt"
 	cp $tempfile6 $manfile
 	cp $repodir/akutils_resources/R-instructions_ancom.r $outdir
+	wait
+
+## Copy transformed files to output (debugging only)
+#	cp $tempfile0 $outdir/tempfile0.txt
+#	cp $tempfile1 $outdir/tempfile1.txt
+#	cp $tempfile2 $outdir/tempfile2.txt
+#	cp $tempfile3 $outdir/tempfile3.txt
+#	cp $tempfile4 $outdir/tempfile4.txt
+#	cp $tempfile5 $outdir/tempfile5.txt
+#	cp $tempfile6 $outdir/tempfile6.txt
 
 ## Run ancom.R
 	Rscript $scriptdir/ancomR.r $tempfile6 $factor $outdir $alpha 1> $stdout 2> $stderr
@@ -307,5 +333,6 @@ Detection plots: ${bold}Detection_plots.pdf${normal}
 OTU file for manual use: ${bold}${manfile0}${normal}
 R instructions (ancomR): ${bold}R-instructions_ancom.r${normal}
 "
+wait
 
 exit 0
