@@ -157,15 +157,18 @@ This will take a few moments.
 	for line in `cat $dm | cut -f1`; do
 	grep -w "^$line" $map >> $maptemp0
 	done
+	wait
 
 ## Make temporary dm file without first column (sample IDs)
 	cat $dm | cut -f2- > $dmtemp0
+wait
 
 ## Get factor columns from map file
 	f1col=`awk -v factor="$factor1" -v map="$maptemp0" '{ for(i=1;i<=NF;i++){if ($i == factor) {print i}}}' $map`
 	f2col=`awk -v factor="$factor2" -v map="$maptemp0" '{ for(i=1;i<=NF;i++){if ($i == factor) {print i}}}' $map`
 	cat $maptemp0 | cut -f${f1col} > $f1temp
 	cat $maptemp0 | cut -f${f2col} > $f2temp
+	wait
 
 ## Run adonis function in R (PerMANOVA test)
 	outdir="2way_permanova_${factor1}_by_${factor2}"
@@ -199,6 +202,7 @@ $perms permutations:" >> $outfile
 	cp $maptemp0 $outdir/map.vegan.txt
 	cp $dmtemp0 $outdir/dm.vegan.txt
 	cp $repodir/akutils_resources/R-instructions_vegan.r $outdir/
+	wait
 
 ## Report end of script
 	echo "Analysis complete.
@@ -210,5 +214,6 @@ Map file (R):	${bold}map.vegan.txt${normal}
 Dis matrix (R):	${bold}dm.vegan.txt${normal}
 R instructions:	${bold}R-instructions_vegan.r${normal}
 	"
+wait
 
 exit 0
