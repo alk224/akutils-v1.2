@@ -370,9 +370,9 @@ Sample-filtered table already present." >> $log
 
 		## Log any sample removals
 		echo "
-${bold}Removed $diffcount samples${normal} from the analysis:"
+${bold}Rarefaction removed $diffcount samples${normal} from the analysis during:"
 		echo "
-Removed $diffcount samples from the analysis following rarefaction:" >> $log
+Rarefaction removed $diffcount samples from the analysis following rarefaction:" >> $log
 		grep -vFf $raresamples $insamples
 		grep -vFf $raresamples $insamples >> $log
 
