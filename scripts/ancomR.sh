@@ -66,6 +66,7 @@ trap finish EXIT
 ## Set variables
 	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
 	repodir=$(dirname $scriptdir)
+	akutilsresdir="$repodir/akutils_resources/"
 	workdir=$(pwd)
 	tempdir="$repodir/temp"
 	randcode=`cat /dev/urandom |tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1` 2>/dev/null
@@ -275,8 +276,18 @@ User-defined significance level: ${bold}${alpha}${normal}
 #	cp $tempfile5 $outdir/tempfile5.txt
 #	cp $tempfile6 $outdir/tempfile6.txt
 
+## Source CPU cores from config file or use 4 cores
+	config=$(bash $scriptdir/config_id.sh)
+	ncores=(`grep "CPU_cores" $config | grep -v "#" | cut -f 2`)
+	if [[ ! -z "$ncores" ]]; then
+	echo "Running ANCOM on $ncores processors"
+	else
+	ncores="4"
+	echo "Running ANCOM on $ncores processors (default)"
+	fi
+
 ## Run ancom.R
-	Rscript $scriptdir/ancomR.r $tempfile6 $factor $outdir $alpha 1> $stdout 2> $stderr
+	Rscript $scriptdir/ancomR.r $tempfile6 $factor $outdir $alpha $akutilsresdir $ncores 1> $stdout 2> $stderr
 	wait
 
 ## Collate Detections and statistical summary

@@ -29,8 +29,17 @@ otufile=(args[1])
 factor=(args[2])
 outdir=(args[3])
 alpha=(args[4])
+akutilsres=(args[5])
+ncores=(args[6])
+
 ## Load libraries
 library(ancom.R)
+
+## Replace functions for parallel processing
+akutils_ANCOM <- paste0(akutilsres, "ANCOM.akutils.r")
+akutils_ancom.detect <- paste0(akutilsres, "ancom.detect.akutils.r")
+source(akutils_ANCOM)
+source(akutils_ancom.detect)
 
 ## Read in data
 otus <- read.table(otufile, sep="\t", header=TRUE)
