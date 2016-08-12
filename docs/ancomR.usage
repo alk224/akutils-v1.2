@@ -2,12 +2,13 @@
 ancomR.sh - Test of differential abundance in the R package ANCOM
 
 Usage:
-	ancomR.sh <input.biom> <mapping_file> <factor> <alpha>
+	ancomR.sh <input.biom> <mapping_file> <factor> <alpha> <cores>
 
 		<input.biom> must be biom-formatted OTU table with .biom extension
 		<mapping_file> is QIIME-formatted sample mapping file
 		<factor> is the metadata category you wish to test
 		<alpha> is your chosen significance level (decimal from 0-1)
+		<cores> is number of CPU threads to use
 
 	Requires that ancom.R library be available in your R installation and
 	datamash and biom commands in your PATH.
