@@ -1312,6 +1312,9 @@ wait
 		wait
 	fi
 
+	## Remove OTU-level table
+	rm $sumtables/CSS_table_sorted.biom
+
 	## ANCOM
 	ancomtoprocess=$(ls $sumtables 2>/dev/null)
 	ancout="$outdir/CSS_normalized_output/ANCOM/"
@@ -1337,8 +1340,8 @@ ANCOM commands:" >> $log
 		sleep 1
 		done
 		for ancomtable in $ancomtoprocess; do
-		echo "ancomR.sh $ancomtable $mapfileabs $line 0.05" >> $log
-		( ancomR.sh $ancomtable $mapfileabs $line 0.05 ) >/dev/null 2>&1 || true &
+		echo "ancomR.sh $ancomtable $mapfileabs $line 0.05 $cores" >> $log
+		ancomR.sh $ancomtable $mapfileabs $line 0.05 $cores >/dev/null 2>&1 || true &
 		done
 	done
 	wait
@@ -2052,6 +2055,9 @@ wait
 		wait
 	fi
 
+	## Remove OTU-level table
+	rm $sumtables/DESeq2_table_sorted.biom
+
 	## ANCOM
 	ancomtoprocess=$(ls $sumtables 2>/dev/null)
 	ancout="$outdir/DESeq2_normalized_output/ANCOM/"
@@ -2078,8 +2084,8 @@ ANCOM commands:" >> $log
 		sleep 1
 		done
 		for ancomtable in $ancomtoprocess; do
-		echo "ancomR.sh $ancomtable $mapfileabs $line 0.05" >> $log
-		( ancomR.sh $ancomtable $mapfileabs $line 0.05 ) >/dev/null 2>&1 || true &
+		echo "ancomR.sh $ancomtable $mapfileabs $line 0.05 $cores" >> $log
+		ancomR.sh $ancomtable $mapfileabs $line 0.05 $cores >/dev/null 2>&1 || true &
 		done
 	done
 	wait
@@ -2882,6 +2888,9 @@ wait
 		wait
 	fi
 
+	## Remove OTU-level table
+	rm $sumtables/rarefied_table_sorted.biom
+
 	## ANCOM
 	ancomtoprocess=$(ls $sumtables 2>/dev/null)
 	ancout="$outdir/Rarefied_output/ANCOM/"
@@ -2908,8 +2917,8 @@ ANCOM commands:" >> $log
 		sleep 1
 		done
 		for ancomtable in $ancomtoprocess; do
-		echo "ancomR.sh $ancomtable $mapfileabs $line 0.05" >> $log
-		( ancomR.sh $ancomtable $mapfileabs $line 0.05 ) >/dev/null 2>&1 || true &
+		echo "ancomR.sh $ancomtable $mapfileabs $line 0.05 $cores" >> $log
+		ancomR.sh $ancomtable $mapfileabs $line 0.05 $cores >/dev/null 2>&1 || true &
 		done
 	done
 	wait
