@@ -85,6 +85,7 @@ trap finish EXIT
 	map="$2"
 	factor="$3"
 	alpha="$4"
+	cores="$5"
 
 	date0=$(date +%Y%m%d_%I%M%p)
 
@@ -99,7 +100,7 @@ trap finish EXIT
 	fi
 
 ## If incorrect number of arguments supplied, display usage 
-	if [[ "$#" -ne 4 ]]; then 
+	if [[ "$#" -ne 5 ]]; then 
 	cat $repodir/docs/ancomR.usage
 		exit 1
 	fi 
@@ -276,18 +277,8 @@ User-defined significance level: ${bold}${alpha}${normal}
 #	cp $tempfile5 $outdir/tempfile5.txt
 #	cp $tempfile6 $outdir/tempfile6.txt
 
-## Source CPU cores from config file or use 4 cores
-	config=$(bash $scriptdir/config_id.sh)
-	ncores=(`grep "CPU_cores" $config | grep -v "#" | cut -f 2`)
-	if [[ ! -z "$ncores" ]]; then
-	echo "Running ANCOM on $ncores processors"
-	else
-	ncores="4"
-	echo "Running ANCOM on $ncores processors (default)"
-	fi
-
 ## Run ancom.R
-	Rscript $scriptdir/ancomR.r $tempfile6 $factor $outdir $alpha $akutilsresdir $ncores 1> $stdout 2> $stderr
+	Rscript $scriptdir/ancomR.r $tempfile6 $factor $outdir $alpha $akutilsresdir $cores 1> $stdout 2> $stderr
 	wait
 
 ## Collate Detections and statistical summary
