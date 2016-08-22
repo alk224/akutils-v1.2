@@ -41,7 +41,15 @@ set -e
 	underline=$(tput smul)
 	res1=$(date +%s.%N)
 
-## Log and run command
+## Determine filtering mode
+	if [[ "$chimbase" == "denovo" ]]; then
+	uchime_mode="denovo"
+	elif [[ ! -z "$chimbase" ]]; then
+	uchime_mode="ref"
+	fi
+
+## Log and run command (ref)
+if [[ "$uchime_mode" == "ref" ]]; then
 	echo "Filtering chimeras.
 Method: ${bold}vsearch${normal} (uchime_ref)
 Reference: ${bold}$chimbase${normal}
@@ -65,6 +73,34 @@ Input sequences: $numseqs
 
 	#unwrap output
 	unwrap_fasta.sh $outdir/vsearch_nonchimeras.fna $outdir/seqs_chimera_filtered.fna
+fi
+
+## Log and run command (denovo)
+if [[ "$uchime_mode" == "denovo" ]]; then
+	echo "Filtering chimeras.
+Method: ${bold}vsearch${normal} (uchime_denovo)
+Reference: ${bold}$chimbase${normal}
+Threads: ${bold}$cores${normal}
+Input sequences: ${bold}$numseqs${normal}
+"
+	echo "
+Chimera filtering commands:" >> $log
+	date "+%a %b %d %I:%M %p %Z %Y" >> $log
+	echo "Method: vsearch (uchime_denovo)
+Reference: $chimera_refs
+Threads: $cores
+Input sequences: $numseqs
+	" >> $log
+
+	echo "	vsearch --uchime_denovo $outdir/seqs.fna --threads $cores --nonchimeras $outdir/vsearch_nonchimeras.fna
+" >> $log
+
+	`vsearch --uchime_denovo $outdir/seqs.fna --threads $cores --nonchimeras $outdir/vsearch_nonchimeras.fna 1>$stdout 2>$outdir/vsearch_log.txt`
+	bash $scriptdir/log_slave.sh $stdout $stderr $log
+
+	#unwrap output
+	unwrap_fasta.sh $outdir/vsearch_nonchimeras.fna $outdir/seqs_chimera_filtered.fna
+fi
 
 ## Count results
 	chimeracount1=$(cat $outdir/seqs_chimera_filtered.fna | wc -l)
