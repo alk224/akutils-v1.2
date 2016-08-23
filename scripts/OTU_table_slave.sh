@@ -47,12 +47,19 @@ trap finish EXIT
 	log="$3"
 	randcode="$4"
 	taxfiles="$5"
-	threads="$6"
+	threads0="$6"
 	mode="$7"
 
 	bold=$(tput bold)
 	normal=$(tput sgr0)
 	underline=$(tput smul)
+
+## Adjust threads value
+	if [[ "$threads0" -le "2" ]]; then
+	threads="3"
+	else
+	threads="$threads0"
+	fi
 
 ## Temp files
 	rawtables="$tempdir/${randcode}_rawtables.temp"
