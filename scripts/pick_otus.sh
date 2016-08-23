@@ -486,6 +486,7 @@ fi
 ## Build OTU tables in parallel
 
 	ls -d *_otus_*/*taxonomy_assignment/merged_rep_set_tax_assignments.txt > $taxfiles
+	wait
 	bash $scriptdir/OTU_table_slave.sh $stdout $stderr $log $randcode $taxfiles $threads $mode
 
 ## Log end of script
