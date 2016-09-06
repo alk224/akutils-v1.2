@@ -36,7 +36,7 @@
 
 ## Move to akutils repo directory and perform git pull
 	cd $repodir
-		if [[ -f "akutils_resources/primer_sequences.bak" ]]
+		if [[ -f "akutils_resources/primer_sequences.bak" ]]; then
 		primerbak="yes"
 		rm akutils_resources/primer_sequences.txt
 		fi
