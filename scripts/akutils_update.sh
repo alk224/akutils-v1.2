@@ -36,10 +36,17 @@
 
 ## Move to akutils repo directory and perform git pull
 	cd $repodir
+		if [[ -f "akutils_resources/primer_sequences.bak" ]]
+		primerbak="yes"
+		rm akutils_resources/primer_sequences.txt
+		fi
 	echo "
 ${bold}Performing fresh git pull of akutils repository.${normal}
 	"
 	git pull
+		if [[ "$primerbak" == "yes" ]]; then
+		cp akutils_resources/primer_sequences.bak akutils_resources/primer_sequences.txt
+		fi
 	wait
 
 ## If present, update QIIME_test_data_16S repo
