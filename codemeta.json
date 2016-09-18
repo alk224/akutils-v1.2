@@ -1,0 +1,18 @@
+{
+  "@context": "https://raw.githubusercontent.com/mbjones/codemeta/master/codemeta.jsonld",
+  "@type": "Code",
+  "author": [Andrew Krohn
+
+  ],
+  "identifier": "http://dx.doi.org/10.5281/zenodo.61581",
+  "codeRepository": "https://github.com/alk224/akutils-v1.2",
+  "datePublished": "2016-09-18",
+  "dateModified": "2016-09-18",
+  "dateCreated": "2016-09-18",
+  "description": "Facilitating analyses of microbial communities through QIIME 1.9.1",
+  "keywords": "QIIME, microbial ecology, amplicon sequencing",
+  "license": "MIT",
+  "title": "akutils v1.2",
+  "version": "v1.2.3"
+}
+
