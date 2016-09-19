@@ -7,7 +7,7 @@ tags:
 authors:
  - name: Andrew Krohn
    orcid: 0000-0002-7057-9957
-   affiliation: Northern Arizona University
+   affiliation: Northern Arizona University, Department of Biological Sciences
 date: 18 September 2016
 bibliography: paper.bib
 ---
