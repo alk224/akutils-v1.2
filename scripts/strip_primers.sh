@@ -462,7 +462,7 @@ Checking for empty fastq records in filtered output."
 	if [[ "$filtercount" == "2" ]]; then
 	grep -B 1 -e "^$" $out1 | grep -v -e "^$" | grep -v -e "^+$" | sed "/^--$/d" | cut -d" " -f1 > $empty1
 	grep -B 1 -e "^$" $out2 | grep -v -e "^$" | grep -v -e "^+$" | sed "/^--$/d" | cut -d" " -f1 > $empty2
-	cat $empty1 $empty1 > $empty3
+	cat $empty1 $empty2 > $empty3
 	fi
 
 	if [[ -s $empty3 ]]; then
