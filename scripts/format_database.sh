@@ -196,8 +196,8 @@ Primer hits files previously generated." >> $log
 	ampout=$outdir/get_amplicons_and_reads_out
 
 	if [[ ! -d $ampout ]]; then
-	fhitsfile=`ls $outdir/analyze_primers_out/*f_*_hits.txt`
-	rhitsfile=`ls $outdir/analyze_primers_out/*r_*_hits.txt`
+	fhitsfile=`ls $outdir/analyze_primers_out/${forname}_*_hits.txt`
+	rhitsfile=`ls $outdir/analyze_primers_out/${revname}_*_hits.txt`
 
 	if [[ $primercount == 2 ]]; then
 	
