@@ -237,6 +237,10 @@ akutils strip_primers 1 $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq" 
 	cp $repodir/akutils_resources/primer_file.test $testdir/primer_file.txt
 	fi
 
+	if [[ -d "$testdir/strip_primers_out_515F-806R_3prime/" ]]; then
+	rm -r $testdir/strip_primers_out_515F-806R_3prime/ 2>/dev/null
+	fi
+
 	cd $testdir
 	akutils strip_primers 13 $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq 1>$testdir/std_out 2>$testdir/std_err || true
 	wait
