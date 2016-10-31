@@ -242,9 +242,9 @@ akutils strip_primers 1 $testdir/read1.fq $testdir/read2.fq $testdir/index1.fq" 
 	wait
 
 	## Rename outputs for phix test
-	#mv $testdir/strip_primers_out_515F-806R_3prime/index1.noprimers.fq $testdir/strip_primers_out_515F-806R_3prime/index1.noprimers.fastq
-	#mv $testdir/strip_primers_out_515F-806R_3prime/read1.noprimers.fq $testdir/strip_primers_out_515F-806R_3prime/read1.noprimers.fastq
-	#mv $testdir/strip_primers_out_515F-806R_3prime/read2.noprimers.fq $testdir/strip_primers_out_515F-806R_3prime/read2.noprimers.fastq
+	mv $testdir/strip_primers_out_515F-806R_3prime/index1.noprimers.fq $testdir/strip_primers_out_515F-806R_3prime/index1.noprimers.fastq 2>/dev/null
+	mv $testdir/strip_primers_out_515F-806R_3prime/read1.noprimers.fq $testdir/strip_primers_out_515F-806R_3prime/read1.noprimers.fastq 2>/dev/null
+	mv $testdir/strip_primers_out_515F-806R_3prime/read2.noprimers.fq $testdir/strip_primers_out_515F-806R_3prime/read2.noprimers.fastq 2>/dev/null
 
 	echo "
 ***** strip_primers std_out:
