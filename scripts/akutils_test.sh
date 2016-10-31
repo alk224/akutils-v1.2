@@ -292,7 +292,7 @@ $runtime
 	echo "
 ***** Test of phix_filtering command.
 ***** Command:
-akutils phix_filtering $testdir/phix_filtering_out $testdir/map.test.txt $testdir/strip_primers_out_515F-806R/index1.noprimers.fastq $testdir/strip_primers_out_515F-806R/read1.noprimers.fastq $testdir/strip_primers_out_515F-806R/read2.noprimers.fastq" >> $log
+akutils phix_filtering $testdir/phix_filtering_out $testdir/map.test.txt $testdir/strip_primers_out_515F-806R_3prime/index1.noprimers.fastq $testdir/strip_primers_out_515F-806R_3prime/read1.noprimers.fastq $testdir/strip_primers_out_515F-806R_3prime/read2.noprimers.fastq" >> $log
 	if [[ -d $testdir/phix_filtering_out ]]; then
 	rm -r $testdir/phix_filtering_out
 	fi
