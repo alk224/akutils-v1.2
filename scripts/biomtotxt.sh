@@ -39,7 +39,7 @@ fi
 
 ## Get biom version
 ## test for biom 2.1.5 or newer
-biom215test=$(biom convert --version 2>/dev/null)
+biom215test=$(biom --version 2>/dev/null)
 if [[ -z "$biom215test" ]]; then
 	biomve="2.1.5+"
 	biomv="2"
