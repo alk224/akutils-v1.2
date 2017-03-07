@@ -59,7 +59,6 @@ fi
 if [[ -f $stderr ]]; then
 	rm $stderr
 fi
-
 }
 trap finish EXIT
 

@@ -40,12 +40,12 @@ fi
 ## Get biom version
 ## test for biom 2.1.5 or newer
 biom215test=$(biom --version 2>/dev/null)
-if [[ -z "$biom215test" ]]; then
+if [[ ! -z "$biom215test" ]]; then
 	biomve="2.1.5+"
 	biomv="2"
 echo "Using biom version $biomve"
 else
-	biomver=`biom convert --version`
+	biomver=$(biom convert --version >/dev/null)
 	biomve=`echo $biomver | cut -d " " -f 4`
 	biomv=`echo $biomve | cut -d "." -f 1`
 echo "Using biom version $biomve"
