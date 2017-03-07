@@ -101,8 +101,8 @@ input file to proceed with biom to txt conversion.
 #Biom convert command
 
 	if [[ "$biomv" == "1" ]]; then
-echo yes
-		biom convert -i $1 -o $biomdir/$biomname.txt --header-key taxonomy -b 2>/dev/null
+
+		biom convert -i $1 -o $biomdir/$biomname.txt --header-key taxonomy -b #2>/dev/null
 		wait
 		
 		if [[ -s $biomdir/$biomname.txt ]]; then
@@ -120,7 +120,7 @@ try again.
 
 	fi
 	if [[ "$biomv" == "2" ]]; then
-echo no
+
 		biom convert -i $1 -o $biomdir/$biomname.txt --header-key taxonomy --to-tsv --table-type="OTU table" 2>/dev/null
 		wait
 
