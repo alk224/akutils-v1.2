@@ -102,7 +102,7 @@ input file to proceed with biom to txt conversion.
 
 	if [[ "$biomv" == "1" ]]; then
 
-		biom convert -i $1 -o $biomdir/$biomname.txt --header-key taxonomy -b #2>/dev/null
+		biom convert -i $1 -o $biomdir/$biomname.txt --header-key taxonomy -b 2>/dev/null
 		wait
 		
 		if [[ -s $biomdir/$biomname.txt ]]; then
@@ -112,10 +112,21 @@ Input:  $biomname.biom
 Output: $biomname.txt
 		"
 		else
+	informat=$(file $1)
+	informattest=$(grep "Hierarchical Data Format" $informat 2>/dev/null | wc -l)
+	if [[ "$informattest" == "1" ]]; then
+		format="hdf5"
+	else
+		format="json"
+	fi
 		echo "
 There may have been a problem in your conversion.  Check your input and
-try again.
-		"
+try again. If your biom file is hdf5 formatted, you will need to convert
+to json format first.
+
+Input file format: $format
+"
+
 		fi
 
 	fi
