@@ -46,7 +46,7 @@ if [[ ! -z "$biom215test" ]]; then
 echo "Using biom version $biomve"
 else
 echo 1
-	biomver=$(biom convert --version >/dev/null)
+	biomver=$(biom convert --version 2>/dev/null)
 echo $biomver
 	biomve=`echo $biomver | cut -d " " -f 4`
 	biomv=`echo $biomve | cut -d "." -f 1`
