@@ -91,7 +91,7 @@ valid biom table from QIIME?
 
 	if [[ -f "$biomdir/$biomname.txt" ]]; then
 		echo "
-A file exists with your input name and .txt extension.  Aborting
+A file exists with your input name and .txt extension. Aborting
 conversion.  Delete the conflicting .txt file or change the name of your
 input file to proceed with biom to txt conversion.
 		"
@@ -113,9 +113,9 @@ Output: $biomname.txt
 		"
 		else
 		echo "
-There may have been a problem in your conversion.  Check your input and
+There may have been a problem in your conversion. Check your input and
 try again. If your biom file is hdf5 formatted, you will need to convert
-to json format first.
+to json format first, or upgrade to biom 2+.
 		"
 
 		fi
