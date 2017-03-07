@@ -45,12 +45,10 @@ if [[ ! -z "$biom215test" ]]; then
 	biomv="2"
 echo "Using biom version $biomve"
 else
-echo 1
 	biomver=$(biom convert --version 2>/dev/null)
-echo $biomver
 	biomve=`echo $biomver | cut -d " " -f 4`
 	biomv=`echo $biomve | cut -d "." -f 1`
-echo "Using biom version $biomve"
+echo "Using biom version $biomve $biomv"
 fi
 
 # check whether user had supplied -h or --help. If yes display help 
