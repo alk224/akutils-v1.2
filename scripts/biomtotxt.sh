@@ -48,7 +48,7 @@ else
 	biomver=$(biom convert --version 2>/dev/null)
 	biomve=`echo $biomver | cut -d " " -f 4`
 	biomv=`echo $biomve | cut -d "." -f 1`
-echo "Using biom version $biomve $biomv"
+echo "Using biom version $biomve"
 fi
 
 # check whether user had supplied -h or --help. If yes display help 
@@ -100,8 +100,8 @@ input file to proceed with biom to txt conversion.
 
 #Biom convert command
 
-	if [[ $biomv == 1 ]]; then
-
+	if [[ "$biomv" == "1" ]]; then
+echo yes
 		biom convert -i $1 -o $biomdir/$biomname.txt --header-key taxonomy -b 2>/dev/null
 		wait
 		
@@ -119,8 +119,8 @@ try again.
 		fi
 
 	fi
-	if [[ $biomv == 2 ]]; then
-
+	if [[ "$biomv" == "2" ]]; then
+echo no
 		biom convert -i $1 -o $biomdir/$biomname.txt --header-key taxonomy --to-tsv --table-type="OTU table" 2>/dev/null
 		wait
 
