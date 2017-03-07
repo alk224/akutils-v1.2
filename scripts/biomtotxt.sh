@@ -113,6 +113,7 @@ Output: $biomname.txt
 		"
 		else
 	informat=$(file $1)
+file $1
 grep "Hierarchical Data Format" $informat
 	informattest=$(grep "Hierarchical Data Format" $informat 2>/dev/null | wc -l)
 	if [[ "$informattest" == "1" ]]; then
