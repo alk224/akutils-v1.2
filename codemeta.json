@@ -1,7 +1,7 @@
 {
   "@context": "https://raw.githubusercontent.com/mbjones/codemeta/master/codemeta.jsonld",
   "@type": "Code",
-  "author": [Andrew Krohn
+  "author": [Lela Andrews
 
   ],
   "identifier": "http://dx.doi.org/10.5281/zenodo.61581",
