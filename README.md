@@ -61,6 +61,6 @@ If new configurable options are available, you will be instructed to run the con
 
 **Citing akutils:**  
 
-Lela Andrews. (2016). akutils-v1.2: Facilitating analyses of microbial communities through QIIME. Zenodo. 10.5281/zenodo.61581
+Lela Andrews. (2016). akutils-v1.2.4: Facilitating analyses of microbial communities through QIIME. Zenodo. 10.5281/zenodo.1205079
 
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.61581.svg)](http://dx.doi.org/10.5281/zenodo.61581)
+[![DOI](https://zenodo.org/badge/28751221.svg)](https://zenodo.org/badge/latestdoi/28751221)  
