@@ -79,6 +79,7 @@ valid biom table from QIIME?
 		"
 		exit 1
 	fi
+
 ## Extract OTU table basename for naming txt file output
 
 	biombase=`basename "$1" | cut -d. -f1`

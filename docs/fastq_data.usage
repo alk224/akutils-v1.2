@@ -1,0 +1,11 @@
+
+fastq_data.sh - Basic analysis of raw fastq file data
+
+Usage:
+	fastq_data.sh <fastq_file>
+
+		<fastq_file> is a fastq file to be analyzed
+
+	Input fastq file must have .fq or .fastq extension.
+	Requires that seqTools library be available in your R installation.
+
