@@ -59,6 +59,7 @@ trap finish EXIT
 ## If other than 1 arguments supplied, display usage
 	if [[ "$#" -ne 1 ]]; then 
 	cat $repodir/docs/fastq_data.usage
+		exit 0
 	fi
 
 ## If supplied file is neither .fastq or .fq, display usage
