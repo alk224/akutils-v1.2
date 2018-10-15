@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-## Written by Yoshiki, co-opted by Andrew.
+## Written by Yoshiki, co-opted by Lela.
 ## See https://groups.google.com/forum/#!searchin/qiime-forum/nmds$20emperor/qiime-forum/CtiCy1vJao8/7jBSlCniCQAJ
 ## and https://gist.github.com/ElDeveloper/dabccfb9024378262549
 #  Version 1.0.0 (October 22, 2015)

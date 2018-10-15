@@ -23,7 +23,7 @@
 #  3. This notice may not be removed or altered from any source distribution.
 #
 
-## This script was concieved by Andrew Krohn
+## This script was concieved by Lela Andrews
 ## Bo Stevens did most of the work
 ## Thanks, Bo!
 

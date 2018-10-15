@@ -4,7 +4,7 @@
 #
 #  Version 2.0 (December 16, 2015)
 #
-#  Copyright (c) 2014-2015 Andrew Krohn
+#  Copyright (c) 2014-- Lela Andrews
 #
 #  This software is provided 'as-is', without any express or implied
 #  warranty. In no event will the authors be held liable for any damages

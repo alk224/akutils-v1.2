@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 ## This file comes from Jennifer Fourquier's excellent ghost-tree project
-## Some modifications by Andrew Krohn to fit with akutils framework
+## Some modifications by Lela Andrews to fit within akutils framework
 ##
 ## Ghost-tree is provided under BSD license
 ##

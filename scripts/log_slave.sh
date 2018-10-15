@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 ## Logging slave script
-## Author: Andrew Krohn
+## Author: Lela Andrews
 ## Date: 2015-10-29
 ## License: MIT
 ## Version 0.0.1
+#
 
 ## Define variables from inputs
 	stdout="$1"
