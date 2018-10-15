@@ -1,5 +1,6 @@
-###akutils-v1.2 README  
+### akutils-v1.2 README  
 
+**akutils:** Andrews' Kang Utilities
 
 This is a collection of scripts I wrote to make myself more productive while doing microbial ecology work with QIIME. I was having difficulty knowing that I was making the best decisions in my analyses, so I started writing this as an exercise in getting to know better the QIIME commands that I was using. I can now use it to run many OTU picking workflows in a row and it generates the plots and stats that I like to have access to right away. This avoids the tedium of entering many commands and helps to keep me organized. I do everything on a Linux system (Ubuntu 14.04). I have also tested most things on CentOS 6.6 (monsoon cluster at Northern Arizona University). You should be comfortable installing packages and such that may be required. For more information on the functionality of akutils, [check out the wiki pages.](https://github.com/alk224/akutils-v1.2/wiki)  
 
@@ -60,6 +61,6 @@ If new configurable options are available, you will be instructed to run the con
 
 **Citing akutils:**  
 
-Lela Andrews. (2016). akutils-v1.2: Facilitating analyses of microbial communities through QIIME. Zenodo. 10.5281/zenodo.61581
+Lela V. Andrews. (2018). akutils-v1.2.4: Facilitating analyses of microbial communities through QIIME. Zenodo. 10.5281/zenodo.1205079
 
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.61581.svg)](http://dx.doi.org/10.5281/zenodo.61581)
+[![DOI](https://zenodo.org/badge/28751221.svg)](https://zenodo.org/badge/latestdoi/28751221)  
