@@ -142,7 +142,7 @@ trap finish EXIT
 
 		if [[ ! -f $rawtabledir/raw_otu_table_bacteria_only.biom ]]; then
 		echo "filter_taxa_from_otu_table.py -i $line -o $rawtabledir/raw_otu_table_bacteria_only.biom -p k__Bacteria,k__Archaea" >> $logtemp
-		( filter_taxa_from_otu_table.py -i $line -o $rawtabledir/raw_otu_table_bacteria_only.biom -p k__Bacteria,k__Archaea 1>$stderrtemp 2>$stdouttemp || true ) &
+		( filter_taxa_from_otu_table.py -i $line -o $rawtabledir/raw_otu_table_bacteria_only.biom -p k__Bacteria,k__Archaea,k__unknown 1>$stderrtemp 2>$stdouttemp || true ) &
 		cat $logtemp >> $log
 		bash $scriptdir/log_slave.sh $stdouttemp $stderrtemp $log
 		rm $stdouttemp $stderrtemp $logtemp 2>/dev/null
@@ -169,7 +169,7 @@ trap finish EXIT
 
 		if [[ ! -f $rawtabledir/raw_otu_table_fungi_only.biom ]]; then
 		echo "filter_taxa_from_otu_table.py -i $line -o $rawtabledir/raw_otu_table_fungi_only.biom -p k__Fungi" >> $logtemp
-		( filter_taxa_from_otu_table.py -i $line -o $rawtabledir/raw_otu_table_fungi_only.biom -p k__Fungi 1>$stderrtemp 2>$stdouttemp || true ) &
+		( filter_taxa_from_otu_table.py -i $line -o $rawtabledir/raw_otu_table_fungi_only.biom -p k__Fungi,k__unknown 1>$stderrtemp 2>$stdouttemp || true ) &
 		cat $logtemp >> $log
 		bash $scriptdir/log_slave.sh $stdouttemp $stderrtemp $log
 		rm $stdouttemp $stderrtemp $logtemp 2>/dev/null
