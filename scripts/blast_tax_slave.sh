@@ -38,11 +38,15 @@ set -e
 	refs="$8"
 	tax="$9"
 	repsetcount="${10}"
+	blastevalue="${11}"
 
 	bold=$(tput bold)
 	normal=$(tput sgr0)
 	underline=$(tput smul)
 	res1=$(date +%s.%N)
+
+	randcode=`cat /dev/urandom |tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1` 2>/dev/null
+	tempdir="$repodir/temp/"
 
 ## Log and run command
 	echo "Assigning taxonomy.
@@ -53,11 +57,20 @@ Method: ${bold}$taxmethod${normal} on ${bold}$cores${normal} cores.
 Input sequences: $repsetcount" >> $log
 	date "+%a %b %d %I:%M %p %Z %Y" >> $log
 	echo "
-	parallel_assign_taxonomy_blast.py -i $otupickdir/merged_rep_set.fna -o $taxdir -r $refs -t $tax -O $cores
+	parallel_assign_taxonomy_blast.py -i $otupickdir/merged_rep_set.fna -o $taxdir -r $refs -t $tax -O $cores -e $blastevalue
 	" >> $log
-	parallel_assign_taxonomy_blast.py -i $otupickdir/merged_rep_set.fna -o $taxdir -r $refs -t $tax -O $cores 1>$stdout 2>$stderr
+	parallel_assign_taxonomy_blast.py -i $otupickdir/merged_rep_set.fna -o $taxdir -r $refs -t $tax -O $cores -e $blastevalue 1>$stdout 2>$stderr
 	bash $scriptdir/log_slave.sh $stdout $stderr $log
 	wait
+
+## Add OTUIDs to "no blast hit" sequences, saving original assignments file
+	cp $taxdir/merged_rep_set_tax_assignments.txt $taxdir/initial_merged_rep_set_tax_assignments.txt
+		grep "No blast hit" $taxdir/initial_merged_rep_set_tax_assignments.txt | cut -f1 > $tempdir/${randcode}_taxids
+			for randtaxid in `cat $tempdir/${randcode}_taxids`; do
+				sed -i -e "s@$randtaxid\tNo blast hit@$randtaxid\tk__unknown;p__unknown;c__unknown;o__unknown;f__unknown;g__unknown;s__$randtaxid@" $taxdir/merged_rep_set_tax_assignments.txt # > $taxdir/merged_rep_set_tax_assignments.txt
+			done
+	wait
+	rm $tempdir/${randcode}_taxids
 
 	res2=$(date +%s.%N)
 	dt=$(echo "$res2 - $res1" | bc)
