@@ -42,6 +42,7 @@ set -e
 	rdptax="${12}"
 	uclusttax="${13}"
 	alltax="${14}"
+	blastevalue="${15}"
 
 	resolutioncount=`cat $resfile | wc -l`
 	cores=(`grep "CPU_cores" $config | grep -v "#" | cut -f 2`)
@@ -144,7 +145,7 @@ Method: ${bold}SWARM (de novo)${normal}"
 		taxmethod="BLAST"
 		taxdir="$otupickdir/blast_taxonomy_assignment"
 		if [[ ! -f $taxdir/merged_rep_set_tax_assignments.txt ]]; then
-			bash $scriptdir/blast_tax_slave.sh $stdout $stderr $log $cores $taxmethod $taxdir $otupickdir $refs $tax $repsetcount
+			bash $scriptdir/blast_tax_slave.sh $stdout $stderr $log $cores $taxmethod $taxdir $otupickdir $refs $tax $repsetcount $blastevalue
 		fi
 	fi
 
