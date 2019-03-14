@@ -42,6 +42,7 @@ set -e
 	rdptax="${12}"
 	uclusttax="${13}"
 	alltax="${14}"
+	blastevalue="${15}"
 
 	similaritycount=`cat $resfile | wc -l`
 	cores=(`grep "CPU_cores" $config | grep -v "#" | cut -f 2`)
@@ -52,6 +53,12 @@ set -e
 	normal=$(tput sgr0)
 	underline=$(tput smul)
 	res1=$(date +%s.%N)
+	randcode=`cat /dev/urandom |tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1` 2>/dev/null
+
+## Find scripts and repository location.
+	scriptdir="$( cd "$( dirname "$0" )" && pwd )"
+	repodir=`dirname $scriptdir`
+	tempdir="$repodir/temp/"
 
 ## Log and run commands
 
@@ -78,9 +85,9 @@ Method: ${bold}BLAST (closed reference)${normal}"
 		echo "Percent similarity: ${bold}$similarity${normal}
 		"
 		echo "
-	parallel_pick_otus_blast.py -i $derepseqs -o $otupickdir -s $similarity -O $cores -r $refs -e 0.001
+	parallel_pick_otus_blast.py -i $derepseqs -o $otupickdir -s $similarity -O $cores -r $refs -e $blastevalue
 		" >> $log
-		parallel_pick_otus_blast.py -i $derepseqs -o $otupickdir -s $similarity -O $cores -r $refs -e 0.001 1>$stdout 2>$stderr
+		parallel_pick_otus_blast.py -i $derepseqs -o $otupickdir -s $similarity -O $cores -r $refs -e $blastevalue 1>$stdout 2>$stderr
 		bash $scriptdir/log_slave.sh $stdout $stderr $log
 
 		res3=$(date +%s.%N)
@@ -145,6 +152,13 @@ Method: ${bold}BLAST (closed reference)${normal}"
 		taxdir="$otupickdir/blast_taxonomy_assignment"
 		if [[ ! -f $taxdir/merged_rep_set_tax_assignments.txt ]]; then
 			bash $scriptdir/blast_tax_slave.sh $stdout $stderr $log $cores $taxmethod $taxdir $otupickdir $refs $tax $repsetcount
+		wait
+	## Add OTUIDs to "no blast hit" sequences, saving original assignments file
+			mv $taxdir/merged_rep_set_tax_assignments.txt $taxdir/initial_merged_rep_set_tax_assignments.txt
+			grep "No blast hit" $taxdir/initial_merged_rep_set_tax_assignments.txt | cut -f1 > $tempdir/$randcode_taxids
+			for randtaxid in `cat $tempdir/$randcode_taxids`; do
+				sed "s@$randtaxid\tNo blast hit@$randtaxid\tk__unknown;p__unknown;c__unknown;o__unknown;f__unknown;g__unknown;s__$randtaxid@" $taxdir/initial_merged_rep_set_tax_assignments.txt > $taxdir/merged_rep_set_tax_assignments.txt
+			done
 		fi
 	fi
 
