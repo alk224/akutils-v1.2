@@ -126,6 +126,7 @@ akutils pick_otus workflow beginning." >> $log
 	suffix_len=(`grep "Suffix_length" $config | grep -v "#" | cut -f 2`)
 	otupicker=(`grep "OTU_picker" $config | grep -v "#" | cut -f 2`)
 	taxassigner=(`grep "Tax_assigner" $config | grep -v "#" | cut -f 2`)
+	blastevalue=(`grep "BLAST_evalue" $config | grep -v "#" | cut -f 2`)
 	cores="$CPU_cores"
 	threads=$(($cores-1))
 
@@ -388,7 +389,7 @@ if [[ $swarmpick == "swarm" || $allpick == "ALL" ]]; then
 		echo 1 > $swarmtemp
 	fi
 
-	bash $scriptdir/swarm_slave.sh $stdout $stderr $log $config $swarmtemp $derepseqs $seqs $numseqs $presufdir $seqname $blasttax $rdptax $uclusttax $alltax
+	bash $scriptdir/swarm_slave.sh $stdout $stderr $log $config $swarmtemp $derepseqs $seqs $numseqs $presufdir $seqname $blasttax $rdptax $uclusttax $alltax $blastevalue
 fi
 
 ################################
@@ -411,7 +412,7 @@ if [[ $blastpick == "blast" || $allpick == "ALL" ]]; then
 		echo "0.97" > $percenttemp
 	fi
 
-	bash $scriptdir/blast_slave.sh $stdout $stderr $log $config $percenttemp $derepseqs $seqs $numseqs $presufdir $seqname $blasttax $rdptax $uclusttax $alltax
+	bash $scriptdir/blast_slave.sh $stdout $stderr $log $config $percenttemp $derepseqs $seqs $numseqs $presufdir $seqname $blasttax $rdptax $uclusttax $alltax $blastevalue
 fi
 
 ################################
