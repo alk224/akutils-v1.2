@@ -52,7 +52,7 @@ _akutils()
 	  ;;
 	configure)
 	  local sub="Reference Taxonomy Tree Chimeras
-		Alignment_template Alignment_lanemask
+		Alignment_template Alignment_lanemask BLAST_evalue
 		Split_libraries_qvalue Split_libraries_minpercent
 		Split_libraries_maxbad Prefix_length
 		Suffix_length OTU_picker Tax_assigner
